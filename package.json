@@ -1,0 +1,16 @@
+{
+  "name": "project3",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/main.js",
+  "scripts": {
+    "dev": "parcel --global g src/index.html",
+    "build": "parcel build --public-url . src/index.html",
+    "dist": "parcel build --public-url . --no-minify --no-content-hash src/index.html"
+  },
+  "author": "",
+  "license": "ISC",
+    "dependencies": {
+      "parcel": "^1.11.0"
+    }
+}
