@@ -31,18 +31,15 @@ import { translate, mult } from "./MV+.js";
 export class Mobile {
     /**
      * @param {MeshLike} mesh The mesh at the top of the mobile
-     * @param {number} radius The radius of the mobile's child arms
      * @param {number} parent_height The length of the upwards arm
      * @param {?number} child_height The length of the downwards arm
+     * @param {number} radius The radius of the mobile's child arms
      *
      * The given mesh will be attached to its parent and children by vertical
      * lines connected to the midpoints of its top and bottom planes,
      * respectively.
-     *
-     * If {@code child_height} is not given, {@code parent_height} is used
-     * instead.
      */
-    constructor(mesh, radius, parent_height, child_height = null) {
+    constructor(mesh, parent_height, child_height, radius) {
         if (!(mesh instanceof Mesh)) {
             mesh = new Mesh(mesh.vertices, mesh.faces);
         }
@@ -70,31 +67,33 @@ export class Mobile {
      *
      * @param {'left'|'right'} which The side of the mobile to add the child to
      * @param {MeshLike} mesh The mesh to use fo the child object
-     * @param {number} radius The child's radius; defaults to half of this
-     *                        mobile's radius
      * @param {number} parent_height The length of the upwards arm; defaults to
      *                               this mobile's parent height
      * @param {?number} child_height The length of the downwards arm; defaults
      *                               to this mobile's child height
+     * @param {number} radius The child's radius; defaults to half of this
+     *                        mobile's radius
      *
      * @returns {Mobile} The newly-added child
      */
-    addChild(which, mesh, radius, parent_height, child_height) {
+    addChild(which, mesh, parent_height, child_height, radius) {
         if (which !== 'left' && which !== 'right') {
             throw new Error('invalid side of mobile');
         }
 
+        let radius        = radius === undefined ? this.radius / 2 : radius,
+            child_height  = child_height === undefined ? this.child_height : child_height,
+            parent_height = parent_height === undefined ? this.parent_height : parent_height;
+
         let direction = (which === 'left' ? +1 : -1),
-            transform = translate(direction * this.radius, 0, 0),
+            transform = translate(direction * this.radius,
+                                  this.mesh.bounds.bottom + this.child_height + parent_height,
+                                  0),
             vertices = mesh.vertices.map(v => mult(transform, v)),
             newmesh = {vertices: vertices, faces: mesh.faces};;
 
-        let child = new Mobile(
-            newmesh,
-            radius === undefined ? this.radius / 2 : radius,
-            child_height === undefined ? this.child_height : child_height,
-            parent_height === undefined ? this.parent_height : parent_height
-        );
+        let child = new Mobile(newmesh, radius, parent_height, child_height);
+
         this[which] = child;
         return child;
     }
@@ -104,7 +103,7 @@ export class Mobile {
      *
      * @see addChild
      */
-    addLeft(mesh, radius, parent_height, child_height) {
+    addLeft(mesh, parent_height, child_height, radius) {
         return this.addChild('left', mesh, radius, parent_height, child_height);
     }
 
@@ -113,7 +112,7 @@ export class Mobile {
      *
      * @see addChild
      */
-    addRight(mesh, radius, parent_height, child_height) {
+    addRight(mesh, parent_height, child_height, radius) {
         return this.addChild('right', mesh, radius, parent_height, child_height);
     }
 }
