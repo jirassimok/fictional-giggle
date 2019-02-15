@@ -3,7 +3,7 @@
 import "./vecarray.js";
 
 import { AnimationState } from "./Animations.js";
-import { Extent } from "./Extent.js";
+import { Bounds } from "./Bounds.js";
 import { Mesh } from "./Mesh.js";
 import { vec2, vec3, vec4 } from "./MV+.js";
 import { setupWebGL, setupProgram, enableVAO } from "./webgl-setup.js";
@@ -153,7 +153,7 @@ function clearCanvas() {
  * margin in all directions.
  */
 function setProjection(mesh) {
-    let bounds = mesh.extent;
+    let bounds = mesh.bounds;
 
     let fov_x = X_FIELD_OF_VIEW * Math.PI / 180,
         fov_y = fov_x / ASPECT_RATIO,
@@ -230,7 +230,7 @@ function animateMesh(mesh) {
  * @param {Mesh} mesh
  */
 function drawMesh(mesh) {
-    let bounds = mesh.extent;
+    let bounds = mesh.bounds;
 
     let rotation = MV.rotateX(animationState.xrotation.position);
 

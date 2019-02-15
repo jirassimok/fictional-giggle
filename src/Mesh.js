@@ -1,7 +1,7 @@
 "use strict";
 
+import { Bounds } from "./Bounds.js";
 import { vec3, normalize } from "./MV+.js";
-import { Extent } from "./Extent.js";
 
 /**
  * Represents a mesh of faces
@@ -14,7 +14,7 @@ import { Extent } from "./Extent.js";
  */
 export class Mesh {
     constructor(vertices, faces) {
-        this.extent = Extent.fromVecs(vertices);
+        this.bounds = Bounds.fromVecs(vertices);
 
         this._vertices = vertices.map(vec3);
 

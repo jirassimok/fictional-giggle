@@ -7,7 +7,7 @@ import { vec3, ortho } from "./MV+.js";
 /**
  * Class representing the extent of a data file's contents.
  */
-export class Extent {
+export class Bounds {
     constructor(left, right, bottom, top, near = 1, far = -1) {
         this.left = left;
         this.right = right;
@@ -29,7 +29,7 @@ export class Extent {
     static fromVecs(vecs) {
         let size = vecs[0].length;
 
-        let extent = new Extent(vecs[0].x, vecs[0].z,
+        let extent = new Bounds(vecs[0].x, vecs[0].z,
                                 vecs[0].y, vecs[0].y,
                                 vecs[0].z, vecs[0].z);
 
@@ -49,7 +49,7 @@ export class Extent {
 
     /** Get the default extent */
     static basic() {
-        return new Extent(-1, 1, -1, 1, 1, -1);
+        return new Bounds(-1, 1, -1, 1, 1, -1);
     }
 
     /** Convert to orthographic projection matrix */
