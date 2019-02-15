@@ -1,5 +1,7 @@
 "use strict";
 
+import "./vecarray.js";
+
 import { vec3, ortho } from "./MV+.js";
 
 /**
@@ -27,19 +29,19 @@ export class Extent {
     static fromVecs(vecs) {
         let size = vecs[0].length;
 
-        let extent = new Extent(vecs[0][0], vecs[0][0],
-                                vecs[0][1], vecs[0][1],
-                                vecs[0][2], vecs[0][2]);
+        let extent = new Extent(vecs[0].x, vecs[0].z,
+                                vecs[0].y, vecs[0].y,
+                                vecs[0].z, vecs[0].z);
 
         return vecs.reduce(
             (ext, vec) => {
-                ext.left = Math.min(ext.left, vec[0]);
-                ext.right = Math.max(ext.right, vec[0]);
-                ext.top = Math.max(ext.top, vec[1]);
-                ext.bottom = Math.min(ext.bottom, vec[1]);
+                ext.left = Math.min(ext.left, vec.x);
+                ext.right = Math.max(ext.right, vec.x);
+                ext.top = Math.max(ext.top, vec.y);
+                ext.bottom = Math.min(ext.bottom, vec.y);
                 if (size > 2) {
-                    ext.near = Math.max(ext.near, vec[2]);
-                    ext.far = Math.min(ext.far, vec[2]);
+                    ext.near = Math.max(ext.near, vec.z);
+                    ext.far = Math.min(ext.far, vec.z);
                 }
                 return ext;
             }, extent);

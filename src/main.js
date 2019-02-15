@@ -1,5 +1,7 @@
 "use strict";
 
+import "./vecarray.js";
+
 import { AnimationState } from "./Animations.js";
 import { Extent } from "./Extent.js";
 import { Mesh } from "./Mesh.js";
@@ -10,8 +12,6 @@ import { shapes } from "./model.js";
 
 import * as MV from "./MV+.js";
 
-export { shapes };
-
 //// Constants
 
 const X_FIELD_OF_VIEW = 90,
@@ -21,7 +21,6 @@ const MIN_CANVAS_HEIGHT = 200;
 
 const PERSPECTIVE_NEAR_PLANE = 0.001,
       PERSPECTIVE_FAR_PLANE = 1000;
-
 
 //// Prepare the canvas
 
@@ -146,12 +145,6 @@ function clearCanvas() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 }
 
-function distance(p1, p2) {
-    return Math.sqrt((p1[0] - p2[0]) ** 2 +
-                     (p1[1] - p2[1]) ** 2 +
-                     (p1[2] - p2[2]) ** 2);
-}
-
 // TODO: Update projection for project 3
 /**
  * Set up the projection and view matrices based on the mesh
@@ -173,8 +166,8 @@ function setProjection(mesh) {
     let projectionMatrix = MV.perspectiveRad(
         fov_y, ASPECT_RATIO, PERSPECTIVE_NEAR_PLANE, PERSPECTIVE_FAR_PLANE);
 
-	let eye = vec3(bounds.midpoint[0],
-                   bounds.midpoint[1],
+	let eye = vec3(bounds.midpoint.x,
+                   bounds.midpoint.y,
                    camera_z),
 	    at = bounds.midpoint,
 	    up = vec3(0, 1, 0);
