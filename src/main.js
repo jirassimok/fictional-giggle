@@ -6,7 +6,7 @@ import { AnimationState } from "./Animations.js";
 import { Bounds } from "./Bounds.js";
 import { Mesh } from "./Mesh.js";
 import { vec2, vec3, vec4 } from "./MV+.js";
-import { setupWebGL, setupProgram, enableVAO } from "./webgl-setup.js";
+import { setupWebGL, setupProgram, enableAndBindVAO } from "./webgl-setup.js";
 
 import { shapes } from "./model.js";
 
@@ -48,6 +48,11 @@ const canvas = document.querySelector("#webglCanvas");
 const gl = setupWebGL(canvas);
 if (gl === null) {
     throw new Error("Failed to set up WebGL");
+}
+
+// Bind VAO extension properties under gl.ext
+if (enableAndBindVAO(gl) === null) {
+    throw new Error("Failed to load Vertex Array Object extension");
 }
 
 const program = setupProgram(gl,

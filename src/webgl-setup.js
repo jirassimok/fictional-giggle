@@ -54,7 +54,7 @@ function linkShaders(gl, vertexShader, fragmentShader) {
 /**
  * Create and prepare a WebGL context.
  * @param {HTMLCanvasElement} canvas The canvas on which to draw.
- * @returns {?WebGLRenderingContext} The WebGL context..
+ * @returns {?WebGLRenderingContext} The WebGL context.
  *
  * If the WebGL context is created and the required extensions loaded, it will be
  * returned, otherwise,  will be {@code null}.
@@ -80,6 +80,31 @@ export function enableVAO(gl) {
         showError(VAOError);
         return null;
     }
+
+    return vao;
+}
+
+/**
+ * Enable the vertex array object extension and add its properties to the WebGL
+ * rendering context
+ *
+ * The properties are added as properties of the {@code vao} property, and do
+ * not have the trailing "OES" in their names.
+ *
+ * @returns The VAO extension object
+ */
+export function enableAndBindVAO(gl) {
+    let vao = enableVAO(gl);
+
+    Object.defineProperty(gl, 'vao', {
+        value: {
+            createVertexArray: vao.createVertexArrayOES,
+            deleteVertexArray: vao.deleteVertexArrayOES,
+            isVertexArray:     vao.isVertexArrayOES,
+            bindVertexArray:   vao.bindVertexArrayOES,
+            VERTEX_ARRAY_BINDING: vao.VERTEX_ARRAY_BINDING_OES
+        }
+    });
 
     return vao;
 }
