@@ -1,4 +1,5 @@
 import { Mesh } from "./Mesh.js";
+import { translate, mult } from "./MV+.js";
 
 /**
  * A mesh represented by two arrays; the parameters to the {@link Mesh}
@@ -17,7 +18,8 @@ import { Mesh } from "./Mesh.js";
  *
  * @property {Mesh} mesh
  * @property connectors The connecting elements
- * @property {Mobile[]} children The mobiles handing from this one
+ * @property {Mobile} left The mobile handing from the left of this one
+ * @property {Mobile} right The mobiles handing from the right of this one
  *
  * @property {number} radius The radius of the mobile's child arms
  * @property {number} parent_height The length of the upwards arm
@@ -50,7 +52,8 @@ export class Mobile {
         this.parent_height = parent_height;
         this.child_height = (child_height === null ? parent_height : child_height);
 
-        this.children = [];
+        this.left = null;
+        this.right = null;
 
         let midpoint = this.mesh.bounds.midpoint;
     }
@@ -65,6 +68,7 @@ export class Mobile {
     /**
      * Add a child to the mobile
      *
+     * @param {'left'|'right'} which The side of the mobile to add the child to
      * @param {MeshLike} mesh The mesh to use fo the child object
      * @param {number} radius The child's radius; defaults to half of this
      *                        mobile's radius
@@ -75,15 +79,42 @@ export class Mobile {
      *
      * @returns {Mobile} The newly-added child
      */
-    addChild(mesh, radius, parent_height, child_height) {
+    addChild(which, mesh, radius, parent_height, child_height) {
+        if (which !== 'left' && which !== 'right') {
+            throw new Error('invalid side of mobile');
+        }
+
+        let direction = (which === 'left' ? +1 : -1),
+            transform = translate(direction * this.radius, 0, 0),
+            vertices = mesh.vertices.map(v => mult(transform, v)),
+            newmesh = {vertices: vertices, faces: mesh.faces};;
+
         let child = new Mobile(
-            mesh,
+            newmesh,
             radius === undefined ? this.radius / 2 : radius,
             child_height === undefined ? this.child_height : child_height,
             parent_height === undefined ? this.parent_height : parent_height
         );
-        this.children.push(child);
+        this[which] = child;
         return child;
+    }
+
+    /**
+     * Add the left child to the mobile
+     *
+     * @see addChild
+     */
+    addLeft(mesh, radius, parent_height, child_height) {
+        return this.addChild('left', mesh, radius, parent_height, child_height);
+    }
+
+    /**
+     * Add the right child to the mobile
+     *
+     * @see addChild
+     */
+    addRight(mesh, radius, parent_height, child_height) {
+        return this.addChild('right', mesh, radius, parent_height, child_height);
     }
 }
 
