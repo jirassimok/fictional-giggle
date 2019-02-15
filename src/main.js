@@ -2,7 +2,6 @@
 
 import { AnimationState } from "./Animations.js";
 import { Extent } from "./Extent.js";
-import { readFile, parsePly } from "./filereaders.js";
 import { Mesh } from "./Mesh.js";
 import { vec2, vec3, vec4 } from "./MV+.js";
 import { setupWebGL, setupProgram, enableVAO } from "./webgl-setup.js";
@@ -254,21 +253,3 @@ function drawMesh(mesh) {
 
     animationState.animate(() => drawMesh(mesh));
 }
-
-
-
-
-
-// File upload for preparation purposes
-document.querySelector("#fileControls input[type='file']")
-    .addEventListener("change", e => {
-        // Hide the parse error message if it was present
-        document.querySelector("#fileControls .error-message").innerText = "";
-
-        readFile(e)
-            .then(parsePly)
-            .then(([vertices, faces]) => {
-                console.log(JSON.stringify({vertices:vertices, faces:faces}));
-            })
-            .catch(console.error);
-    });
