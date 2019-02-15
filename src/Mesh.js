@@ -16,34 +16,16 @@ export class Mesh {
     constructor(vertices, faces) {
         this.bounds = Bounds.fromVecs(vertices);
 
-        this._vertices = vertices.map(vec3);
+        this._vertices = Object.freeze(vertices.map(vec3));
 
-        this._faces = faces.map(Array.from);
+        this._faces = Object.freeze(faces.map(Array.from));
 
-
-
-        // Copy vertices so each face has its own copies
-        this._allvertices = Object.freeze(
-            faces.flatMap(
-                face => face.map(
-                    v => vertices[v])));
-
-        let faceoffsets = [];
-        let offset = 0;
-
-        // Create list of (size, offset) pairs per face
-        for (let size of faces.map(face => face.length)) {
-            faceoffsets.push(Object.freeze([size, offset]));
-            offset += size;
-        }
-
-        this._faces = Object.freeze(faceoffsets);
-
-        this._normals = [];
+        this._facenormals = [];
 
         for (let face of faces) {
-            let face2 = face.slice(1).concat(face[0]);
-            let vertexpairs = face.map((_, i) => [vertices[face[i]],
+            // face rotated by 1 vertex
+            let face2 = face.slice(1).concat(face[0]),
+                vertexpairs = face.map((_, i) => [vertices[face[i]],
                                                   vertices[face2[i]]]);
             let x = 0,
                 y = 0,
@@ -56,9 +38,11 @@ export class Mesh {
             }
 
             for (let _ of face) {
-                this._normals.push(normalize(vec3(x, y, z)));
+                this._facenormals.push(normalize(vec3(x, y, z)));
             }
         }
+
+        Object.freeze(this._facenormals);
     }
 
     /**
@@ -76,9 +60,9 @@ export class Mesh {
     }
 
     /**
-     * @returns {vec3[]} an array of normals for the vertices
+     * @returns {vec3[]} an array of normals for the faces
      */
-    get normals() {
-        return this._normals;
+    get facenormals() {
+        return this._facenormals;
     }
 }

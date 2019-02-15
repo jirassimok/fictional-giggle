@@ -202,7 +202,7 @@ function setNormals(mesh) {
     gl.enableVertexAttribArray(shader.faceNormal);
 
     gl.bufferData(gl.ARRAY_BUFFER,
-                  MV.flatten(mesh.normals),
+                  MV.flatten(mesh.facenormals),
                   gl.STATIC_DRAW);
 }
 
