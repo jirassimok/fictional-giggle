@@ -19,7 +19,7 @@ export const cube = Object.freeze({
 
 export const shapes = [sphere, cube];
 
-const mobile = new Mobile(cube, 1, 1, 2);
+export const mobile = new Mobile(cube, 1, 1, 2);
 
 {
     let left1 = mobile.addLeft(cube),
