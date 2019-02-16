@@ -2,13 +2,13 @@
 
 //// Constants
 
-const X_FIELD_OF_VIEW = 90,
-      ASPECT_RATIO = 5/3;
+export const X_FIELD_OF_VIEW = 90,
+             ASPECT_RATIO = 5/3;
 
-const MIN_CANVAS_HEIGHT = 200;
+export const MIN_CANVAS_HEIGHT = 200;
 
-const PERSPECTIVE_NEAR_PLANE = 0.001,
-      PERSPECTIVE_FAR_PLANE = 1000;
+export const PERSPECTIVE_NEAR_PLANE = 0.001,
+             PERSPECTIVE_FAR_PLANE = 1000;
 
 //// Prepare the canvas
 
