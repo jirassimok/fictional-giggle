@@ -29,7 +29,7 @@ export class Bounds {
     static fromVecs(vecs) {
         let size = vecs[0].length;
 
-        let extent = new Bounds(vecs[0].x, vecs[0].z,
+        let extent = new Bounds(vecs[0].x, vecs[0].x,
                                 vecs[0].y, vecs[0].y,
                                 vecs[0].z, vecs[0].z);
 
