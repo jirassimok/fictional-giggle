@@ -1,7 +1,7 @@
 "use strict";
 
 import "./vecarray.js";
-import { gl } from "./setup.js";
+import { gl, X_FIELD_OF_VIEW, ASPECT_RATIO, PERSPECTIVE_NEAR_PLANE, PERSPECTIVE_FAR_PLANE } from "./setup.js";
 
 import { AnimationState } from "./Animations.js";
 import { Bounds } from "./Bounds.js";
@@ -118,70 +118,36 @@ function clearCanvas() {
 function setProjection(mobile) {
     let bounds = mobile.bounds;
 
-    // let fov_x = X_FIELD_OF_VIEW * Math.PI / 180,
-    //     fov_y = fov_x / ASPECT_RATIO,
-    //     // Distance required to view entire width/height
-    //     width_distance = bounds.width / (2 * Math.tan(fov_x / 2)),
-    //     height_distance = bounds.height / (2 * Math.tan(fov_y / 2)),
-    //     // Distance camera must be to view full mesh
-    //     camera_z = bounds.near + Math.max(width_distance, height_distance) * 1.1;
-    //
-    // let projectionMatrix = MV.perspectiveRad(
-    //     fov_y, ASPECT_RATIO, PERSPECTIVE_NEAR_PLANE, PERSPECTIVE_FAR_PLANE);
-    //
-	// let eye = vec3(bounds.midpoint.x,
-    //                bounds.midpoint.y,
-    //                camera_z),
-	//     at = bounds.midpoint,
-	//     up = vec3(0, 1, 0);
-    //
-	// var viewMatrix = MV.lookAt(eye, at, up);
-    //
-    // // Add margins around the mesh
-    // var margins = MV.scalem(0.9, 0.9, 0.9);
-    // projectionMatrix = MV.mult(margins, projectionMatrix);
+    let fov_x = X_FIELD_OF_VIEW * Math.PI / 180,
+        fov_y = fov_x / ASPECT_RATIO,
+        // Distance required to view entire width/height
+        width_distance = bounds.width / (2 * Math.tan(fov_x / 2)),
+        height_distance = bounds.height / (2 * Math.tan(fov_y / 2)),
+        // Distance camera must be to view full mesh
+        camera_z = bounds.near + Math.max(width_distance, height_distance) * 1.1;
+
+    let projectionMatrix = MV.perspectiveRad(
+        fov_y, ASPECT_RATIO, PERSPECTIVE_NEAR_PLANE, PERSPECTIVE_FAR_PLANE);
+
+	let eye = vec3(bounds.midpoint.x,
+                   bounds.midpoint.y,
+                   camera_z),
+	    at = bounds.midpoint,
+	    up = vec3(0, 1, 0);
+
+	var viewMatrix = MV.lookAt(eye, at, up);
+
+    // // Add margins around the  mesh
+    let margins = MV.scalem(0.9, 0.9, 0.9);
+    projectionMatrix = MV.mult(margins, projectionMatrix);
 
     gl.uniformMatrix4fv(shader.projectionMatrix,
                         false,
-                        MV.flatten(MV.ortho(
-                            bounds.left,
-                            bounds.right,
-                            bounds.bottom,
-                            bounds.top,
-                            bounds.near,
-                            bounds.far)));
+                        MV.flatten(projectionMatrix));
 
     gl.uniformMatrix4fv(shader.viewMatrix,
                         false,
-                        MV.flatten(MV.mat4()));
-}
-
-/**
- * Set the normal vectors in the shader for the given mesh
- */
-function setNormals(mesh) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.normal);
-
-    gl.vertexAttribPointer(shader.faceNormal, 3, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(shader.faceNormal);
-
-    gl.bufferData(gl.ARRAY_BUFFER,
-                  MV.flatten(mesh.facenormals),
-                  gl.STATIC_DRAW);
-}
-
-/**
- * Set the vertices in the shader for the given mesh
- */
-function setVertices(mesh) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
-
-    gl.vertexAttribPointer(shader.position, 3, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(shader.position);
-
-    gl.bufferData(gl.ARRAY_BUFFER,
-                  MV.flatten(mesh.vertices),
-                  gl.STATIC_DRAW);
+                        MV.flatten(viewMatrix));
 }
 
 
@@ -216,12 +182,18 @@ function drawMesh(mesh) {
     animationState.animate(() => drawMesh(mesh));
 }
 
-clearCanvas();
-
-setup();
 function setup() {
     mobile.setup(shader.position);
     setProjection(mobile);
-    mobile.draw(shader.modelMatrix);
 }
 
+function render() {
+    clearCanvas();
+    mobile.draw(shader.modelMatrix);
+
+    window.requestAnimationFrame(render);
+}
+
+clearCanvas();
+setup();
+render();

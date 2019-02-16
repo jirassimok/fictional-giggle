@@ -42,7 +42,7 @@ export class Mobile {
     }
 
     /**
-     * Set up the vertex array object for the mobile and its children
+     * Set up the vertex array objects for the mobile and its children
      *
      * @param position The location of the shader's position attribute
      */
@@ -59,26 +59,8 @@ export class Mobile {
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.mesh.vertices.flat(1)), gl.STATIC_DRAW);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(this.mesh.faces.flat(1)), gl.STATIC_DRAW);
 
-
-
-        let midpoint = vec4(this.mesh.bounds.midpoint);
-        this.lines = [
-            // parent line
-            [midpoint, vec3(mult(translate(0, this.parentHeight(), 0), midpoint))],
-            // child lines
-            [midpoint, vec3(mult(translate(0, -this.childHeight(), 0), midpoint))],
-            // child arms
-            [vec3(midpoint.x - this.radius,
-                  midpoint.y - this.childHeight(),
-                  midpoint.z),
-             vec3(midpoint.x + this.radius,
-                  midpoint.y - this.childHeight(),
-                  midpoint.z)]
-        ].flat(1);
-        this.line_indices = [[0, 1]];
-        if (this.left || this.right) {
-            this.line_indices.push([2, 3], [4, 5]);
-        }
+        // Add strings to the mobile
+        this.addLines();
 
         this.line_vao = gl.vao.createVertexArrayOES();
         gl.vao.bindVertexArrayOES(this.line_vao);
@@ -89,16 +71,41 @@ export class Mobile {
         gl.vertexAttribPointer(position, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(position);
 
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.mesh.vertices.flat(1)), gl.STATIC_DRAW);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(this.mesh.faces.flat(1)), gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.lines.flat(1)), gl.STATIC_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(this.line_indices.flat(1)), gl.STATIC_DRAW);
 
-
+        // Unbind buffers
         gl.vao.bindVertexArrayOES(null);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
         if (this.left  !== null) this.left.setup(position);
         if (this.right !== null) this.right.setup(position);
+    }
+
+
+    /**
+     * Add connecting strings to the mobile
+     */
+    addLines() {
+        let midpoint = this.mesh.bounds.midpoint;
+        this.lines = [
+            // parent line
+            midpoint, vec3(mult(translate(0, this.parentHeight(), 0), vec4(midpoint))),
+            // child lines
+            midpoint, vec3(mult(translate(0, -this.childHeight(), 0), vec4(midpoint))),
+            // child arms
+            vec3(midpoint.x - this.radius,
+                 midpoint.y - this.childHeight(),
+                 midpoint.z),
+            vec3(midpoint.x + this.radius,
+                 midpoint.y - this.childHeight(),
+                 midpoint.z)
+        ];
+        this.line_indices = [[0, 1]];
+        if (this.left || this.right) {
+            this.line_indices.push([2, 3], [4, 5]);
+        }
     }
 
     /**
@@ -112,10 +119,10 @@ export class Mobile {
                             MV.flatten(MV.mat4()));
 
         gl.vao.bindVertexArrayOES(this.vao);
-        gl.drawElements(gl.TRIANGLES, this.mesh.faces.length, gl.UNSIGNED_BYTE, 0);
+        gl.drawElements(gl.TRIANGLES, this.mesh.faces.flat(1).length, gl.UNSIGNED_BYTE, 0);
 
         gl.vao.bindVertexArrayOES(this.line_vao);
-        gl.drawElements(gl.LINES, this.line_indices.length, gl.UNSIGNED_BYTE, 0);
+        gl.drawElements(gl.LINES, this.line_indices.flat(1).length, gl.UNSIGNED_BYTE, 0);
 
         if (this.left  !== null) this.left.draw(modelMatrix);
         if (this.right !== null) this.right.draw(modelMatrix);
