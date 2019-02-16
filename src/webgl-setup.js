@@ -88,23 +88,12 @@ export function enableVAO(gl) {
  * Enable the vertex array object extension and add its properties to the WebGL
  * rendering context
  *
- * The properties are added as properties of the {@code vao} property, and do
- * not have the trailing "OES" in their names.
- *
  * @returns The VAO extension object
  */
 export function enableAndBindVAO(gl) {
     let vao = enableVAO(gl);
 
-    Object.defineProperty(gl, 'vao', {
-        value: {
-            createVertexArray: vao.createVertexArrayOES,
-            deleteVertexArray: vao.deleteVertexArrayOES,
-            isVertexArray:     vao.isVertexArrayOES,
-            bindVertexArray:   vao.bindVertexArrayOES,
-            VERTEX_ARRAY_BINDING: vao.VERTEX_ARRAY_BINDING_OES
-        }
-    });
+    Object.defineProperty(gl, 'vao', {value: vao});
 
     return vao;
 }
