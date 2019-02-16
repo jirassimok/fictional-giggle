@@ -1,5 +1,5 @@
 import { Mesh } from "./Mesh.js";
-import { translate, mult } from "./MV+.js";
+import { translate, mult, vec4 } from "./MV+.js";
 
 /**
  * A mesh represented by two arrays; the parameters to the {@link Mesh}
@@ -36,8 +36,7 @@ export class Mobile {
      * @param {number} radius The radius of the mobile's child arms
      *
      * The given mesh will be attached to its parent and children by vertical
-     * lines connected to the midpoints of its top and bottom planes,
-     * respectively.
+     * lines connected to its midpoint.
      */
     constructor(mesh, parent_height, child_height, radius) {
         if (!(mesh instanceof Mesh)) {
@@ -47,12 +46,22 @@ export class Mobile {
 
         this.radius = radius;
         this.parent_height = parent_height;
-        this.child_height = (child_height === null ? parent_height : child_height);
+        this.child_height = (child_height === null
+                             ? parent_height
+                             : child_height);
 
         this.left = null;
         this.right = null;
 
         let midpoint = this.mesh.bounds.midpoint;
+    }
+
+    parentHeight() {
+        return this.parent_height + this.mesh.bounds.height / 2;
+    }
+
+    childHeight() {
+        return this.child_height + this.mesh.bounds.height / 2;
     }
 
     /**
@@ -81,18 +90,26 @@ export class Mobile {
             throw new Error('invalid side of mobile');
         }
 
-        let radius        = radius === undefined ? this.radius / 2 : radius,
-            child_height  = child_height === undefined ? this.child_height : child_height,
-            parent_height = parent_height === undefined ? this.parent_height : parent_height;
+        if (!(mesh instanceof Mesh)) {
+            mesh = new Mesh(mesh.vertices, mesh.faces);
+        }
 
-        let direction = (which === 'left' ? +1 : -1),
-            transform = translate(direction * this.radius,
-                                  this.mesh.bounds.bottom + this.child_height + parent_height,
-                                  0),
-            vertices = mesh.vertices.map(v => mult(transform, v)),
-            newmesh = {vertices: vertices, faces: mesh.faces};;
+        radius        = (radius === undefined ? this.radius / 2 : radius),
+        child_height  = (child_height  === undefined ? this.child_height  : child_height),
+        parent_height = (parent_height === undefined ? this.parent_height : parent_height);
 
-        let child = new Mobile(newmesh, radius, parent_height, child_height);
+        let child = new Mobile(mesh, radius, parent_height, child_height);
+
+        let direction = (which === 'left' ? -1 : +1),
+            translation = translate(
+                this.mesh.bounds.midpoint.x + direction * this.radius,
+                this.mesh.bounds.midpoint.y - this.childHeight() - child.parentHeight(),
+                this.mesh.bounds.midpoint.z
+            );
+
+        let new_vertices = child.mesh.vertices.map(v => mult(translation, vec4(v)));
+
+        child.mesh = new Mesh(new_vertices, child.mesh.faces);
 
         this[which] = child;
         return child;
