@@ -85,6 +85,26 @@ export class Mobile {
 
 
     /**
+     * Draw the mobile
+     *
+     * @param modelMatrix The location of the shader's model matrix
+     */
+    draw(modelMatrix) {
+        gl.uniformMatrix4fv(modelMatrix,
+                            false,
+                            MV.flatten(MV.mat4()));
+
+        gl.vao.bindVertexArrayOES(this.vao);
+        gl.drawElements(gl.TRIANGLES, this.mesh.faces.flat(1).length, gl.UNSIGNED_BYTE, 0);
+
+        gl.vao.bindVertexArrayOES(this.line_vao);
+        gl.drawElements(gl.LINES, this.line_indices.flat(1).length, gl.UNSIGNED_BYTE, 0);
+
+        if (this.left  !== null) this.left.draw(modelMatrix);
+        if (this.right !== null) this.right.draw(modelMatrix);
+    }
+
+    /**
      * Add connecting strings to the mobile
      */
     addLines() {
@@ -106,26 +126,6 @@ export class Mobile {
         if (this.left || this.right) {
             this.line_indices.push([2, 3], [4, 5]);
         }
-    }
-
-    /**
-     * Draw the mobile
-     *
-     * @param modelMatrix The location of the shader's model matrix
-     */
-    draw(modelMatrix) {
-        gl.uniformMatrix4fv(modelMatrix,
-                            false,
-                            MV.flatten(MV.mat4()));
-
-        gl.vao.bindVertexArrayOES(this.vao);
-        gl.drawElements(gl.TRIANGLES, this.mesh.faces.flat(1).length, gl.UNSIGNED_BYTE, 0);
-
-        gl.vao.bindVertexArrayOES(this.line_vao);
-        gl.drawElements(gl.LINES, this.line_indices.flat(1).length, gl.UNSIGNED_BYTE, 0);
-
-        if (this.left  !== null) this.left.draw(modelMatrix);
-        if (this.right !== null) this.right.draw(modelMatrix);
     }
 
     /**
@@ -155,10 +155,12 @@ export class Mobile {
         let midpoint = this.mesh.bounds.midpoint;
     }
 
+    /** Get parent height as measured from the center of the mesh */
     parentHeight() {
         return this.parent_height + this.mesh.bounds.height / 2;
     }
 
+    /** Get child height as measured from the center of the mesh */
     childHeight() {
         return this.child_height + this.mesh.bounds.height / 2;
     }
