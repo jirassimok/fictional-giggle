@@ -16,9 +16,9 @@ export class Mesh {
     constructor(vertices, faces) {
         this.bounds = Bounds.fromVecs(vertices);
 
-        this._vertices = Object.freeze(vertices.map(vec3));
+        this._allvertices = Object.freeze(vertices.map(vec3));
 
-        this._faces = Object.freeze(faces.map(Array.from));
+        this._faces = Object.freeze(faces.map(face => Array.from(face)));
 
         this._facenormals = [];
 
@@ -53,9 +53,9 @@ export class Mesh {
     }
 
     /**
-     * @returns {[number, number][]} the (size, offset) pairs for each face
+     * @returns {number[][]} Index array of faces
      */
-    get faceoffsets() {
+    get faces() {
         return this._faces;
     }
 
