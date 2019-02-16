@@ -50,14 +50,7 @@ export class Mobile {
         this.vao = gl.vao.createVertexArrayOES();
         gl.vao.bindVertexArrayOES(this.vao);
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
-
-        gl.vertexAttribPointer(position, 3, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(position);
-
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.mesh.vertices.flat(1)), gl.STATIC_DRAW);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(this.mesh.faces.flat(1)), gl.STATIC_DRAW);
+        this.constructor.setupBuffers(position, this.mesh.vertices, this.mesh.faces);
 
         // Add strings to the mobile
         this.addLines();
@@ -65,14 +58,7 @@ export class Mobile {
         this.line_vao = gl.vao.createVertexArrayOES();
         gl.vao.bindVertexArrayOES(this.line_vao);
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
-
-        gl.vertexAttribPointer(position, 3, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(position);
-
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.lines.flat(1)), gl.STATIC_DRAW);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(this.line_indices.flat(1)), gl.STATIC_DRAW);
+        this.constructor.setupBuffers(position, this.lines, this.line_indices);
 
         // Unbind buffers
         gl.vao.bindVertexArrayOES(null);
@@ -83,6 +69,23 @@ export class Mobile {
         if (this.right !== null) this.right.setup(position);
     }
 
+    /**
+     * Prepare buffers for the given {@code vec3(float32)} attribute
+     *
+     * @param attribute The WebGL attribute to prepare
+     * @param {number[][]} data The data to put in the array buffer
+     * @param {number[][]} indices An index array for the data
+     */
+    static setupBuffers(attribute, data, indices) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
+
+        gl.vertexAttribPointer(attribute, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(attribute);
+
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data.flat(1)), gl.STATIC_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(indices.flat(1)), gl.STATIC_DRAW);
+    }
 
     /**
      * Draw the mobile
@@ -127,6 +130,9 @@ export class Mobile {
             this.line_indices.push([2, 3], [4, 5]);
         }
     }
+
+    //// Mobile construction functions
+    // (These aren't very nice.)
 
     /**
      * @param {MeshLike} mesh The mesh at the top of the mobile
