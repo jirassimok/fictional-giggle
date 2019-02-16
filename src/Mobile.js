@@ -1,5 +1,10 @@
+import { Bounds } from "./Bounds.js";
 import { Mesh } from "./Mesh.js";
-import { translate, mult, vec4 } from "./MV+.js";
+import { translate, mult, vec4, vec3 } from "./MV+.js";
+
+import * as MV from "./MV+.js";
+
+import { gl } from "./setup.js";
 
 /**
  * A mesh represented by two arrays; the parameters to the {@link Mesh}
@@ -30,6 +35,93 @@ import { translate, mult, vec4 } from "./MV+.js";
  */
 export class Mobile {
     /**
+     * Compute a bounding box of this mobile
+     */
+    get bounds() {
+        return Bounds.fromVecs(mobileVertices(this));
+    }
+
+    /**
+     * Set up the vertex array object for the mobile and its children
+     *
+     * @param position The location of the shader's position attribute
+     */
+    setup(position) {
+        this.vao = gl.vao.createVertexArrayOES();
+        gl.vao.bindVertexArrayOES(this.vao);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
+
+        gl.vertexAttribPointer(position, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(position);
+
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.mesh.vertices.flat(1)), gl.STATIC_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(this.mesh.faces.flat(1)), gl.STATIC_DRAW);
+
+
+
+        let midpoint = vec4(this.mesh.bounds.midpoint);
+        this.lines = [
+            // parent line
+            [midpoint, vec3(mult(translate(0, this.parentHeight(), 0), midpoint))],
+            // child lines
+            [midpoint, vec3(mult(translate(0, -this.childHeight(), 0), midpoint))],
+            // child arms
+            [vec3(midpoint.x - this.radius,
+                  midpoint.y - this.childHeight(),
+                  midpoint.z),
+             vec3(midpoint.x + this.radius,
+                  midpoint.y - this.childHeight(),
+                  midpoint.z)]
+        ].flat(1);
+        this.line_indices = [[0, 1]];
+        if (this.left || this.right) {
+            this.line_indices.push([2, 3], [4, 5]);
+        }
+
+        this.line_vao = gl.vao.createVertexArrayOES();
+        gl.vao.bindVertexArrayOES(this.line_vao);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
+
+        gl.vertexAttribPointer(position, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(position);
+
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.mesh.vertices.flat(1)), gl.STATIC_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(this.mesh.faces.flat(1)), gl.STATIC_DRAW);
+
+
+        gl.vao.bindVertexArrayOES(null);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+        if (this.left  !== null) this.left.setup(position);
+        if (this.right !== null) this.right.setup(position);
+    }
+
+    /**
+     * Draw the mobile
+     *
+     * @param modelMatrix The location of the shader's model matrix
+     */
+    draw(modelMatrix) {
+        gl.uniformMatrix4fv(modelMatrix,
+                            false,
+                            MV.flatten(MV.mat4()));
+
+        gl.vao.bindVertexArrayOES(this.vao);
+        gl.drawElements(gl.TRIANGLES, this.mesh.faces.length, gl.UNSIGNED_BYTE, 0);
+
+        gl.vao.bindVertexArrayOES(this.line_vao);
+        gl.drawElements(gl.LINES, this.line_indices.length, gl.UNSIGNED_BYTE, 0);
+
+        if (this.left  !== null) this.left.draw(modelMatrix);
+        if (this.right !== null) this.right.draw(modelMatrix);
+    }
+
+    /**
      * @param {MeshLike} mesh The mesh at the top of the mobile
      * @param {number} parent_height The length of the upwards arm
      * @param {?number} child_height The length of the downwards arm
@@ -38,7 +130,7 @@ export class Mobile {
      * The given mesh will be attached to its parent and children by vertical
      * lines connected to its midpoint.
      */
-    constructor(mesh, parent_height, child_height, radius) {
+    constructor(mesh, radius, parent_height, child_height) {
         if (!(mesh instanceof Mesh)) {
             mesh = new Mesh(mesh.vertices, mesh.faces);
         }
@@ -65,16 +157,9 @@ export class Mobile {
     }
 
     /**
-     * Compute a bounding box of this mobile
-     */
-    get bounds() {
-        return mobileVertices(this);
-    }
-
-    /**
      * Add a child to the mobile
      *
-     * @param {'left'|'right'} which The side of the mobile to add the child to
+     * @param {'left'|'right'} side The side of the mobile to add the child to
      * @param {MeshLike} mesh The mesh to use fo the child object
      * @param {number} parent_height The length of the upwards arm; defaults to
      *                               this mobile's parent height
@@ -85,8 +170,8 @@ export class Mobile {
      *
      * @returns {Mobile} The newly-added child
      */
-    addChild(which, mesh, parent_height, child_height, radius) {
-        if (which !== 'left' && which !== 'right') {
+    addChild(side, mesh, radius, parent_height, child_height) {
+        if (side !== 'left' && side !== 'right') {
             throw new Error('invalid side of mobile');
         }
 
@@ -94,13 +179,13 @@ export class Mobile {
             mesh = new Mesh(mesh.vertices, mesh.faces);
         }
 
-        radius        = (radius === undefined ? this.radius / 2 : radius),
+        radius        = (radius === undefined ? (this.radius / 2) : radius),
         child_height  = (child_height  === undefined ? this.child_height  : child_height),
         parent_height = (parent_height === undefined ? this.parent_height : parent_height);
 
         let child = new Mobile(mesh, radius, parent_height, child_height);
 
-        let direction = (which === 'left' ? -1 : +1),
+        let direction = (side === 'left' ? -1 : +1),
             translation = translate(
                 this.mesh.bounds.midpoint.x + direction * this.radius,
                 this.mesh.bounds.midpoint.y - this.childHeight() - child.parentHeight(),
@@ -111,7 +196,7 @@ export class Mobile {
 
         child.mesh = new Mesh(new_vertices, child.mesh.faces);
 
-        this[which] = child;
+        this[side] = child;
         return child;
     }
 
@@ -120,7 +205,7 @@ export class Mobile {
      *
      * @see addChild
      */
-    addLeft(mesh, parent_height, child_height, radius) {
+    addLeft(mesh, radius, parent_height, child_height) {
         return this.addChild('left', mesh, radius, parent_height, child_height);
     }
 
@@ -129,7 +214,7 @@ export class Mobile {
      *
      * @see addChild
      */
-    addRight(mesh, parent_height, child_height, radius) {
+    addRight(mesh, radius, parent_height, child_height) {
         return this.addChild('right', mesh, radius, parent_height, child_height);
     }
 }
@@ -139,5 +224,7 @@ export class Mobile {
  * Get a list of all vertices in a mobile
  */
 function mobileVertices(mobile) {
-    return mobile.mesh.vertices.concat(mobile.children.flatMap(mobileVertices));
+    return mobile.mesh.vertices.concat(
+        mobile.left ? mobileVertices(mobile.left) : [],
+        mobile.right ? mobileVertices(mobile.right) : []);
 }

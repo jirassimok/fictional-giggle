@@ -1,59 +1,17 @@
 "use strict";
 
 import "./vecarray.js";
+import { gl } from "./setup.js";
 
 import { AnimationState } from "./Animations.js";
 import { Bounds } from "./Bounds.js";
 import { Mesh } from "./Mesh.js";
 import { vec2, vec3, vec4 } from "./MV+.js";
-import { setupWebGL, setupProgram, enableAndBindVAO } from "./webgl-setup.js";
+import { setupProgram } from "./webgl-setup.js";
 
-import { shapes } from "./model.js";
+import { mobile } from "./model.js";
 
 import * as MV from "./MV+.js";
-
-//// Constants
-
-const X_FIELD_OF_VIEW = 90,
-      ASPECT_RATIO = 5/3;
-
-const MIN_CANVAS_HEIGHT = 200;
-
-const PERSPECTIVE_NEAR_PLANE = 0.001,
-      PERSPECTIVE_FAR_PLANE = 1000;
-
-//// Prepare the canvas
-
-const canvas = document.querySelector("#webglCanvas");
-
-{
-    // Set height to either 200 or as tall as it can be without pushing anything else off-screen
-    canvas.height = 0;
-    let body = window.getComputedStyle(document.body);
-    let height = document.body.scrollHeight + parseInt(body.marginTop) + parseInt(body.marginTop);
-
-    canvas.height = Math.max(MIN_CANVAS_HEIGHT, window.innerHeight - height);
-
-    // Set width to
-    canvas.width = (canvas.height * ASPECT_RATIO);
-    if (canvas.width > document.body.clientWidth) {
-        canvas.width = document.body.clientWidth;
-        canvas.height = canvas.width / ASPECT_RATIO;
-    }
-}
-
-
-//// Set up WebGL, the program, buffers, and shader variables
-
-const gl = setupWebGL(canvas);
-if (gl === null) {
-    throw new Error("Failed to set up WebGL");
-}
-
-// Bind VAO extension properties under gl.ext
-if (enableAndBindVAO(gl) === null) {
-    throw new Error("Failed to load Vertex Array Object extension");
-}
 
 const program = setupProgram(gl,
     document.querySelector("#vertexShader").text,
@@ -157,39 +115,45 @@ function clearCanvas() {
  * The mesh is viewed from distance equal to its depth (z-width), with a 10%
  * margin in all directions.
  */
-function setProjection(mesh) {
-    let bounds = mesh.bounds;
+function setProjection(mobile) {
+    let bounds = mobile.bounds;
 
-    let fov_x = X_FIELD_OF_VIEW * Math.PI / 180,
-        fov_y = fov_x / ASPECT_RATIO,
-        // Distance required to view entire width/height
-        width_distance = bounds.width / (2 * Math.tan(fov_x / 2)),
-        height_distance = bounds.height / (2 * Math.tan(fov_y / 2)),
-        // Distance camera must be to view full mesh
-        camera_z = bounds.near + Math.max(width_distance, height_distance) * 1.1;
-
-    let projectionMatrix = MV.perspectiveRad(
-        fov_y, ASPECT_RATIO, PERSPECTIVE_NEAR_PLANE, PERSPECTIVE_FAR_PLANE);
-
-	let eye = vec3(bounds.midpoint.x,
-                   bounds.midpoint.y,
-                   camera_z),
-	    at = bounds.midpoint,
-	    up = vec3(0, 1, 0);
-
-	var viewMatrix = MV.lookAt(eye, at, up);
-
-    // Add margins around the mesh
-    var margins = MV.scalem(0.9, 0.9, 0.9);
-    projectionMatrix = MV.mult(margins, projectionMatrix);
+    // let fov_x = X_FIELD_OF_VIEW * Math.PI / 180,
+    //     fov_y = fov_x / ASPECT_RATIO,
+    //     // Distance required to view entire width/height
+    //     width_distance = bounds.width / (2 * Math.tan(fov_x / 2)),
+    //     height_distance = bounds.height / (2 * Math.tan(fov_y / 2)),
+    //     // Distance camera must be to view full mesh
+    //     camera_z = bounds.near + Math.max(width_distance, height_distance) * 1.1;
+    //
+    // let projectionMatrix = MV.perspectiveRad(
+    //     fov_y, ASPECT_RATIO, PERSPECTIVE_NEAR_PLANE, PERSPECTIVE_FAR_PLANE);
+    //
+	// let eye = vec3(bounds.midpoint.x,
+    //                bounds.midpoint.y,
+    //                camera_z),
+	//     at = bounds.midpoint,
+	//     up = vec3(0, 1, 0);
+    //
+	// var viewMatrix = MV.lookAt(eye, at, up);
+    //
+    // // Add margins around the mesh
+    // var margins = MV.scalem(0.9, 0.9, 0.9);
+    // projectionMatrix = MV.mult(margins, projectionMatrix);
 
     gl.uniformMatrix4fv(shader.projectionMatrix,
                         false,
-                        MV.flatten(projectionMatrix));
+                        MV.flatten(MV.ortho(
+                            bounds.left,
+                            bounds.right,
+                            bounds.bottom,
+                            bounds.top,
+                            bounds.near,
+                            bounds.far)));
 
     gl.uniformMatrix4fv(shader.viewMatrix,
                         false,
-                        MV.flatten(viewMatrix));
+                        MV.flatten(MV.mat4()));
 }
 
 /**
@@ -251,3 +215,13 @@ function drawMesh(mesh) {
 
     animationState.animate(() => drawMesh(mesh));
 }
+
+clearCanvas();
+
+setup();
+function setup() {
+    mobile.setup(shader.position);
+    setProjection(mobile);
+    mobile.draw(shader.modelMatrix);
+}
+
