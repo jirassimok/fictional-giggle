@@ -47,18 +47,17 @@ export class Mobile {
      * @param position The location of the shader's position attribute
      */
     setup(position) {
-        this.vao = gl.vao.createVertexArrayOES();
-        gl.vao.bindVertexArrayOES(this.vao);
 
+        // Prepare a VAO for the mesh
+        this.mesh_vao = gl.vao.createVertexArrayOES();
+        gl.vao.bindVertexArrayOES(this.mesh_vao);
         this.constructor.setupBuffers(position, this.mesh.vertices, this.mesh.faces);
 
-        // Add strings to the mobile
-        this.addLines();
-
+        this.addLines(); // Add strings to the mobile
+        // Prepare a VAO for the strings
         this.line_vao = gl.vao.createVertexArrayOES();
         gl.vao.bindVertexArrayOES(this.line_vao);
-
-        this.constructor.setupBuffers(position, this.lines, this.line_indices);
+        this.constructor.setupBuffers(position, this.lines.vertices, this.lines.indices);
 
         // Unbind buffers
         gl.vao.bindVertexArrayOES(null);
@@ -97,11 +96,11 @@ export class Mobile {
                             false,
                             MV.flatten(MV.mat4()));
 
-        gl.vao.bindVertexArrayOES(this.vao);
+        gl.vao.bindVertexArrayOES(this.mesh_vao);
         gl.drawElements(gl.TRIANGLES, this.mesh.faces.flat(1).length, gl.UNSIGNED_BYTE, 0);
 
         gl.vao.bindVertexArrayOES(this.line_vao);
-        gl.drawElements(gl.LINES, this.line_indices.flat(1).length, gl.UNSIGNED_BYTE, 0);
+        gl.drawElements(gl.LINES, this.lines.indices.flat(1).length, gl.UNSIGNED_BYTE, 0);
 
         if (this.left  !== null) this.left.draw(modelMatrix);
         if (this.right !== null) this.right.draw(modelMatrix);
@@ -112,7 +111,7 @@ export class Mobile {
      */
     addLines() {
         let midpoint = this.mesh.bounds.midpoint;
-        this.lines = [
+        let lines = [
             // parent line
             midpoint, vec3(mult(translate(0, this.parentHeight(), 0), vec4(midpoint))),
             // child lines
@@ -125,10 +124,12 @@ export class Mobile {
                  midpoint.y - this.childHeight(),
                  midpoint.z)
         ];
-        this.line_indices = [[0, 1]];
+        let line_indices = [[0, 1]];
         if (this.left || this.right) {
-            this.line_indices.push([2, 3], [4, 5]);
+            line_indices.push([2, 3], [4, 5]);
         }
+
+        this.lines = Object.freeze({vertices: lines, indices: line_indices});
     }
 
     //// Mobile construction functions
