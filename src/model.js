@@ -56,7 +56,7 @@ let root = Mobile.builder(cube, pale_purple)
     .childHeight(0.25)
     .spinSpeed(0.5),
 
-    lrl = lr.left(scale(0.5, cube), gray)
+    lrl = lr.left(cube.scaled(0.5), gray)
     .spinSpeed(0.1),
 
     rl = R.left(sphere, magenta)
@@ -69,8 +69,8 @@ let root = Mobile.builder(cube, pale_purple)
     .childHeight(3)
     .armSpeed(0.1),
 
-    rrl = rr.left(scale(0.25, sphere), blue).spinSpeed(0.5),
-    rrr = rr.right(scale(0.25, cube), white).spinSpeed(0.05);
+    rrl = rr.left(sphere.scaled(0.25), blue).spinSpeed(0.5),
+    rrr = rr.right(cube.scaled(0.25), white).spinSpeed(0.05);
 
 export const mobile = root.build();
 
@@ -105,14 +105,6 @@ function rotate(angle, axis, mesh) {
     let rotation = MV.rotate(angle, axis);
     return new Mesh(
         mesh.vertices.map(v => vec3(MV.mult(rotation, MV.vec4(v)))),
-        mesh.faces
-    );
-}
-
-/** Scale a mesh */
-function scale(scale, mesh) {
-    return new Mesh(
-        mesh.vertices.map(v => v.map(n => n * scale)),
         mesh.faces
     );
 }
