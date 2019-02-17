@@ -25,6 +25,8 @@ const empty = Object.freeze({
 });
 
 let white = [1, 1, 1, 1],
+    black = [0, 0, 0, 1],
+    gray = [0.5, 0.5, 0.5, 1],
     red = [1, 0, 0, 1],
     green = [0, 1, 0, 1],
     blue = [0, 0, 1, 1],
@@ -35,20 +37,20 @@ let white = [1, 1, 1, 1],
 
 export const mobile = new Mobile(cube, pale_purple, 4, 10, 0.5).setSpeed(0.06).setArmSpeed(0.05, -1);
 
-let left1 = mobile.addLeft(sphere, red, 2, 0.5, 0.5).setSpeed(0.125).setArmSpeed(0.075),
-    right1 = mobile.addRight(cube, green, 2, 0.5, 0.5).setSpeed(0.075).setArmSpeed(0.125);
+let L = mobile.addLeft(sphere, red, 2, 0.5, 0.5).setSpeed(0.125).setArmSpeed(0.075),
+    R = mobile.addRight(cube, green, 2, 2, 0.5).setSpeed(0.075).setArmSpeed(0.125),
 
-left1.addLeft(sphere, cyan).setSpeed(0.2);
-left1.addRight(cube, yellow).setSpeed(0.005);
+    ll = L.addLeft(cube, cyan, undefined, 1.25).setSpeed(0.1).setArmSpeed(0),
+    lr = L.addRight(sphere, yellow, 0, undefined, 0.25).setSpeed(0.005),
 
-right1.addLeft(sphere, magenta).setSpeed(0.025);
+    lrl = lr.addLeft(scale(0.5, cube), gray).setSpeed(0.1),
 
-let rrr = right1.addRight(empty, white, 4, 0.25, 3).setSpeed(0).setArmSpeed(-0.1);
-rrr.addLeft(scale(0.25, sphere), blue).setSpeed(0.05);
-rrr.addRight(scale(0.25, cube), white).setSpeed(0.05);
+    rl = R.addLeft(sphere, magenta, undefined, 0.5).setSpeed(0.025),
+    rr = R.addRight(empty, white, 4, 0.25, 3).setSpeed(0).setArmSpeed(-0.1),
 
-// right1.addLeft(cube, white);
-// right1.addRight(sphere, white);
+    rrl = rr.addLeft(scale(0.25, sphere), blue).setSpeed(0.05),
+    rrr = rr.addRight(scale(0.25, cube), white).setSpeed(0.05);
+
 
 function merge(...meshes) {
     return meshes.reduce(merge2);
