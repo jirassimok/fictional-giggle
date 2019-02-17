@@ -12,10 +12,10 @@ import { AnimationTracker } from "./Animations.js";
  */
 const LINE_COLOR = vec4(0.62745098, 0.32156863, 0.17647059, 1);
 
-/**
- * Default speed for all mobiles
- */
-export let DEFAULT_SPEED = 0.05;
+           /** Default speed for all mobiles' meshes */
+export let DEFAULT_MESH_SPEED = 0.05,
+           /** Default speed for all mobiles' arms */
+           DEFAULT_ARM_SPEED = 0.05;
 
 /**
  * A mesh represented by two arrays; the parameters to the {@link Mesh}
@@ -67,6 +67,7 @@ function setupBuffers(attribute, data, indices) {
  * @property {WebGLUniformLocation} colorLocation Location of shader color variable
  * @param {WebGLUniformLocation} modelMatrixLocation The location of the shader's model matrix
  * @property {AnimationTracker} rotation The tracker for this mobile element's rotation
+ * @property {AnimationTracker} armRotation The tracker for the arms' rotation
  *
  * The following properties exist for Mobile construction only.
  * @property {number} radius The radius of the mobile's child arms
@@ -114,17 +115,18 @@ export class Mobile {
         if (this.right !== null) this.right.setup(modelMatrix, position, color);
 
         this.rotation.start();
+        this.armRotation.start();
     }
 
     /**
      * Draw the mobile
      */
     draw(modelMatrix = MV.mat4()) {
-        modelMatrix = MV.mult(modelMatrix, MV.rotateY(this.rotation.position));
+        let meshModelMatrix = MV.mult(modelMatrix, MV.rotateY(this.rotation.position));
 
         gl.uniformMatrix4fv(this.modelMatrixLocation,
                             false,
-                            MV.flatten(modelMatrix));
+                            MV.flatten(meshModelMatrix));
 
         // Set color
         gl.uniform4fv(this.colorLocation, this.color);
@@ -134,15 +136,20 @@ export class Mobile {
         gl.drawElements(gl.TRIANGLES, this.mesh.faces.flat(1).length, gl.UNSIGNED_BYTE, 0);
 
         // Draw lines
+        let lineModelMatrix = MV.mult(modelMatrix, MV.rotateY(this.armRotation.position));
+        gl.uniformMatrix4fv(this.modelMatrixLocation,
+                            false,
+                            MV.flatten(lineModelMatrix));
+
         gl.uniform4fv(this.colorLocation, LINE_COLOR);
         gl.vao.bindVertexArrayOES(this.line_vao);
         gl.drawElements(gl.LINES, this.lines.indices.flat(1).length, gl.UNSIGNED_BYTE, 0);
 
         if (this.left !== null) {
-            this.left.draw(MV.mult(modelMatrix, translate(-this.radius, 0, 0)));
+            this.left.draw(MV.mult(lineModelMatrix, translate(-this.radius, 0, 0)));
         }
         if (this.right !== null) {
-            this.right.draw(MV.mult(modelMatrix, translate(this.radius, 0, 0)));
+            this.right.draw(MV.mult(lineModelMatrix, translate(this.radius, 0, 0)));
         }
     }
 
@@ -181,11 +188,12 @@ export class Mobile {
      * @param {number} parent_height The length of the upwards arm
      * @param {?number} child_height The length of the downwards arm
      * @param {number} radius The radius of the mobile's child arms
+     * @param {number} armDirection The direction of the arms' rotation (sign only)
      *
      * The given mesh will be attached to its parent and children by vertical
      * lines connected to its midpoint.
      */
-    constructor(mesh, color, radius, parent_height, child_height) {
+    constructor(mesh, color, radius, parent_height, child_height, armDirection = 1) {
         if (!(mesh instanceof Mesh)) {
             mesh = new Mesh(mesh.vertices, mesh.faces);
         }
@@ -210,7 +218,9 @@ export class Mobile {
 
         this.left = null;
         this.right = null;
-        this.rotation = new AnimationTracker(() => DEFAULT_SPEED);
+        this.rotation = new AnimationTracker(() => DEFAULT_MESH_SPEED);
+        this.armRotation = new AnimationTracker(() => DEFAULT_ARM_SPEED);
+        this.armRotation.scale = Math.sign(armDirection);
     }
 
     /**
@@ -226,6 +236,23 @@ export class Mobile {
         }
         else {
             this.rotation.speed = speed;
+        }
+        return this;
+    }
+
+    /**
+     * @param {(number|function():number)} speed Speed or speed getter function
+     * @param {number} direction Direction of rotation (only sign matters)
+     *
+     * @returns {Mobile} this mobile
+     */
+    setArmSpeed(speed, direction = 1) {
+        this.armRotation.scale = Math.sign(direction);
+        if (typeof speed === 'number') {
+            this.armRotation.speed = () => speed;
+        }
+        else {
+            this.armRotation.speed = speed;
         }
         return this;
     }
@@ -273,7 +300,9 @@ export class Mobile {
         child_height  = (child_height  === undefined ? this.child_height  : child_height),
         parent_height = (parent_height === undefined ? this.parent_height : parent_height);
 
-        let child = new Mobile(mesh, color, radius, parent_height, child_height);
+        let child = new Mobile(mesh, color,
+                               radius, parent_height, child_height,
+                               -this.armRotation.scale);
 
         let direction = (side === 'left' ? -1 : +1),
             translation = translate(
