@@ -4,6 +4,11 @@ import { Bounds } from "./Bounds.js";
 import { vec4, vec3, normalize, mult } from "./MV+.js";
 
 /**
+ * A 3-dimensional vector
+ * @typedef {number[][]} vec3
+ */
+
+/**
  * Represents a mesh of faces
  *
  * Stores the mesh as a list of vertices, a list of normals for the vertices,
