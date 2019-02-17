@@ -19,11 +19,6 @@ const cube = Object.freeze({
     faces: _cube.faces
 });
 
-const empty = Object.freeze({
-    vertices: [vec3(0, 0, 0)],
-    faces: []
-});
-
 let white = [1, 1, 1, 1],
     black = [0, 0, 0, 1],
     gray = [0.5, 0.5, 0.5, 1],
@@ -35,22 +30,52 @@ let white = [1, 1, 1, 1],
     yellow = [1, 1, 0, 1],
     pale_purple = [0.5, 0.5, 1, 1];
 
-export const mobile = Mobile.create(cube, pale_purple, 4, 10, 0.5).setSpeed(0.06).setArmSpeed(0.05, -1);
 
-let L = mobile.addLeft(sphere, red, 2, 0.5, 0.5).setSpeed(0.125).setArmSpeed(0.075),
-    R = mobile.addRight(cube, green, 2, 2, 0.5).setSpeed(0.075).setArmSpeed(0.125),
+let root = Mobile.builder(cube, pale_purple)
+    .radius(4)
+    .parentHeight(10)
+    .childHeight(0.5)
+    .spinSpeed(0.06)
+    .armSpeed(0.05),
 
-    ll = L.addLeft(cube, cyan, undefined, 1.25).setSpeed(0.1).setArmSpeed(0),
-    lr = L.addRight(sphere, yellow, 0, undefined, 0.25).setSpeed(0.005),
+    L = root.left(sphere, red)
+    .parentHeight(0.5)
+    .spinSpeed(0.125)
+    .armSpeed(0.075),
 
-    lrl = lr.addLeft(scale(0.5, cube), gray).setSpeed(0.1),
+    R = root.right(cube, green)
+    .parentHeight(2)
+    .childHeight(0.5)
+    .spinSpeed(0.075)
+    .armSpeed(0.125),
 
-    rl = R.addLeft(sphere, magenta, undefined, 0.5).setSpeed(0.025),
-    rr = R.addRight(empty, white, 4, 0.25, 3).setSpeed(0).setArmSpeed(-0.1),
+    ll = L.left(cube, cyan)
+    .parentHeight(1.25)
+    .spinSpeed(0.1)
+    .armSpeed(0),
 
-    rrl = rr.addLeft(scale(0.25, sphere), blue).setSpeed(0.05),
-    rrr = rr.addRight(scale(0.25, cube), white).setSpeed(0.05);
+    lr = L.right(sphere, yellow)
+    .radius(0)
+    .childHeight(0.25)
+    .spinSpeed(0.5),
 
+    lrl = lr.left(scale(0.5, cube), gray)
+    .spinSpeed(0.1),
+
+    rl = R.left(sphere, magenta)
+    .parentHeight(0.5)
+    .spinSpeed(0.025),
+
+    rr = R.emptyRight()
+    .radius(4)
+    .parentHeight(0.25)
+    .childHeight(3)
+    .armSpeed(0.1),
+
+    rrl = rr.left(scale(0.25, sphere), blue).spinSpeed(0.5),
+    rrr = rr.right(scale(0.25, cube), white).spinSpeed(0.05);
+
+export const mobile = root.build();
 
 function merge(...meshes) {
     return meshes.reduce(merge2);
