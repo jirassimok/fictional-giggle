@@ -54,6 +54,8 @@ function setupBuffers(attribute, data, indices) {
  * @property {Mobile} left The mobile handing from the left of this one
  * @property {Mobile} right The mobiles handing from the right of this one
  * @property {WebGLUniformLocation} colorLocation Location of shader color variable
+ * @param {WebGLUniformLocation} modelMatrix The location of the shader's model matrix
+ * @property {AnimationTracker} rotation The tracker for this mobile element's rotation
  *
  * The following properties exist for Mobile construction only.
  * @property {number} radius The radius of the mobile's child arms
@@ -71,11 +73,14 @@ export class Mobile {
     /**
      * Set up the vertex array objects for the mobile and its children
      *
-     * @param position The location of the shader's position attribute
-     * @param color The location of the shader's color attribute
+     * @param {WebGLUniformLocation} modelMatrix The location of the shader's model matrix
+     * @param {GLint} position The location of the shader's position attribute
+     * @param {GLint} color The location of the shader's color attribute
      */
-    setup(position, color) {
-        this.colorLocation = color; // Save the color for draw time
+    setup(modelMatrix, position, color) {
+        // Save the color are model matrix for draw time
+        this.colorLocation = color;
+        this.modelMatrix = modelMatrix;
 
         this.addLines(); // Add strings to the mobile
 
@@ -94,31 +99,31 @@ export class Mobile {
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
-        if (this.left  !== null) this.left.setup(position, color);
-        if (this.right !== null) this.right.setup(position, color);
+        if (this.left  !== null) this.left.setup(modelMatrix, position, color);
+        if (this.right !== null) this.right.setup(modelMatrix, position, color);
     }
 
     /**
      * Draw the mobile
-     *
-     * @param modelMatrix The location of the shader's model matrix
      */
-    draw(modelMatrix) {
-        gl.uniformMatrix4fv(modelMatrix,
+    draw() {
+        gl.uniformMatrix4fv(this.modelMatrix,
                             false,
                             MV.flatten(MV.mat4()));
 
         // Set color
         gl.uniform4fv(this.colorLocation, this.color);
 
+        // Draw mesh
         gl.vao.bindVertexArrayOES(this.mesh_vao);
         gl.drawElements(gl.TRIANGLES, this.mesh.faces.flat(1).length, gl.UNSIGNED_BYTE, 0);
 
+        // Draw lines
         gl.vao.bindVertexArrayOES(this.line_vao);
         gl.drawElements(gl.LINES, this.lines.indices.flat(1).length, gl.UNSIGNED_BYTE, 0);
 
-        if (this.left  !== null) this.left.draw(modelMatrix);
-        if (this.right !== null) this.right.draw(modelMatrix);
+        if (this.left  !== null) this.left.draw();
+        if (this.right !== null) this.right.draw();
     }
 
     /**

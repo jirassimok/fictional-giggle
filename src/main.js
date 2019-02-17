@@ -185,13 +185,13 @@ function drawMesh(mesh) {
 }
 
 function setup() {
-    mobile.setup(shader.position, shader.color);
+    mobile.setup(shader.modelMatrix, shader.position, shader.color);
     setProjection(mobile);
 }
 
 function render() {
     clearCanvas();
-    mobile.draw(shader.modelMatrix);
+    mobile.draw();
 
     window.requestAnimationFrame(render);
 }
