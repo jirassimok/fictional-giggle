@@ -116,7 +116,8 @@ function clearCanvas() {
  * margin in all directions.
  */
 function setProjection(mobile) {
-    let bounds = mobile.bounds;
+    let bounds = mobile.bounds,
+        midpoint = mobile.bounds.midpoint;
 
     let fov_x = X_FIELD_OF_VIEW * Math.PI / 180,
         fov_y = fov_x / ASPECT_RATIO,
@@ -129,10 +130,10 @@ function setProjection(mobile) {
     let projectionMatrix = MV.perspectiveRad(
         fov_y, ASPECT_RATIO, PERSPECTIVE_NEAR_PLANE, PERSPECTIVE_FAR_PLANE);
 
-	let eye = vec3(bounds.midpoint.x,
-                   bounds.midpoint.y,
+	let eye = vec3(midpoint.x,
+                   midpoint.y,
                    camera_z),
-	    at = bounds.midpoint,
+	    at = midpoint,
 	    up = vec3(0, 1, 0);
 
 	var viewMatrix = MV.lookAt(eye, at, up);
