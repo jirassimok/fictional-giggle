@@ -55,7 +55,17 @@ export class Mesh {
      * Create a mesh like this one, translated by the given amounts
      */
     translated(dx, dy, dz) {
-        let vertices = this.vertices.map(([x, y, z]) => vec3(x + dx, y + dy, z + dz));
+        let vertices = this.vertices.map(
+            ([x, y, z]) => vec3(x + dx, y + dy, z + dz));
+        return new Mesh(vertices, this.faces);
+    }
+
+    /**
+     * Create a mesh like this one, scaled by the given amount
+     */
+    scaled(scale) {
+        let vertices = this.vertices.map(
+            ([x, y, z]) => vec3(x * scale, y * scale, z * scale));
         return new Mesh(vertices, this.faces);
     }
 }
