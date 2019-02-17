@@ -1,7 +1,7 @@
 "use strict";
 
 import { Bounds } from "./Bounds.js";
-import { vec3, normalize, mult } from "./MV+.js";
+import { vec4, vec3, normalize, mult } from "./MV+.js";
 
 /**
  * Represents a mesh of faces
@@ -70,7 +70,7 @@ export class Mesh {
      * Create a mesh like this one, transformed by the given matrix
      */
     transformed(transformation) {
-        let vertices = this.vertices.map(v => mult(transformation, v));
+        let vertices = this.vertices.map(v => vec3(mult(transformation, vec4(v))));
         return new Mesh(vertices, this.faces);
     }
 }
