@@ -256,7 +256,7 @@ function allVertices(mobile, radius_acc = 0) {
     if (!mobile) {
         return [];
     }
-    let mesh = mobile.mesh.transformed(translate(radius_acc, 0, 0));
+    let mesh = mobile.mesh.translated(radius_acc, 0, 0);
     return mesh.vertices.concat(
         allVertices(mobile.left, radius_acc - mobile.radius),
         allVertices(mobile.right, radius_acc + mobile.radius)

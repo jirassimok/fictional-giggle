@@ -47,10 +47,10 @@ export class Mesh {
     }
 
     /**
-     * Create a mesh like this one, transformed by the given matrix
+     * Create a mesh like this one, translated by the given amounts
      */
-    transformed(transformation) {
-        let vertices = this.vertices.map(v => vec3(mult(transformation, vec4(v))));
+    translated(dx, dy, dz) {
+        let vertices = this.vertices.map(([x, y, z]) => vec3(x + dx, y + dy, z + dz));
         return new Mesh(vertices, this.faces);
     }
 }
