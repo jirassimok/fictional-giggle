@@ -8,6 +8,11 @@ import { gl } from "./setup.js";
 import { AnimationTracker } from "./Animations.js";
 
 /**
+ * Default color for mobile strings
+ */
+const LINE_COLOR = vec4(0.62745098, 0.32156863, 0.17647059, 1);
+
+/**
  * Default speed for all mobiles
  */
 export let DEFAULT_SPEED = 0.05;
@@ -129,6 +134,7 @@ export class Mobile {
         gl.drawElements(gl.TRIANGLES, this.mesh.faces.flat(1).length, gl.UNSIGNED_BYTE, 0);
 
         // Draw lines
+        gl.uniform4fv(this.colorLocation, LINE_COLOR);
         gl.vao.bindVertexArrayOES(this.line_vao);
         gl.drawElements(gl.LINES, this.lines.indices.flat(1).length, gl.UNSIGNED_BYTE, 0);
 
