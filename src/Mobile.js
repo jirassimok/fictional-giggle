@@ -192,9 +192,21 @@ export class Mobile {
         this.rotation = new AnimationTracker(() => 0.1);
     }
 
-    setSpeed(speedGetter, direction) {
+    /**
+     * @param {(number|function():number)} speed Speed or speed getter function
+     * @param {number} direction Direction of rotation (only sign matters)
+     *
+     * @returns {Mobile} this mobile
+     */
+    setSpeed(speed, direction) {
         this.rotation.scale = Math.sign(direction);
-        this.rotation.speed = speedGetter;
+        if (typeof speed === 'number') {
+            this.rotation.speed = () => speed;
+        }
+        else {
+            this.rotation.speed = speed;
+        }
+        return this;
     }
 
     /** Get parent height as measured from the center of the mesh */
