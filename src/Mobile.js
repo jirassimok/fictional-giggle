@@ -13,9 +13,9 @@ import { AnimationTracker } from "./Animations.js";
 const ARM_COLOR = vec4(0.62745098, 0.32156863, 0.17647059, 1);
 
            /** Default speed for all mobiles' meshes */
-export let DEFAULT_MESH_SPEED = 0.05,
+export let DEFAULT_MESH_SPEED = () => 0.05,
            /** Default speed for all mobiles' arms */
-           DEFAULT_ARM_SPEED = 0.05;
+           DEFAULT_ARM_SPEED = () => 0.05;
 
 /**
  * A mesh represented by two arrays; the parameters to the {@link Mesh}
@@ -130,11 +130,11 @@ export class Mobile {
                             false,
                             MV.flatten(meshModelMatrix));
 
-        // Set color
-        gl.uniform4fv(this.colorLocation, this.color);
-
         // Draw mesh
         if (this.mesh.vertices.length) {
+            // Set color
+            gl.uniform4fv(this.colorLocation, this.color);
+
             gl.vao.bindVertexArrayOES(this.mesh_vao);
             gl.drawElements(gl.TRIANGLES, this.mesh.faces.flat(1).length, gl.UNSIGNED_BYTE, 0);
         }
@@ -192,12 +192,12 @@ export class Mobile {
      * @param {number} parent_height The length of the upwards arm
      * @param {?number} child_height The length of the downwards arm
      * @param {number} radius The radius of the mobile's child arms
-     * @param {number} armDirection The direction of the arms' rotation (sign only)
+     * @param {number} arm_direction The direction of the arms' rotation (sign only)
      *
      * The given mesh will be attached to its parent and children by vertical
      * lines connected to its midpoint.
      */
-    static create(mesh, color, radius, parent_height, child_height, armDirection = 1) {
+    static create(mesh, color, radius, parent_height, child_height, arm_direction = 1) {
         if (!(mesh instanceof Mesh)) {
             mesh = new Mesh(mesh.vertices, mesh.faces);
         }
@@ -217,19 +217,29 @@ export class Mobile {
                         ? parent_height
                         : child_height);
 
-        return new Mobile(mesh, color, radius, parent_height, child_height, armDirection);
+        return new Mobile(mesh, color,
+                          radius, parent_height, child_height,
+                          arm_direction);
     }
 
-    constructor(mesh, color, radius, parent_height, child_height, armDirection) {
+    constructor(mesh, color,
+                radius, parent_height, child_height,
+                arm_direction, mesh_direction,
+                mesh_speed = DEFAULT_MESH_SPEED, arm_speed = DEFAULT_ARM_SPEED,
+                left, right) {
         this.mesh = mesh;
         this.color = color;
         this.radius = radius;
         this.parent_height = parent_height;
         this.child_height = child_height;
 
-        this.rotation = new AnimationTracker(() => DEFAULT_MESH_SPEED);
-        this.armRotation = new AnimationTracker(() => DEFAULT_ARM_SPEED);
-        this.armRotation.scale = Math.sign(armDirection);
+        this.left = left;
+        this.right = right;
+
+        this.rotation = new AnimationTracker(mesh_speed);
+        if (mesh_direction) this.rotation.scale = Math.sign(mesh_direction);
+        this.armRotation = new AnimationTracker(arm_speed);
+        this.armRotation.scale = Math.sign(arm_direction);
     }
 
     /**
@@ -309,9 +319,9 @@ export class Mobile {
         child_height  = (child_height  === undefined ? this.child_height  : child_height),
         parent_height = (parent_height === undefined ? this.parent_height : parent_height);
 
-        let child = new Mobile(mesh, color,
-                               radius, parent_height, child_height,
-                               -this.armRotation.scale);
+        let child = Mobile.create(mesh, color,
+                                  radius, parent_height, child_height,
+                                  -this.armRotation.scale);
 
         let direction = (side === 'left' ? -1 : +1),
             translation = translate(
@@ -345,6 +355,10 @@ export class Mobile {
     addRight(mesh, color, radius, parent_height, child_height) {
         return this.addChild('right', mesh, color, radius, parent_height, child_height);
     }
+
+    static builder(mesh, color) {
+        return new MobileBuilder(mesh, color);
+    }
 }
 
 
@@ -369,4 +383,192 @@ function allVertices(mobile, radius_acc = 0) {
         allVertices(mobile.left, radius_acc - mobile.radius),
         allVertices(mobile.right, radius_acc + mobile.radius)
     );
+}
+
+class MobileBuilder {
+    /**
+     * If a parent is given, use its child and parent heights, and half its
+     * radius.
+     *
+     * @param {?MeshLike} mesh
+     * @param {?MobileBuilder} parent
+     */
+    constructor(mesh, color, parent = null) {
+        this.mesh = mesh;
+        this.color = color;
+
+        if (parent) {
+            this._radius = parent._radius / 2;
+
+            this.parent_height = parent.parent_height;
+            this.child_height = parent.child_height;
+            this.spin_speed_source = parent.spin_speed_source;
+            this.arm_speed_source = parent.arm_speed_source;
+            this.spin_direction = parent.spin_direction;
+
+            this.arm_direction = -parent.arm_direction;
+        }
+        else {
+            this.spin_speed_source = DEFAULT_MESH_SPEED;
+            this.arm_speed_source = DEFAULT_ARM_SPEED;
+            this.spin_direction = 1;
+            this.arm_direction = -1;
+        }
+    }
+
+    build(translate_y = 0) {
+        assertBuilderComplete(this);
+        let height = Bounds.fromVecs(this.mesh.vertices).height;
+
+        // Increase translation by height to parent
+        translate_y -= this.parent_height + height / 2;
+
+        // Translate vertices and create mesh
+        let vertices = this.mesh.vertices
+            .map(([x, y, z]) => vec3(x,
+                                     y + translate_y,
+                                     z)),
+            mesh = new Mesh(vertices, this.mesh.faces);
+
+        let color = Float32Array.from(this.color);
+
+        // Increase translation for children
+        translate_y -= this.child_height + height / 2;
+
+        let left, right;
+        if (this.leftChild) {
+            left = this.leftChild.build(translate_y);
+        }
+        if (this.rightChild) {
+            right = this.rightChild.build(translate_y);
+        }
+
+        return new Mobile(mesh, color,
+                          this._radius, this.parent_height, this.child_height,
+                          this.arm_direction, this.spin_direction,
+                          this.spin_speed_source, this.arm_speed_source,
+                          left, right);
+    }
+
+    radius(r) {
+        this._radius = r;
+        return this;
+    }
+
+    parentHeight(parent_height) {
+        this.parent_height = parent_height;
+        return this;
+    }
+
+    childHeight(child_height) {
+        this.child_height = child_height;
+        return this;
+    }
+
+    spinSpeed(speed_source, direction = 1) {
+        setSpeedProperty(this, 'spin_speed_source', speed_source);
+        return this;
+    }
+
+    armSpeed(speed_source) {
+        setSpeedProperty(this, 'arm_speed_source', speed_source);
+        return this;
+    }
+
+    /** Only sign matters */
+    spinDirection(direction) {
+        this.spin_direction = Math.sign(direction);
+        return this;
+    }
+
+    /** Only sigh matters */
+    armDirection(direction) {
+        this.arm_direction = Math.sign(direction);
+        return this;
+    }
+
+    /**
+     * @param {number[]} color
+     * @param {MeshLike} mesh
+     * @returns {MobileBuiler} The left child mobile builder
+     *
+     * The child inherits radius, color, heights, speeds, and spin direction
+     * from its parent.
+     *
+     * The child has half its parent's radius, and the opposite arm direction.
+     */
+    left(mesh, color) {
+        this.leftChild = new MobileBuilder(mesh, color, this);
+        return this.leftChild;
+    }
+
+    /**
+     * @param {number[]} color
+     * @param {MeshLike} mesh
+     * @returns {MobileBuilder} The right child mobile builder
+     *
+     * The child inherits radius, heights, speeds, and spin direction from its
+     * parent.
+     *
+     * The child has half its parent's radius, and the opposite arm direction.
+     */
+    right(mesh, color) {
+        this.rightChild = new MobileBuilder(mesh, color, this);
+        return this.rightChild;
+    }
+
+    /**
+     * Get the parent mobile
+     */
+    parent() {
+        if (this.parent) {
+            return this.parent;
+        }
+        else {
+            throw new Error("Can not get parent of root mobile");
+        }
+    }
+
+    emptyLeft() {
+        return this.left({vertices: [vec3(0, 0, 0)], faces: []}, [0,0,0,0])
+            .parentHeight(0)
+            .spinSpeed(0);
+    }
+
+    emptyRight() {
+        return this.right({vertices: [vec3(0, 0, 0)], faces: []}, [0,0,0,0])
+            .parentHeight(0)
+            .spinSpeed(0);
+    }
+}
+
+/**
+ * Set a speed property on a {@link MobileBuilder} to a constant or a supplier
+ * function
+ */
+function setSpeedProperty(builder, property, value) {
+    if (typeof value === 'number') {
+        builder[property] = () => value;
+    }
+    else {
+        builder[property] = value;
+    }
+}
+
+/**
+ * Throw an error if the given {@link MobileBuilder} is incomplete
+ */
+function assertBuilderComplete(builder) {
+    let prop;
+    if (builder._radius === undefined) {
+        prop = 'radius';
+    }
+    else if (builder.parent_height === undefined) {
+        prop = 'parent height';
+    }
+    // If has children, but no child height
+    else if (builder.child_height === undefined &&
+             (builder.leftChild || builder.rightChild)) {
+        prop = 'child height';
+    }
 }
