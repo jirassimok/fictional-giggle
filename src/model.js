@@ -116,11 +116,3 @@ function scale(scale, mesh) {
         mesh.faces
     );
 }
-
-/** Move a mesh up or down */
-function moveY(dy, mesh) {
-    return new Mesh(
-        mesh.vertices.map(([x, y, z]) => vec3(x, y + dy, z)),
-        mesh.faces
-    );
-}
