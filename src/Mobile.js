@@ -35,8 +35,10 @@ import { gl } from "./setup.js";
  * @property {Mobile} right The mobiles handing from the right of this one
  * @property {WebGLUniformLocation} colorLocation Location of shader color variable
  *
- * A mobile with a number of children besides 0 or 2 may behave in unexpected
- * manners.
+ * The following properties exist for Mobile construction only.
+ * @property {number} radius The radius of the mobile's child arms
+ * @property {number} parent_height The length of the upwards arm
+ * @property {number} child_height The length of the downwards arm
  */
 export class Mobile {
     /**
@@ -55,12 +57,13 @@ export class Mobile {
     setup(position, color) {
         this.colorLocation = color; // Save the color for draw time
 
+        this.addLines(); // Add strings to the mobile
+
         // Prepare a VAO for the mesh
         this.mesh_vao = gl.vao.createVertexArrayOES();
         gl.vao.bindVertexArrayOES(this.mesh_vao);
         this.constructor.setupBuffers(position, this.mesh.vertices, this.mesh.faces);
 
-        this.addLines(); // Add strings to the mobile
         // Prepare a VAO for the strings
         this.line_vao = gl.vao.createVertexArrayOES();
         gl.vao.bindVertexArrayOES(this.line_vao);
@@ -184,6 +187,11 @@ export class Mobile {
 
     /**
      * Add a child to the mobile
+     *
+     * For internal use only
+     *
+     * @see addLeft
+     * @see addRight
      *
      * @param {'left'|'right'} side The side of the mobile to add the child to
      * @param {MeshLike} mesh The mesh to use fo the child object
