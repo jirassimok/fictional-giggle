@@ -1,6 +1,7 @@
 /*
  * Definitions of meshes and the mobile
  */
+import { Mesh } from "./Mesh.js";
 import { Mobile } from "./Mobile.js";
 import { vec3 } from "./MV+.js";
 
@@ -9,15 +10,11 @@ import * as MV from "./MV+.js";
 import _sphere from "./sphere.json";
 import _cube from "./cube.json";
 
-const sphere = Object.freeze({
-    vertices: _sphere.vertices.map(vec3),
-    faces: _sphere.faces
-});
+const sphere = new Mesh(_sphere.vertices.map(vec3),
+                        _sphere.faces);
 
-const cube = Object.freeze({
-    vertices: _cube.vertices.map(vec3),
-    faces: _cube.faces
-});
+const cube = new Mesh(_cube.vertices.map(vec3),
+                      _cube.faces);
 
 let white = [1, 1, 1, 1],
     black = [0, 0, 0, 1],
@@ -82,48 +79,48 @@ function merge(...meshes) {
 }
 /** Join two meshes */
 function merge2(mesh1, mesh2) {
-    return {
-        vertices: mesh1.vertices.concat(mesh2.vertices),
-        faces: mesh1.faces.concat(mesh2.faces.map(face => face.map(i => i + mesh1.vertices.length)))
-    };
+    return new Mesh(
+        mesh1.vertices.concat(mesh2.vertices),
+        mesh1.faces.concat(mesh2.faces.map(face => face.map(i => i + mesh1.vertices.length)))
+    );
 }
 
 function rotateY(angle, mesh) {
     let rotation = MV.rotateY(angle);
-    return {
-        vertices: mesh.vertices.map(v => vec3(MV.mult(rotation, MV.vec4(v)))),
-        faces: mesh.faces
-    };
+    return new Mesh(
+        mesh.vertices.map(v => vec3(MV.mult(rotation, MV.vec4(v)))),
+        mesh.faces
+    );
 }
 
 function rotateX(angle, mesh) {
     let rotation = MV.rotateX(angle);
-    return {
-        vertices: mesh.vertices.map(v => vec3(MV.mult(rotation, MV.vec4(v)))),
-        faces: mesh.faces
-    };
+    return new Mesh(
+        mesh.vertices.map(v => vec3(MV.mult(rotation, MV.vec4(v)))),
+        mesh.faces
+    );
 }
 
 function rotate(angle, axis, mesh) {
     let rotation = MV.rotate(angle, axis);
-    return {
-        vertices: mesh.vertices.map(v => vec3(MV.mult(rotation, MV.vec4(v)))),
-        faces: mesh.faces
-    };
+    return new Mesh(
+        mesh.vertices.map(v => vec3(MV.mult(rotation, MV.vec4(v)))),
+        mesh.faces
+    );
 }
 
 /** Scale a mesh */
 function scale(scale, mesh) {
-    return {
-        vertices: mesh.vertices.map(v => v.map(n => n * scale)),
-        faces: mesh.faces
-    };
+    return new Mesh(
+        mesh.vertices.map(v => v.map(n => n * scale)),
+        mesh.faces
+    );
 }
 
 /** Move a mesh up or down */
 function moveY(dy, mesh) {
-    return {
-        vertices: mesh.vertices.map(([x, y, z]) => vec3(x, y + dy, z)),
-        faces: mesh.faces
-    };
+    return new Mesh(
+        mesh.vertices.map(([x, y, z]) => vec3(x, y + dy, z)),
+        mesh.faces
+    );
 }

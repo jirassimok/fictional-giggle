@@ -18,18 +18,6 @@ export let DEFAULT_MESH_SPEED = () => 0.05,
            DEFAULT_ARM_SPEED = () => 0.05;
 
 /**
- * A mesh represented by two arrays; the parameters to the {@link Mesh}
- * constructor.
- * @typedef {Object} PlainMesh
- * @property {number[][]} vertices Array of vertices
- * @property {number[][]} faces Index array of faces
- */
-
-/**
- * @typedef {(Mesh|PlainMesh)} MeshLike
- */
-
-/**
  * Array-like objects, as the first parameter to {@link Array.from}
  * @typedef {Array|TypedArray|Iterable|array-like} ArrayLike
  * This includes all iterable objects and objects with a {@code length} property
@@ -77,7 +65,7 @@ function setupBuffers(attribute, data, indices) {
 export class Mobile {
     /**
      * Get a {@link MobileBuilder} for a mobile with the given mesh and color
-     * @param {MeshLike} mesh
+     * @param {Mesh} mesh
      * @param {number[]} color
      */
     static builder(mesh, color) {
@@ -268,10 +256,14 @@ class MobileBuilder {
      * If a parent is given, use its child and parent heights, and half its
      * radius.
      *
-     * @param {?MeshLike} mesh
+     * @param {Mesh} mesh
+     * @param {number[]} color
      * @param {?MobileBuilder} parent
      */
     constructor(mesh, color, parent = null) {
+        if (!(mesh instanceof Mesh)) {
+            throw new Error("MobileBuilder only accepts meshes");
+        }
         this.mesh = mesh;
         this.color = color;
 
@@ -302,11 +294,12 @@ class MobileBuilder {
         translate_y -= this.parent_height + height / 2;
 
         // Translate vertices and create mesh
-        let vertices = this.mesh.vertices
-            .map(([x, y, z]) => vec3(x,
-                                     y + translate_y,
-                                     z)),
-            mesh = new Mesh(vertices, this.mesh.faces);
+        let mesh = this.mesh.translated(0, translate_y, 0);
+        // let vertices = this.mesh.vertices
+        //     .map(([x, y, z]) => vec3(x,
+        //                              y + translate_y,
+        //                              z)),
+        //     mesh = new Mesh(vertices, this.mesh.faces);
 
         let color = Float32Array.from(this.color);
 
@@ -367,7 +360,7 @@ class MobileBuilder {
 
     /**
      * @param {number[]} color
-     * @param {MeshLike} mesh
+     * @param {Mesh} mesh
      * @returns {MobileBuiler} The left child mobile builder
      *
      * The child inherits radius, color, heights, speeds, and spin direction
@@ -382,7 +375,7 @@ class MobileBuilder {
 
     /**
      * @param {number[]} color
-     * @param {MeshLike} mesh
+     * @param {Mesh} mesh
      * @returns {MobileBuilder} The right child mobile builder
      *
      * The child inherits radius, heights, speeds, and spin direction from its
@@ -408,13 +401,13 @@ class MobileBuilder {
     }
 
     emptyLeft() {
-        return this.left({vertices: [vec3(0, 0, 0)], faces: []}, [0,0,0,0])
+        return this.left(new Mesh([vec3(0, 0, 0)], []), [0,0,0,0])
             .parentHeight(0)
             .spinSpeed(0);
     }
 
     emptyRight() {
-        return this.right({vertices: [vec3(0, 0, 0)], faces: []}, [0,0,0,0])
+        return this.right(new Mesh([vec3(0, 0, 0)], []), [0,0,0,0])
             .parentHeight(0)
             .spinSpeed(0);
     }
