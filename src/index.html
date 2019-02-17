@@ -8,13 +8,11 @@
 
         <script id="vertexShader" type="x-shader/x-vertex">
          attribute vec3 aPosition;
-         attribute vec3 faceNormal;
+         attribute vec3 vertexNormal;
 
          uniform mat4 projectionMatrix;
          uniform mat4 viewMatrix;
          uniform mat4 modelMatrix;
-
-         varying vec4 fragColor;
 
          void main() {
              gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(aPosition, 1);
@@ -23,11 +21,11 @@
 
         <script id="fragmentShader" type="x-shader/x-fragment">
          precision mediump float;
-         varying vec4 fragColor;
+         uniform vec4 color;
 
          void main()
          {
-             gl_FragColor = vec4(1, 1, 1, 1);
+             gl_FragColor = color;
          }
         </script>
     </head>

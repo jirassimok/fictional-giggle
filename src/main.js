@@ -31,7 +31,9 @@ const buffers = Object.freeze({
 // Set up the shader variables
 const shader = Object.freeze({
     position:         gl.getAttribLocation(program, "aPosition"),
-    faceNormal:       gl.getAttribLocation(program, "faceNormal"),
+    vertexNormal:     gl.getAttribLocation(program, "vertexNormal"),
+
+    color:            gl.getUniformLocation(program, "color"),
 
     modelMatrix:      gl.getUniformLocation(program, "modelMatrix"),
     viewMatrix:       gl.getUniformLocation(program, "viewMatrix"),
