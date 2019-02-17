@@ -21,27 +21,7 @@ export class Mesh {
         this._faces = Object.freeze(faces.map(face => Array.from(face)));
 
         this._facenormals = [];
-
-        for (let face of faces) {
-            // face rotated by 1 vertex
-            let face2 = face.slice(1).concat(face[0]),
-                vertexpairs = face.map((_, i) => [vertices[face[i]],
-                                                  vertices[face2[i]]]);
-            let x = 0,
-                y = 0,
-                z = 0;
-
-            for (let [[x1, y1, z1], [x2, y2, z2]] of vertexpairs) {
-                x += (y1 - y2) * (z1 + z2);
-                y += (z1 - z2) * (x1 + x2);
-                z += (x1 - x2) * (y1 + y2);
-            }
-
-            for (let _ of face) {
-                this._facenormals.push(normalize(vec3(x, y, z)));
-            }
-        }
-
+        // TODO: Restore face normals and add vertex normals
         Object.freeze(this._facenormals);
     }
 
