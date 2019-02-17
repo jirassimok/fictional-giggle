@@ -5,6 +5,7 @@ import { translate, mult, vec4, vec3 } from "./MV+.js";
 import * as MV from "./MV+.js";
 
 import { gl } from "./setup.js";
+import { AnimationTracker } from "./Animations.js";
 
 /**
  * A mesh represented by two arrays; the parameters to the {@link Mesh}
@@ -101,6 +102,8 @@ export class Mobile {
 
         if (this.left  !== null) this.left.setup(modelMatrix, position, color);
         if (this.right !== null) this.right.setup(modelMatrix, position, color);
+
+        this.rotation.start();
     }
 
     /**
@@ -109,7 +112,7 @@ export class Mobile {
     draw() {
         gl.uniformMatrix4fv(this.modelMatrix,
                             false,
-                            MV.flatten(MV.mat4()));
+                            MV.flatten(MV.rotateY(this.rotation.position)));
 
         // Set color
         gl.uniform4fv(this.colorLocation, this.color);
@@ -180,6 +183,12 @@ export class Mobile {
 
         this.left = null;
         this.right = null;
+        this.rotation = new AnimationTracker(() => 0.1);
+    }
+
+    setSpeed(speedGetter, direction) {
+        this.rotation.scale = Math.sign(direction);
+        this.rotation.speed = speedGetter;
     }
 
     /** Get parent height as measured from the center of the mesh */
