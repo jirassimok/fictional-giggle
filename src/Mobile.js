@@ -8,6 +8,11 @@ import { gl } from "./setup.js";
 import { AnimationTracker } from "./Animations.js";
 
 /**
+ * Default speed for all mobiles
+ */
+export let DEFAULT_SPEED = 0.05;
+
+/**
  * A mesh represented by two arrays; the parameters to the {@link Mesh}
  * constructor.
  * @typedef {Object} PlainMesh
@@ -189,7 +194,7 @@ export class Mobile {
 
         this.left = null;
         this.right = null;
-        this.rotation = new AnimationTracker(() => 0.1);
+        this.rotation = new AnimationTracker(() => DEFAULT_SPEED);
     }
 
     /**
@@ -198,7 +203,7 @@ export class Mobile {
      *
      * @returns {Mobile} this mobile
      */
-    setSpeed(speed, direction) {
+    setSpeed(speed, direction = 1) {
         this.rotation.scale = Math.sign(direction);
         if (typeof speed === 'number') {
             this.rotation.speed = () => speed;
