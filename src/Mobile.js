@@ -76,6 +76,51 @@ function setupBuffers(attribute, data, indices) {
  */
 export class Mobile {
     /**
+     * Get a {@link MobileBuilder} for a mobile with the given mesh and color
+     * @param {MeshLike} mesh
+     * @param {number[]} color
+     */
+    static builder(mesh, color) {
+        return new MobileBuilder(mesh, color);
+    }
+
+    /**
+     * @param {Mesh} mesh The mesh at the top of the mobile
+     * @param {ArrayLike} color The mesh's color
+     * @param {number} radius The radius of the mobile's child arms
+     * @param {number} parent_height The length of the upwards arm
+     * @param {?number} child_height The length of the downwards arm
+     * @param {number} arm_direction The direction of the arms' rotation (sign only)
+     * @param {number} mesh_direction The direction of the mesh's rotation (sign only)
+     * @param {number} mesh_speed The speed of the mesh's rotation
+     * @param {number} arm_speed The speed of the arms' rotation
+     * @param {Mobile} left The element hanging from the left of the mobile
+     * @param {Mobile} right The element hanging from the right of the mobile
+     *
+     * The given mesh will be attached to its parent and children by vertical
+     * lines connected to its midpoint.
+     */
+    constructor(mesh, color,
+                radius, parent_height, child_height,
+                mesh_speed = DEFAULT_MESH_SPEED, mesh_direction,
+                arm_speed = DEFAULT_ARM_SPEED, arm_direction,
+                left, right) {
+        this.mesh = mesh;
+        this.color = color;
+        this.radius = radius;
+        this.parent_height = parent_height;
+        this.child_height = child_height;
+
+        this.left = left;
+        this.right = right;
+
+        this.rotation = new AnimationTracker(mesh_speed);
+        if (mesh_direction) this.rotation.scale = Math.sign(mesh_direction);
+        this.armRotation = new AnimationTracker(arm_speed);
+        this.armRotation.scale = Math.sign(arm_direction);
+    }
+
+    /**
      * Compute a bounding box of this mobile
      */
     bounds() {
@@ -183,45 +228,6 @@ export class Mobile {
         this.arms = Object.freeze({vertices: arms, indices: arm_indices});
     }
 
-    //// Mobile construction functions
-    // (These aren't very nice.)
-
-    /**
-     * @param {MeshLike} mesh The mesh at the top of the mobile
-     * @param {ArrayLike} color The mesh's color
-     * @param {number} radius The radius of the mobile's child arms
-     * @param {number} parent_height The length of the upwards arm
-     * @param {?number} child_height The length of the downwards arm
-     * @param {number} arm_direction The direction of the arms' rotation (sign only)
-     * @param {number} mesh_direction The direction of the mesh's rotation (sign only)
-     * @param {number} mesh_speed The speed of the mesh's rotation
-     * @param {number} arm_speed The speed of the arms' rotation
-     * @param {Mobile} left The element hanging from the left of the mobile
-     * @param {Mobile} right The element hanging from the right of the mobile
-     *
-     * The given mesh will be attached to its parent and children by vertical
-     * lines connected to its midpoint.
-     */
-    constructor(mesh, color,
-                radius, parent_height, child_height,
-                arm_direction, mesh_direction,
-                mesh_speed = DEFAULT_MESH_SPEED, arm_speed = DEFAULT_ARM_SPEED,
-                left, right) {
-        this.mesh = mesh;
-        this.color = color;
-        this.radius = radius;
-        this.parent_height = parent_height;
-        this.child_height = child_height;
-
-        this.left = left;
-        this.right = right;
-
-        this.rotation = new AnimationTracker(mesh_speed);
-        if (mesh_direction) this.rotation.scale = Math.sign(mesh_direction);
-        this.armRotation = new AnimationTracker(arm_speed);
-        this.armRotation.scale = Math.sign(arm_direction);
-    }
-
     /** Get parent height as measured from the center of the mesh */
     parentHeight() {
         return this.parent_height + this.mesh.bounds.height / 2;
@@ -230,10 +236,6 @@ export class Mobile {
     /** Get child height as measured from the center of the mesh */
     childHeight() {
         return this.child_height + this.mesh.bounds.height / 2;
-    }
-
-    static builder(mesh, color) {
-        return new MobileBuilder(mesh, color);
     }
 }
 
@@ -321,8 +323,8 @@ class MobileBuilder {
 
         return new Mobile(mesh, color,
                           this._radius, this.parent_height, this.child_height,
-                          this.arm_direction, this.spin_direction,
-                          this.spin_speed_source, this.arm_speed_source,
+                          this.spin_speed_source, this.spin_direction,
+                          this.arm_speed_source, this.arm_direction,
                           left, right);
     }
 
