@@ -113,8 +113,8 @@ export class Mobile {
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
-        if (this.left  !== null) this.left.setup(modelMatrix, position, color);
-        if (this.right !== null) this.right.setup(modelMatrix, position, color);
+        if (this.left) this.left.setup(modelMatrix, position, color);
+        if (this.right) this.right.setup(modelMatrix, position, color);
 
         this.rotation.start();
         this.armRotation.start();
@@ -149,10 +149,10 @@ export class Mobile {
         gl.vao.bindVertexArrayOES(this.arm_vao);
         gl.drawElements(gl.LINES, this.arms.indices.flat(1).length, gl.UNSIGNED_BYTE, 0);
 
-        if (this.left !== null) {
+        if (this.left) {
             this.left.draw(MV.mult(armModelMatrix, translate(-this.radius, 0, 0)));
         }
-        if (this.right !== null) {
+        if (this.right) {
             this.right.draw(MV.mult(armModelMatrix, translate(this.radius, 0, 0)));
         }
     }
@@ -197,7 +197,7 @@ export class Mobile {
      * The given mesh will be attached to its parent and children by vertical
      * lines connected to its midpoint.
      */
-    constructor(mesh, color, radius, parent_height, child_height, armDirection = 1) {
+    static create(mesh, color, radius, parent_height, child_height, armDirection = 1) {
         if (!(mesh instanceof Mesh)) {
             mesh = new Mesh(mesh.vertices, mesh.faces);
         }
@@ -211,17 +211,22 @@ export class Mobile {
             );
         }
 
-        this.mesh = mesh;
-        this.color = Float32Array.from(color);
+        color = Float32Array.from(color);
 
+        child_height = (child_height === null
+                        ? parent_height
+                        : child_height);
+
+        return new Mobile(mesh, color, radius, parent_height, child_height, armDirection);
+    }
+
+    constructor(mesh, color, radius, parent_height, child_height, armDirection) {
+        this.mesh = mesh;
+        this.color = color;
         this.radius = radius;
         this.parent_height = parent_height;
-        this.child_height = (child_height === null
-                             ? parent_height
-                             : child_height);
+        this.child_height = child_height;
 
-        this.left = null;
-        this.right = null;
         this.rotation = new AnimationTracker(() => DEFAULT_MESH_SPEED);
         this.armRotation = new AnimationTracker(() => DEFAULT_ARM_SPEED);
         this.armRotation.scale = Math.sign(armDirection);

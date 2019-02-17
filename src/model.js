@@ -35,7 +35,7 @@ let white = [1, 1, 1, 1],
     yellow = [1, 1, 0, 1],
     pale_purple = [0.5, 0.5, 1, 1];
 
-export const mobile = new Mobile(cube, pale_purple, 4, 10, 0.5).setSpeed(0.06).setArmSpeed(0.05, -1);
+export const mobile = Mobile.create(cube, pale_purple, 4, 10, 0.5).setSpeed(0.06).setArmSpeed(0.05, -1);
 
 let L = mobile.addLeft(sphere, red, 2, 0.5, 0.5).setSpeed(0.125).setArmSpeed(0.075),
     R = mobile.addRight(cube, green, 2, 2, 0.5).setSpeed(0.075).setArmSpeed(0.125),
