@@ -19,16 +19,21 @@ import { gl } from "./setup.js";
  */
 
 /**
+ * Array-like objects, as the first parameter to {@link Array.from}
+ * @typedef {Array|TypedArray|Iterable|array-like} ArrayLike
+ * This includes all iterable objects and objects with a {@code length} property
+ * and indexed elements.
+ */
+
+/**
  * Tree-like structure representing the meshes forming a mobile
  *
- * @property {Mesh} mesh
- * @property connectors The connecting elements
+ * @property {Mesh} mesh The mesh hanging from the mobile
+ * @property {Float32Array} color The mesh's color
+ * @property {PlainMesh} lines The lines connecting the mobile
  * @property {Mobile} left The mobile handing from the left of this one
  * @property {Mobile} right The mobiles handing from the right of this one
- *
- * @property {number} radius The radius of the mobile's child arms
- * @property {number} parent_height The length of the upwards arm
- * @property {number} child_height The length of the downwards arm
+ * @property {WebGLUniformLocation} colorLocation Location of shader color variable
  *
  * A mobile with a number of children besides 0 or 2 may behave in unexpected
  * manners.
@@ -45,8 +50,10 @@ export class Mobile {
      * Set up the vertex array objects for the mobile and its children
      *
      * @param position The location of the shader's position attribute
+     * @param color The location of the shader's color attribute
      */
-    setup(position) {
+    setup(position, color) {
+        this.colorLocation = color; // Save the color for draw time
 
         // Prepare a VAO for the mesh
         this.mesh_vao = gl.vao.createVertexArrayOES();
@@ -64,8 +71,8 @@ export class Mobile {
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
-        if (this.left  !== null) this.left.setup(position);
-        if (this.right !== null) this.right.setup(position);
+        if (this.left  !== null) this.left.setup(position, color);
+        if (this.right !== null) this.right.setup(position, color);
     }
 
     /**
@@ -95,6 +102,9 @@ export class Mobile {
         gl.uniformMatrix4fv(modelMatrix,
                             false,
                             MV.flatten(MV.mat4()));
+
+        // Set color
+        gl.uniform4fv(this.colorLocation, this.color);
 
         gl.vao.bindVertexArrayOES(this.mesh_vao);
         gl.drawElements(gl.TRIANGLES, this.mesh.faces.flat(1).length, gl.UNSIGNED_BYTE, 0);
@@ -137,6 +147,7 @@ export class Mobile {
 
     /**
      * @param {MeshLike} mesh The mesh at the top of the mobile
+     * @param {ArrayLike} color The mesh's color
      * @param {number} parent_height The length of the upwards arm
      * @param {?number} child_height The length of the downwards arm
      * @param {number} radius The radius of the mobile's child arms
@@ -144,11 +155,12 @@ export class Mobile {
      * The given mesh will be attached to its parent and children by vertical
      * lines connected to its midpoint.
      */
-    constructor(mesh, radius, parent_height, child_height) {
+    constructor(mesh, color, radius, parent_height, child_height) {
         if (!(mesh instanceof Mesh)) {
             mesh = new Mesh(mesh.vertices, mesh.faces);
         }
         this.mesh = mesh;
+        this.color = Float32Array.from(color);
 
         this.radius = radius;
         this.parent_height = parent_height;
@@ -177,6 +189,7 @@ export class Mobile {
      *
      * @param {'left'|'right'} side The side of the mobile to add the child to
      * @param {MeshLike} mesh The mesh to use fo the child object
+     * @param {ArrayLike} color The mesh's color, a length-4 array
      * @param {number} parent_height The length of the upwards arm; defaults to
      *                               this mobile's parent height
      * @param {?number} child_height The length of the downwards arm; defaults
@@ -186,7 +199,7 @@ export class Mobile {
      *
      * @returns {Mobile} The newly-added child
      */
-    addChild(side, mesh, radius, parent_height, child_height) {
+    addChild(side, mesh, color, radius, parent_height, child_height) {
         if (side !== 'left' && side !== 'right') {
             throw new Error('invalid side of mobile');
         }
@@ -199,7 +212,7 @@ export class Mobile {
         child_height  = (child_height  === undefined ? this.child_height  : child_height),
         parent_height = (parent_height === undefined ? this.parent_height : parent_height);
 
-        let child = new Mobile(mesh, radius, parent_height, child_height);
+        let child = new Mobile(mesh, color, radius, parent_height, child_height);
 
         let direction = (side === 'left' ? -1 : +1),
             translation = translate(
@@ -221,8 +234,8 @@ export class Mobile {
      *
      * @see addChild
      */
-    addLeft(mesh, radius, parent_height, child_height) {
-        return this.addChild('left', mesh, radius, parent_height, child_height);
+    addLeft(mesh, color, radius, parent_height, child_height) {
+        return this.addChild('left', mesh, color, radius, parent_height, child_height);
     }
 
     /**
@@ -230,8 +243,8 @@ export class Mobile {
      *
      * @see addChild
      */
-    addRight(mesh, radius, parent_height, child_height) {
-        return this.addChild('right', mesh, radius, parent_height, child_height);
+    addRight(mesh, color, radius, parent_height, child_height) {
+        return this.addChild('right', mesh, color, radius, parent_height, child_height);
     }
 }
 

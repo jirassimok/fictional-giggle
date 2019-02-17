@@ -185,7 +185,7 @@ function drawMesh(mesh) {
 }
 
 function setup() {
-    mobile.setup(shader.position);
+    mobile.setup(shader.position, shader.color);
     setProjection(mobile);
 }
 
