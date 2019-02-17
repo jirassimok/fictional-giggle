@@ -10,7 +10,7 @@ import { AnimationTracker } from "./Animations.js";
 /**
  * Default color for mobile strings
  */
-const LINE_COLOR = vec4(0.62745098, 0.32156863, 0.17647059, 1);
+const ARM_COLOR = vec4(0.62745098, 0.32156863, 0.17647059, 1);
 
            /** Default speed for all mobiles' meshes */
 export let DEFAULT_MESH_SPEED = 0.05,
@@ -61,7 +61,7 @@ function setupBuffers(attribute, data, indices) {
  *
  * @property {Mesh} mesh The mesh hanging from the mobile
  * @property {Float32Array} color The mesh's color
- * @property {PlainMesh} lines The lines connecting the mobile
+ * @property {PlainMesh} arms The lines connecting the mobile
  * @property {Mobile} left The mobile handing from the left of this one
  * @property {Mobile} right The mobiles handing from the right of this one
  * @property {WebGLUniformLocation} colorLocation Location of shader color variable
@@ -94,7 +94,7 @@ export class Mobile {
         this.colorLocation = color;
         this.modelMatrixLocation = modelMatrix;
 
-        this.addLines(); // Add strings to the mobile
+        this.addArms(); // Add strings to the mobile
 
         // Prepare a VAO for the mesh
         this.mesh_vao = gl.vao.createVertexArrayOES();
@@ -102,9 +102,9 @@ export class Mobile {
         setupBuffers(position, this.mesh.vertices, this.mesh.faces);
 
         // Prepare a VAO for the strings
-        this.line_vao = gl.vao.createVertexArrayOES();
-        gl.vao.bindVertexArrayOES(this.line_vao);
-        setupBuffers(position, this.lines.vertices, this.lines.indices);
+        this.arm_vao = gl.vao.createVertexArrayOES();
+        gl.vao.bindVertexArrayOES(this.arm_vao);
+        setupBuffers(position, this.arms.vertices, this.arms.indices);
 
         // Unbind buffers
         gl.vao.bindVertexArrayOES(null);
@@ -135,35 +135,35 @@ export class Mobile {
         gl.vao.bindVertexArrayOES(this.mesh_vao);
         gl.drawElements(gl.TRIANGLES, this.mesh.faces.flat(1).length, gl.UNSIGNED_BYTE, 0);
 
-        // Draw lines
-        let lineModelMatrix = MV.mult(modelMatrix, MV.rotateY(this.armRotation.position));
+        // Draw arms
+        let armModelMatrix = MV.mult(modelMatrix, MV.rotateY(this.armRotation.position));
         gl.uniformMatrix4fv(this.modelMatrixLocation,
                             false,
-                            MV.flatten(lineModelMatrix));
+                            MV.flatten(armModelMatrix));
 
-        gl.uniform4fv(this.colorLocation, LINE_COLOR);
-        gl.vao.bindVertexArrayOES(this.line_vao);
-        gl.drawElements(gl.LINES, this.lines.indices.flat(1).length, gl.UNSIGNED_BYTE, 0);
+        gl.uniform4fv(this.colorLocation, ARM_COLOR);
+        gl.vao.bindVertexArrayOES(this.arm_vao);
+        gl.drawElements(gl.LINES, this.arms.indices.flat(1).length, gl.UNSIGNED_BYTE, 0);
 
         if (this.left !== null) {
-            this.left.draw(MV.mult(lineModelMatrix, translate(-this.radius, 0, 0)));
+            this.left.draw(MV.mult(armModelMatrix, translate(-this.radius, 0, 0)));
         }
         if (this.right !== null) {
-            this.right.draw(MV.mult(lineModelMatrix, translate(this.radius, 0, 0)));
+            this.right.draw(MV.mult(armModelMatrix, translate(this.radius, 0, 0)));
         }
     }
 
     /**
      * Add connecting strings to the mobile
      */
-    addLines() {
+    addArms() {
         let midpoint = this.mesh.bounds.midpoint;
-        let lines = [
+        let arms = [
             // parent line
             midpoint, vec3(mult(translate(0, this.parentHeight(), 0), vec4(midpoint))),
-            // child lines
+            // child line
             midpoint, vec3(mult(translate(0, -this.childHeight(), 0), vec4(midpoint))),
-            // child arms
+            // horizontal arms
             vec3(midpoint.x - this.radius,
                  midpoint.y - this.childHeight(),
                  midpoint.z),
@@ -171,12 +171,12 @@ export class Mobile {
                  midpoint.y - this.childHeight(),
                  midpoint.z)
         ];
-        let line_indices = [[0, 1]];
+        let arm_indices = [[0, 1]];
         if (this.left || this.right) {
-            line_indices.push([2, 3], [4, 5]);
+            arm_indices.push([2, 3], [4, 5]);
         }
 
-        this.lines = Object.freeze({vertices: lines, indices: line_indices});
+        this.arms = Object.freeze({vertices: arms, indices: arm_indices});
     }
 
     //// Mobile construction functions
