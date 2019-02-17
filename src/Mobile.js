@@ -97,9 +97,11 @@ export class Mobile {
         this.addArms(); // Add strings to the mobile
 
         // Prepare a VAO for the mesh
-        this.mesh_vao = gl.vao.createVertexArrayOES();
-        gl.vao.bindVertexArrayOES(this.mesh_vao);
-        setupBuffers(position, this.mesh.vertices, this.mesh.faces);
+        if (this.mesh.vertices.length) {
+            this.mesh_vao = gl.vao.createVertexArrayOES();
+            gl.vao.bindVertexArrayOES(this.mesh_vao);
+            setupBuffers(position, this.mesh.vertices, this.mesh.faces);
+        }
 
         // Prepare a VAO for the strings
         this.arm_vao = gl.vao.createVertexArrayOES();
@@ -132,8 +134,10 @@ export class Mobile {
         gl.uniform4fv(this.colorLocation, this.color);
 
         // Draw mesh
-        gl.vao.bindVertexArrayOES(this.mesh_vao);
-        gl.drawElements(gl.TRIANGLES, this.mesh.faces.flat(1).length, gl.UNSIGNED_BYTE, 0);
+        if (this.mesh.vertices.length) {
+            gl.vao.bindVertexArrayOES(this.mesh_vao);
+            gl.drawElements(gl.TRIANGLES, this.mesh.faces.flat(1).length, gl.UNSIGNED_BYTE, 0);
+        }
 
         // Draw arms
         let armModelMatrix = MV.mult(modelMatrix, MV.rotateY(this.armRotation.position));
