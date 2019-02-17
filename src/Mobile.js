@@ -109,10 +109,12 @@ export class Mobile {
     /**
      * Draw the mobile
      */
-    draw() {
+    draw(modelMatrix = MV.mat4()) {
+        modelMatrix = MV.mult(modelMatrix, MV.rotateY(this.rotation.position));
+
         gl.uniformMatrix4fv(this.modelMatrixLocation,
                             false,
-                            MV.flatten(MV.rotateY(this.rotation.position)));
+                            MV.flatten(modelMatrix));
 
         // Set color
         gl.uniform4fv(this.colorLocation, this.color);
@@ -125,8 +127,12 @@ export class Mobile {
         gl.vao.bindVertexArrayOES(this.line_vao);
         gl.drawElements(gl.LINES, this.lines.indices.flat(1).length, gl.UNSIGNED_BYTE, 0);
 
-        if (this.left  !== null) this.left.draw();
-        if (this.right !== null) this.right.draw();
+        if (this.left !== null) {
+            this.left.draw(MV.mult(modelMatrix, translate(-this.radius, 0, 0)));
+        }
+        if (this.right !== null) {
+            this.right.draw(MV.mult(modelMatrix, translate(this.radius, 0, 0)));
+        }
     }
 
     /**
@@ -238,7 +244,7 @@ export class Mobile {
 
         let direction = (side === 'left' ? -1 : +1),
             translation = translate(
-                this.mesh.bounds.midpoint.x + direction * this.radius,
+                this.mesh.bounds.midpoint.x,
                 this.mesh.bounds.midpoint.y - this.childHeight() - child.parentHeight(),
                 this.mesh.bounds.midpoint.z
             );
