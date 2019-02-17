@@ -116,8 +116,8 @@ function clearCanvas() {
  * margin in all directions.
  */
 function setProjection(mobile) {
-    let bounds = mobile.bounds,
-        midpoint = mobile.bounds.midpoint;
+    let bounds = mobile.bounds(),
+        midpoint = bounds.midpoint;
 
     let fov_x = X_FIELD_OF_VIEW * Math.PI / 180,
         fov_y = fov_x / ASPECT_RATIO,

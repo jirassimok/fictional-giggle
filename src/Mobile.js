@@ -78,7 +78,7 @@ export class Mobile {
     /**
      * Compute a bounding box of this mobile
      */
-    get bounds() {
+    bounds() {
         return Bounds.fromVecs(allVertices(this));
     }
 
