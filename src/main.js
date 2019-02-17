@@ -105,8 +105,6 @@ const animationState = new AnimationState(settings);
 //// Canvas/GL/Mesh preparation functions
 
 function clearCanvas() {
-    gl.clearColor(0, 0, 0, 1);
-    gl.clearDepth(1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 }
 
@@ -185,6 +183,12 @@ function drawMesh(mesh) {
 }
 
 function setup() {
+    gl.clearColor(0, 0, 0, 1);
+    gl.clearDepth(1);
+    gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
+
     mobile.setup(shader.modelMatrix, shader.position, shader.color);
     setProjection(mobile);
 }
