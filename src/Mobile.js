@@ -55,7 +55,7 @@ function setupBuffers(attribute, data, indices) {
  * @property {Mobile} left The mobile handing from the left of this one
  * @property {Mobile} right The mobiles handing from the right of this one
  * @property {WebGLUniformLocation} colorLocation Location of shader color variable
- * @param {WebGLUniformLocation} modelMatrix The location of the shader's model matrix
+ * @param {WebGLUniformLocation} modelMatrixLocation The location of the shader's model matrix
  * @property {AnimationTracker} rotation The tracker for this mobile element's rotation
  *
  * The following properties exist for Mobile construction only.
@@ -81,7 +81,7 @@ export class Mobile {
     setup(modelMatrix, position, color) {
         // Save the color are model matrix for draw time
         this.colorLocation = color;
-        this.modelMatrix = modelMatrix;
+        this.modelMatrixLocation = modelMatrix;
 
         this.addLines(); // Add strings to the mobile
 
@@ -110,7 +110,7 @@ export class Mobile {
      * Draw the mobile
      */
     draw() {
-        gl.uniformMatrix4fv(this.modelMatrix,
+        gl.uniformMatrix4fv(this.modelMatrixLocation,
                             false,
                             MV.flatten(MV.rotateY(this.rotation.position)));
 
