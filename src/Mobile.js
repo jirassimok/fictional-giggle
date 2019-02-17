@@ -189,6 +189,16 @@ export class Mobile {
         if (!(mesh instanceof Mesh)) {
             mesh = new Mesh(mesh.vertices, mesh.faces);
         }
+
+        // If the mesh isn't centered at 0, move it there
+        if (!mesh.bounds.midpoint.every(n => Math.abs(n) < 0.001)) {
+            let mp = mesh.bounds.midpoint;
+            mesh = new Mesh(
+                mesh.vertices.map(([x, y, z]) => vec3(x - mp.x, y - mp.y, z - mp.z)),
+                mesh.faces
+            );
+        }
+
         this.mesh = mesh;
         this.color = Float32Array.from(color);
 
