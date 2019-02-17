@@ -170,8 +170,6 @@ export class Mobile {
 
         this.left = null;
         this.right = null;
-
-        let midpoint = this.mesh.bounds.midpoint;
     }
 
     /** Get parent height as measured from the center of the mesh */
