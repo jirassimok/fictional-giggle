@@ -189,39 +189,19 @@ export class Mobile {
     /**
      * @param {MeshLike} mesh The mesh at the top of the mobile
      * @param {ArrayLike} color The mesh's color
+     * @param {number} radius The radius of the mobile's child arms
      * @param {number} parent_height The length of the upwards arm
      * @param {?number} child_height The length of the downwards arm
-     * @param {number} radius The radius of the mobile's child arms
      * @param {number} arm_direction The direction of the arms' rotation (sign only)
+     * @param {number} mesh_direction The direction of the mesh's rotation (sign only)
+     * @param {number} mesh_speed The speed of the mesh's rotation
+     * @param {number} arm_speed The speed of the arms' rotation
+     * @param {Mobile} left The element hanging from the left of the mobile
+     * @param {Mobile} right The element hanging from the right of the mobile
      *
      * The given mesh will be attached to its parent and children by vertical
      * lines connected to its midpoint.
      */
-    static create(mesh, color, radius, parent_height, child_height, arm_direction = 1) {
-        if (!(mesh instanceof Mesh)) {
-            mesh = new Mesh(mesh.vertices, mesh.faces);
-        }
-
-        // If the mesh isn't centered at 0, move it there
-        if (!mesh.bounds.midpoint.every(n => Math.abs(n) < 0.001)) {
-            let mp = mesh.bounds.midpoint;
-            mesh = new Mesh(
-                mesh.vertices.map(([x, y, z]) => vec3(x - mp.x, y - mp.y, z - mp.z)),
-                mesh.faces
-            );
-        }
-
-        color = Float32Array.from(color);
-
-        child_height = (child_height === null
-                        ? parent_height
-                        : child_height);
-
-        return new Mobile(mesh, color,
-                          radius, parent_height, child_height,
-                          arm_direction);
-    }
-
     constructor(mesh, color,
                 radius, parent_height, child_height,
                 arm_direction, mesh_direction,
@@ -242,40 +222,6 @@ export class Mobile {
         this.armRotation.scale = Math.sign(arm_direction);
     }
 
-    /**
-     * @param {(number|function():number)} speed Speed or speed getter function
-     * @param {number} direction Direction of rotation (only sign matters)
-     *
-     * @returns {Mobile} this mobile
-     */
-    setSpeed(speed, direction = 1) {
-        this.rotation.scale = Math.sign(direction);
-        if (typeof speed === 'number') {
-            this.rotation.speed = () => speed;
-        }
-        else {
-            this.rotation.speed = speed;
-        }
-        return this;
-    }
-
-    /**
-     * @param {(number|function():number)} speed Speed or speed getter function
-     * @param {number} direction Direction of rotation (only sign matters)
-     *
-     * @returns {Mobile} this mobile
-     */
-    setArmSpeed(speed, direction = 1) {
-        this.armRotation.scale = Math.sign(direction);
-        if (typeof speed === 'number') {
-            this.armRotation.speed = () => speed;
-        }
-        else {
-            this.armRotation.speed = speed;
-        }
-        return this;
-    }
-
     /** Get parent height as measured from the center of the mesh */
     parentHeight() {
         return this.parent_height + this.mesh.bounds.height / 2;
@@ -284,76 +230,6 @@ export class Mobile {
     /** Get child height as measured from the center of the mesh */
     childHeight() {
         return this.child_height + this.mesh.bounds.height / 2;
-    }
-
-    /**
-     * Add a child to the mobile
-     *
-     * For internal use only
-     *
-     * @see addLeft
-     * @see addRight
-     *
-     * @param {'left'|'right'} side The side of the mobile to add the child to
-     * @param {MeshLike} mesh The mesh to use fo the child object
-     * @param {ArrayLike} color The mesh's color, a length-4 array
-     * @param {number} parent_height The length of the upwards arm; defaults to
-     *                               this mobile's parent height
-     * @param {?number} child_height The length of the downwards arm; defaults
-     *                               to this mobile's child height
-     * @param {number} radius The child's radius; defaults to half of this
-     *                        mobile's radius
-     *
-     * @returns {Mobile} The newly-added child
-     */
-    addChild(side, mesh, color, radius, parent_height, child_height) {
-        if (side !== 'left' && side !== 'right') {
-            throw new Error('invalid side of mobile');
-        }
-
-        if (!(mesh instanceof Mesh)) {
-            mesh = new Mesh(mesh.vertices, mesh.faces);
-        }
-
-        radius        = (radius === undefined ? (this.radius / 2) : radius),
-        child_height  = (child_height  === undefined ? this.child_height  : child_height),
-        parent_height = (parent_height === undefined ? this.parent_height : parent_height);
-
-        let child = Mobile.create(mesh, color,
-                                  radius, parent_height, child_height,
-                                  -this.armRotation.scale);
-
-        let direction = (side === 'left' ? -1 : +1),
-            translation = translate(
-                this.mesh.bounds.midpoint.x,
-                this.mesh.bounds.midpoint.y - this.childHeight() - child.parentHeight(),
-                this.mesh.bounds.midpoint.z
-            );
-
-        let new_vertices = child.mesh.vertices.map(v => mult(translation, vec4(v)));
-
-        child.mesh = new Mesh(new_vertices, child.mesh.faces);
-
-        this[side] = child;
-        return child;
-    }
-
-    /**
-     * Add the left child to the mobile
-     *
-     * @see addChild
-     */
-    addLeft(mesh, color, radius, parent_height, child_height) {
-        return this.addChild('left', mesh, color, radius, parent_height, child_height);
-    }
-
-    /**
-     * Add the right child to the mobile
-     *
-     * @see addChild
-     */
-    addRight(mesh, color, radius, parent_height, child_height) {
-        return this.addChild('right', mesh, color, radius, parent_height, child_height);
     }
 
     static builder(mesh, color) {
