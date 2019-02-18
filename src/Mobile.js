@@ -153,8 +153,8 @@ export class Mobile {
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
-        if (this.left) this.left.setup(modelMatrix, position, color);
-        if (this.right) this.right.setup(modelMatrix, position, color);
+        if (this.left) this.left.setup(modelMatrix, position, color, vertexNormal);
+        if (this.right) this.right.setup(modelMatrix, position, color, vertexNormal);
 
         this.rotation.start();
         this.armRotation.start();
