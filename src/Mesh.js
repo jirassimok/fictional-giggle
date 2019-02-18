@@ -1,7 +1,7 @@
 "use strict";
 
 import { Bounds } from "./Bounds.js";
-import { vec4, vec3, normalize, mult, add } from "./MV+.js";
+import { vec4, vec3, normalize, mult, rotateRad, radians as toRadians } from "./MV+.js";
 
 /**
  * A 3-dimensional vector
@@ -139,5 +139,34 @@ export class Mesh {
         let vertices = this.vertices.map(
             ([x, y, z]) => vec3(x * scale, y * scale, z * scale));
         return new Mesh(vertices, this.faces, this.faceNormals, this.vertexNormals);
+    }
+
+    /**
+     * Create a mesh like this one, rotated around the given axis by the given
+     * amount (in degrees)
+     */
+    degRotated(degrees, axis) {
+        return this.radRotated(toRadians(degrees), axis);
+    }
+
+    /**
+     * Create a mesh like this one, rotated around the given axis by the given
+     * amount (in radians)
+     */
+    radRotated(radians, axis) {
+        let rotation = rotateRad(radians, axis),
+            rotateNormal = ([x, y, z]) => {
+                let result = mult(rotation, [x, y, z, 1]);
+                result.pop();
+                return normalize(result);
+            },
+            vertices = this.vertices.map(([x, y, z]) => {
+                let result = mult(rotation, [x, y, z, 1]);
+                result.pop();
+                return result;
+            }),
+            faceNormals = this.faceNormals.map(rotateNormal),
+            vertexNormals = this.vertexNormals.map(rotateNormal);
+        return new Mesh(vertices, this.faces, faceNormals, vertexNormals);
     }
 }
