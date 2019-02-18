@@ -415,6 +415,8 @@ function setSpeedProperty(builder, property, value) {
  * Throw an error if the given {@link MobileBuilder} is incomplete
  */
 function assertBuilderComplete(builder) {
+    let hasChildren = (builder.leftChild || builder.rightChild);
+
     let prop;
     if (builder._radius === undefined) {
         prop = 'radius';
@@ -423,8 +425,26 @@ function assertBuilderComplete(builder) {
         prop = 'parent height';
     }
     // If has children, but no child height
-    else if (builder.child_height === undefined &&
-             (builder.leftChild || builder.rightChild)) {
+    else if (builder.child_height === undefined && hasChildren) {
         prop = 'child height';
+    }
+    // Checks for speed not strictly necessary
+    else if (builder.spin_speed_source === undefined) {
+        prop = 'spin speed';
+    }
+    else if (builder.arm_speed_source === undefined && hasChildren) {
+        prop = 'arm speed';
+    }
+    else {
+        try {
+            Array.from(builder.color);
+        }
+        catch (e) {
+            prop = 'circle';
+        }
+    }
+
+    if (prop) {
+        throw new Error(`MobileBuilder not ready: missing ${prop}`);
     }
 }
