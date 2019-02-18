@@ -1,7 +1,7 @@
 "use strict";
 
 import { Bounds } from "./Bounds.js";
-import { vec4, vec3, normalize, mult, rotateRad, radians as toRadians } from "./MV+.js";
+import { normalize, mult, rotateRad, radians as toRadians } from "./MV+.js";
 
 /**
  * A 3-dimensional vector
@@ -24,7 +24,7 @@ export class Mesh {
     constructor(vertices, faces, facenormals = null, vertexnormals = null) {
         this.bounds = Bounds.fromVecs(vertices);
 
-        this._vertices = Object.freeze(vertices.map(vec3));
+        this._vertices = Object.freeze(vertices.map(([x, y, z]) => [x, y, z]));
 
         this._faces = Object.freeze(faces.map(face => Array.from(face)));
 
@@ -55,7 +55,7 @@ export class Mesh {
                 z += (x1 - x2) * (y1 + y2);
             }
 
-            face_normals.push(normalize(vec3(x, y, z)));
+            face_normals.push(normalize([x, y, z]));
         }
 
         return face_normals;
@@ -63,7 +63,7 @@ export class Mesh {
 
     computeVertexNormals() {
         if (this._faces.length === 0) {
-            return Array(this._vertices.length).fill(vec3(0, 0, 0));
+            return Array(this._vertices.length).fill([0, 0, 0]);
         }
 
         // element i will be the normals of the faces adjoining vertex i
@@ -89,7 +89,7 @@ export class Mesh {
                 z += nz;
             }
 
-            vertex_normals.push(normalize(vec3(x, y, z)));
+            vertex_normals.push(normalize([x, y, z]));
         }
 
         return vertex_normals;
@@ -128,7 +128,7 @@ export class Mesh {
      */
     translated(dx, dy, dz) {
         let vertices = this.vertices.map(
-            ([x, y, z]) => vec3(x + dx, y + dy, z + dz));
+            ([x, y, z]) => [x + dx, y + dy, z + dz]);
         return new Mesh(vertices, this.faces, this.faceNormals, this.vertexNormals);
     }
 
@@ -137,7 +137,7 @@ export class Mesh {
      */
     scaled(scale) {
         let vertices = this.vertices.map(
-            ([x, y, z]) => vec3(x * scale, y * scale, z * scale));
+            ([x, y, z]) => [x * scale, y * scale, z * scale]);
         return new Mesh(vertices, this.faces, this.faceNormals, this.vertexNormals);
     }
 
