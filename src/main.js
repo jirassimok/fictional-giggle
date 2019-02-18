@@ -35,7 +35,14 @@ const shader = Object.freeze({
     position:         gl.getAttribLocation(program, "aPosition"),
     vertexNormal:     gl.getAttribLocation(program, "vertexNormal"),
 
-    color:            gl.getUniformLocation(program, "color"),
+    color:            gl.getUniformLocation(program, "baseColor"),
+    shininess:        gl.getUniformLocation(program, "shininess"),
+
+    lightPosition:    gl.getUniformLocation(program, "lightPosition"),
+
+    ambientProduct:   gl.getUniformLocation(program, "ambientProduct"),
+    diffuseProduct:   gl.getUniformLocation(program, "diffuseProduct"),
+    specularProduct:  gl.getUniformLocation(program, "specularProduct"),
 
     modelMatrix:      gl.getUniformLocation(program, "modelMatrix"),
     viewMatrix:       gl.getUniformLocation(program, "viewMatrix"),
@@ -48,13 +55,6 @@ const shader = Object.freeze({
 
 /**
  * Container for configural animation settings
- *
- * @property {number} rotation_speed    degrees of rotation per millisecond
- * @property {number} x_speed           multiplier for movement along X-axis
- * @property {number} y_speed           multiplier for movement along Y-axis
- * @property {number} z_speed           multiplier for movement along Z axis
- * @property {boolean} multi_axis_movement whether to allow movement along more
- *                                         than one axis at the same time
  */
 class Settings {
     constructor() {
@@ -191,6 +191,26 @@ function setup() {
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);
+
+    // Place light at center of mesh
+    gl.uniform3f(shader.lightPosition, 1.625, -15.5, 0);
+    gl.uniform1f(shader.shininess, 20);
+
+    let ambientIntensity = vec4(0.2, 0.2, 0.2, 1),
+        diffuseIntensity = vec4(1, 1, 1, 1),
+        specularIntensity = vec4(1, 1, 1, 1);
+
+    let ambientCoeff = vec4(1, 1, 1, 1),
+        diffuseCoeff = vec4(0.5, 0.5, 0.5, 1),
+        specularCoeff = vec4(1, 1, 1, 1);
+
+    let ambientProduct = MV.mult(ambientIntensity, ambientCoeff),
+        diffuseProduct = MV.mult(diffuseIntensity, diffuseCoeff),
+        specularProduct = MV.mult(specularIntensity, specularCoeff);
+
+    gl.uniform4fv(shader.ambientProduct, ambientProduct);
+    gl.uniform4fv(shader.diffuseProduct, diffuseProduct);
+    gl.uniform4fv(shader.specularProduct, specularProduct);
 
     mobile.setup(shader.modelMatrix,
                  shader.position,
