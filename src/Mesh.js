@@ -55,13 +55,10 @@ export class Mesh {
                 z += (x1 - x2) * (y1 + y2);
             }
 
-            for (let _ of face) {
-                face_normals.push(normalize(vec3(x, y, z)));
-            }
+            face_normals.push(normalize(vec3(x, y, z)));
         }
 
         return face_normals;
-
     }
 
     computeVertexNormals() {
@@ -70,7 +67,7 @@ export class Mesh {
         }
 
         // element i will be the normals of the faces adjoining vertex i
-        let vertexfacenormals = Array(this._vertices.length).fill([]);
+        let vertexfacenormals = Array(this._vertices.length).fill().map(() => []);
 
         for (let f of this._faces.keys()) {
             let normal = this._facenormals[f];
