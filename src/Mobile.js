@@ -46,12 +46,15 @@ function setupBuffers(attribute, data, indices) {
  * Tree-like structure representing the meshes forming a mobile
  *
  * @property {Mesh} mesh The mesh hanging from the mobile
- * @property {Float32Array} color The mesh's color
  * @property {WireMesh} arms The lines connecting the mobile
+ * @property {Float32Array} color The mesh's color
+ *
  * @property {Mobile} left The mobile handing from the left of this one
  * @property {Mobile} right The mobiles handing from the right of this one
+ *
  * @property {WebGLUniformLocation} colorLocation Location of shader color variable
  * @param {WebGLUniformLocation} modelMatrixLocation The location of the shader's model matrix
+ *
  * @property {AnimationTracker} rotation The tracker for this mobile element's rotation
  * @property {AnimationTracker} armRotation The tracker for the arms' rotation
  *
@@ -123,9 +126,10 @@ export class Mobile {
      *
      * @param {WebGLUniformLocation} modelMatrix The location of the shader's model matrix
      * @param {GLint} position The location of the shader's position attribute
-     * @param {GLint} color The location of the shader's color attribute
+     * @param {GLUniformLocation} color The location of the shader's uniform color variable
+     * @param {GLint} vertexNormal The location of the shader's vertex normal attribute
      */
-    setup(modelMatrix, position, color) {
+    setup(modelMatrix, position, color, vertexNormal) {
         // Save the color are model matrix for draw time
         this.colorLocation = color;
         this.modelMatrixLocation = modelMatrix;
@@ -134,7 +138,9 @@ export class Mobile {
         if (this.mesh.vertices.length) {
             this.mesh_vao = gl.vao.createVertexArrayOES();
             gl.vao.bindVertexArrayOES(this.mesh_vao);
+
             setupBuffers(position, this.mesh.vertices, this.mesh.faces);
+            setupBuffers(vertexNormal, this.mesh.vertexNormals, this.mesh.faces);
         }
 
         // Prepare a VAO for the strings

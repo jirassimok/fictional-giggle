@@ -192,7 +192,10 @@ function setup() {
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);
 
-    mobile.setup(shader.modelMatrix, shader.position, shader.color);
+    mobile.setup(shader.modelMatrix,
+                 shader.position,
+                 shader.color,
+                 shader.vertexNormal);
     setProjection(mobile);
 }
 
