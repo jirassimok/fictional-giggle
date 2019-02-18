@@ -18,12 +18,10 @@ export let DEFAULT_MESH_SPEED = () => 0.05,
            DEFAULT_ARM_SPEED = () => 0.05;
 
 /**
- * Array-like objects, as the first parameter to {@link Array.from}
- * @typedef {Array|TypedArray|Iterable|array-like} ArrayLike
- * This includes all iterable objects and objects with a {@code length} property
- * and indexed elements.
+ * @typedef {Object} WireMesh
+ * @property {number[][]} vertices The mesh's vertices
+ * @property {[number, number][]} indices The mesh's lines as list of index pairs
  */
-
 
 /**
  * Prepare buffers for the given {@code vec3(float32)} attribute
@@ -49,7 +47,7 @@ function setupBuffers(attribute, data, indices) {
  *
  * @property {Mesh} mesh The mesh hanging from the mobile
  * @property {Float32Array} color The mesh's color
- * @property {PlainMesh} arms The lines connecting the mobile
+ * @property {WireMesh} arms The lines connecting the mobile
  * @property {Mobile} left The mobile handing from the left of this one
  * @property {Mobile} right The mobiles handing from the right of this one
  * @property {WebGLUniformLocation} colorLocation Location of shader color variable
@@ -73,8 +71,12 @@ export class Mobile {
     }
 
     /**
+     * Constructor for mobiles. Do not call this directly; use {@link
+     * Mobile.builder} instead.
+     *
      * @param {Mesh} mesh The mesh at the top of the mobile
-     * @param {ArrayLike} color The mesh's color
+     * @param {Float32Arrray} color The mesh's color
+     * @property {WireMesh} arms The lines connecting the mobile
      * @param {number} radius The radius of the mobile's child arms
      * @param {number} parent_height The length of the upwards arm
      * @param {?number} child_height The length of the downwards arm
@@ -88,13 +90,14 @@ export class Mobile {
      * The given mesh will be attached to its parent and children by vertical
      * lines connected to its midpoint.
      */
-    constructor(mesh, color,
+    constructor(mesh, color, arms,
                 radius, parent_height, child_height,
                 mesh_speed = DEFAULT_MESH_SPEED, mesh_direction,
                 arm_speed = DEFAULT_ARM_SPEED, arm_direction,
                 left, right) {
         this.mesh = mesh;
         this.color = color;
+        this.arms = arms;
         this.radius = radius;
         this.parent_height = parent_height;
         this.child_height = child_height;
@@ -103,7 +106,7 @@ export class Mobile {
         this.right = right;
 
         this.rotation = new AnimationTracker(mesh_speed);
-        if (mesh_direction) this.rotation.scale = Math.sign(mesh_direction);
+        this.rotation.scale = Math.sign(mesh_direction);
         this.armRotation = new AnimationTracker(arm_speed);
         this.armRotation.scale = Math.sign(arm_direction);
     }
@@ -126,8 +129,6 @@ export class Mobile {
         // Save the color are model matrix for draw time
         this.colorLocation = color;
         this.modelMatrixLocation = modelMatrix;
-
-        this.addArms(); // Add strings to the mobile
 
         // Prepare a VAO for the mesh
         if (this.mesh.vertices.length) {
@@ -189,42 +190,6 @@ export class Mobile {
             this.right.draw(MV.mult(armModelMatrix, translate(this.radius, 0, 0)));
         }
     }
-
-    /**
-     * Add connecting strings to the mobile
-     */
-    addArms() {
-        let midpoint = this.mesh.bounds.midpoint;
-        let arms = [
-            // parent line
-            midpoint, vec3(mult(translate(0, this.parentHeight(), 0), vec4(midpoint))),
-            // child line
-            midpoint, vec3(mult(translate(0, -this.childHeight(), 0), vec4(midpoint))),
-            // horizontal arms
-            vec3(midpoint.x - this.radius,
-                 midpoint.y - this.childHeight(),
-                 midpoint.z),
-            vec3(midpoint.x + this.radius,
-                 midpoint.y - this.childHeight(),
-                 midpoint.z)
-        ];
-        let arm_indices = [[0, 1]];
-        if (this.left || this.right) {
-            arm_indices.push([2, 3], [4, 5]);
-        }
-
-        this.arms = Object.freeze({vertices: arms, indices: arm_indices});
-    }
-
-    /** Get parent height as measured from the center of the mesh */
-    parentHeight() {
-        return this.parent_height + this.mesh.bounds.height / 2;
-    }
-
-    /** Get child height as measured from the center of the mesh */
-    childHeight() {
-        return this.child_height + this.mesh.bounds.height / 2;
-    }
 }
 
 
@@ -279,33 +244,56 @@ class MobileBuilder {
 
     build(translate_y = 0) {
         assertBuilderComplete(this);
-        let height = Bounds.fromVecs(this.mesh.vertices).height;
+        let height = this.mesh.bounds.height,
+            full_parent_height = this.parent_height + height / 2,
+            full_child_height = this.child_height + height / 2;
 
         // Increase translation by height to parent
-        translate_y -= this.parent_height + height / 2;
+        translate_y -= full_parent_height;
 
         // Translate vertices and create mesh
-        let mesh = this.mesh.translated(0, translate_y, 0);
-        // let vertices = this.mesh.vertices
-        //     .map(([x, y, z]) => vec3(x,
-        //                              y + translate_y,
-        //                              z)),
-        //     mesh = new Mesh(vertices, this.mesh.faces);
+        let mesh = this.mesh.translated(0, translate_y, 0),
+            midpoint = mesh.bounds.midpoint;
 
         let color = Float32Array.from(this.color);
 
-        // Increase translation for children
-        translate_y -= this.child_height + height / 2;
+        let arms = {
+            vertices: [
+                midpoint, // (0)
+                // (1) Top of upwards connector
+                vec3(midpoint.x, midpoint.y + full_parent_height, midpoint.z),
+                // (2) Bottom of downwards connector
+                vec3(midpoint.x, midpoint.y - full_child_height,  midpoint.z),
+                // (3) Left end of arm
+                vec3(midpoint.x - this._radius,
+                     midpoint.y - full_child_height,
+                     midpoint.z),
+                // (4) Right end of arm
+                vec3(midpoint.x + this._radius,
+                     midpoint.y - full_child_height,
+                     midpoint.z)
+            ],
+            indices: [[0, 1]] // always connect to parent
+        };
 
+        // Increase translation for children
+        translate_y -= full_child_height;
+
+        // Add children and child connectors
         let left, right;
         if (this.leftChild) {
             left = this.leftChild.build(translate_y);
+            arms.indices.push([2, 3]);
         }
         if (this.rightChild) {
             right = this.rightChild.build(translate_y);
+            arms.indices.push([2, 4]);
+        }
+        if (this.leftChild || this.rightChild) {
+            arms.indices.push([0, 2]); // connect mesh to arms
         }
 
-        return new Mobile(mesh, color,
+        return new Mobile(mesh, color, arms,
                           this._radius, this.parent_height, this.child_height,
                           this.spin_speed_source, this.spin_direction,
                           this.arm_speed_source, this.arm_direction,
