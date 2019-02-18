@@ -27,7 +27,8 @@ void main() {
 	vec3 camera = normalize(-eyePosition);
 
 
-	vec3 lightToVertex = normalize((viewMatrix * vec4(lightPosition, 1)).xyz - eyePosition);
+	vec3 eyeLightPosition = (viewMatrix * vec4(lightPosition, 1)).xyz;
+	vec3 lightToVertex = normalize(eyeLightPosition - eyePosition);
 
 	vec3 reflection = reflect(lightToVertex, eyeNormal);
 
@@ -36,6 +37,6 @@ void main() {
 	vec4 specularLight = specularProduct * pow(max(dot(camera, reflection), 0.0), shininess);
 
 
-	finalColor = (diffuseLight + specularLight + ambientProduct) * baseColor;
+	finalColor = (diffuseLight + specularLight + ambientProduct);
 	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(aPosition, 1);
 }

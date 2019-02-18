@@ -193,14 +193,14 @@ function setup() {
     gl.cullFace(gl.BACK);
 
     // Place light at center of mesh
-    gl.uniform3f(shader.lightPosition, 1.625, -15.5, 0);
-    gl.uniform1f(shader.shininess, 20);
+    gl.uniform3f(shader.lightPosition, 10, 0, 10);
+    gl.uniform1f(shader.shininess, 100);
 
-    let ambientIntensity = vec4(0.2, 0.2, 0.2, 1),
-        diffuseIntensity = vec4(1, 1, 1, 1),
-        specularIntensity = vec4(1, 1, 1, 1);
+    let ambientIntensity = vec4(0.3, 0.3, 0.3, 1),
+        diffuseIntensity = vec4(2, 2, 2, 1),
+        specularIntensity = vec4(2, 2, 2, 1);
 
-    let ambientCoeff = vec4(1, 1, 1, 1),
+    let ambientCoeff = vec4(2, 2, 2, 2),
         diffuseCoeff = vec4(0.5, 0.5, 0.5, 1),
         specularCoeff = vec4(1, 1, 1, 1);
 
