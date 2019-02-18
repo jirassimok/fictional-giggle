@@ -250,9 +250,11 @@ class MobileBuilder {
 
     build(translate_y = 0) {
         assertBuilderComplete(this);
+
         let height = this.mesh.bounds.height,
             full_parent_height = this.parent_height + height / 2,
-            full_child_height = this.child_height + height / 2;
+            full_child_height = this.child_height + height / 2,
+            radius = this._radius ? this._radius : 0;
 
         // Increase translation by height to parent
         translate_y -= full_parent_height;
@@ -415,36 +417,40 @@ function setSpeedProperty(builder, property, value) {
  * Throw an error if the given {@link MobileBuilder} is incomplete
  */
 function assertBuilderComplete(builder) {
-    let hasChildren = (builder.leftChild || builder.rightChild);
+    let hasAnyChildren  = builder.leftChild || builder.rightChild,
+        hasBothChildren = builder.leftChild && builder.RightChild;
 
-    let prop;
-    if (builder._radius === undefined) {
-        prop = 'radius';
+    let msg;
+    if (builder._radius === undefined && hasBothChildren) {
+        msg = 'missing radius';
+    }
+    else if (builder._radius === 0 && hasBothChildren) {
+        msg = 'can not have zero radius with two children';
     }
     else if (builder.parent_height === undefined) {
-        prop = 'parent height';
+        msg = 'missing parent height';
     }
     // If has children, but no child height
-    else if (builder.child_height === undefined && hasChildren) {
-        prop = 'child height';
+    else if (builder.child_height === undefined && hasAnyChildren) {
+        msg = 'missing child height';
     }
     // Checks for speed not strictly necessary
     else if (builder.spin_speed_source === undefined) {
-        prop = 'spin speed';
+        msg = 'missing spin speed';
     }
-    else if (builder.arm_speed_source === undefined && hasChildren) {
-        prop = 'arm speed';
+    else if (builder.arm_speed_source === undefined && hasAnyChildren) {
+        msg = 'missing arm speed';
     }
     else {
         try {
             Array.from(builder.color);
         }
         catch (e) {
-            prop = 'circle';
+            msg = 'missing color';
         }
     }
 
-    if (prop) {
-        throw new Error(`MobileBuilder not ready: missing ${prop}`);
+    if (msg) {
+        throw new Error(`MobileBuilder not ready: ${msg}`);
     }
 }
