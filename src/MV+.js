@@ -374,7 +374,11 @@ export function translate(x, y, z)
 
 //----------------------------------------------------------------------------
 
-export function rotate(angle, axis)
+export function rotateDeg(angle, axis) {
+    return rotateRad(radians(angle), axis);
+}
+
+export function rotateRad(angle, axis)
 {
     if (!Array.isArray(axis)) {
         axis = [ arguments[1], arguments[2], arguments[3] ];
@@ -386,9 +390,9 @@ export function rotate(angle, axis)
     let y = v[1];
     let z = v[2];
 
-    let c = Math.cos( radians(angle) );
+    let c = Math.cos( angle );
     let omc = 1.0 - c;
-    let s = Math.sin( radians(angle) );
+    let s = Math.sin( angle );
 
     return mat4(
         vec4(x * x * omc + c, x * y * omc - z * s, x * z * omc + y * s, 0.0),
