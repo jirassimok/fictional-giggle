@@ -1,7 +1,7 @@
 "use strict";
 
 import { Bounds } from "./Bounds.js";
-import { vec4, vec3, normalize, mult } from "./MV+.js";
+import { vec4, vec3, normalize, mult, add } from "./MV+.js";
 
 /**
  * A 3-dimensional vector
@@ -16,22 +16,35 @@ import { vec4, vec3, normalize, mult } from "./MV+.js";
  * vertex list.
  *
  * The constructor takes in a list of vertices and an index array of faces.
+ *
+ * The constructor optionally takes a list of facenormals and vertexnormals,
+ * which are used without any checks.
  */
 export class Mesh {
-    constructor(vertices, faces) {
+    constructor(vertices, faces, facenormals = null, vertexnormals = null) {
         this.bounds = Bounds.fromVecs(vertices);
 
-        this._allvertices = Object.freeze(vertices.map(vec3));
+        this._vertices = Object.freeze(vertices.map(vec3));
 
         this._faces = Object.freeze(faces.map(face => Array.from(face)));
 
-        this._facenormals = [];
+        this._facenormals = (facenormals
+                             ? facenormals
+                             : Object.freeze(this.computeFaceNormals()));
 
-        for (let face of faces) {
+        this._vertexnormals = (vertexnormals
+                               ? vertexnormals
+                               : this.computeVertexNormals());
+    }
+
+    computeFaceNormals() {
+        let face_normals = [];
+
+        for (let face of this._faces) {
             // face rotated by 1 vertex
             let face2 = face.slice(1).concat(face[0]),
-                vertexpairs = face.map((_, i) => [vertices[face[i]],
-                                                  vertices[face2[i]]]);
+                vertexpairs = face.map((_, i) => [this._vertices[face[i]],
+                                                  this._vertices[face2[i]]]);
             let x = 0,
                 y = 0,
                 z = 0;
@@ -43,18 +56,53 @@ export class Mesh {
             }
 
             for (let _ of face) {
-                this._facenormals.push(normalize(vec3(x, y, z)));
+                face_normals.push(normalize(vec3(x, y, z)));
             }
         }
 
-        Object.freeze(this._facenormals);
+        return face_normals;
+
+    }
+
+    computeVertexNormals() {
+        if (this._faces.length === 0) {
+            return Array(this._vertices.length).fill(vec3(0, 0, 0));
+        }
+
+        // element i will be the normals of the faces adjoining vertex i
+        let vertexfacenormals = Array(this._vertices.length).fill([]);
+
+        for (let f of this._faces.keys()) {
+            let normal = this._facenormals[f];
+            for (let vertex of this._faces[f]) {
+                vertexfacenormals[vertex].push(normal);
+            }
+        }
+
+        let vertex_normals = [];
+
+        for (let normals of vertexfacenormals) {
+            let x = 0,
+                y = 0,
+                z = 0;
+
+            for (let [nx, ny, nz] of normals) {
+                x += nx;
+                y += ny;
+                z += nz;
+            }
+
+            vertex_normals.push(normalize(vec3(x, y, z)));
+        }
+
+        return vertex_normals;
     }
 
     /**
      * @returns {vec3[]} An array of the vertices in this mesh.
      */
     get vertices() {
-        return this._allvertices;
+        return this._vertices;
     }
 
     /**
@@ -67,8 +115,15 @@ export class Mesh {
     /**
      * @returns {vec3[]} an array of normals for the faces
      */
-    get facenormals() {
+    get faceNormals() {
         return this._facenormals;
+    }
+
+    /**
+     * @returns {vec3[]} an array of normals for the vertices
+     */
+    get vertexNormals() {
+        return this._vertexnormals;
     }
 
     /**
@@ -77,7 +132,7 @@ export class Mesh {
     translated(dx, dy, dz) {
         let vertices = this.vertices.map(
             ([x, y, z]) => vec3(x + dx, y + dy, z + dz));
-        return new Mesh(vertices, this.faces);
+        return new Mesh(vertices, this.faces, this.faceNormals, this.vertexNormals);
     }
 
     /**
@@ -86,6 +141,6 @@ export class Mesh {
     scaled(scale) {
         let vertices = this.vertices.map(
             ([x, y, z]) => vec3(x * scale, y * scale, z * scale));
-        return new Mesh(vertices, this.faces);
+        return new Mesh(vertices, this.faces, this.faceNormals, this.vertexNormals);
     }
 }
