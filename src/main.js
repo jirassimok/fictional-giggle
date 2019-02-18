@@ -2,6 +2,8 @@
 
 import "./vecarray.js";
 import { gl, X_FIELD_OF_VIEW, ASPECT_RATIO, PERSPECTIVE_NEAR_PLANE, PERSPECTIVE_FAR_PLANE } from "./setup.js";
+import VERTEX_SHADER_SOURCE from "./shader.vert";
+import FRAGMENT_SHADER_SOURCE from "./shader.frag";
 
 import { AnimationState } from "./Animations.js";
 import { Bounds } from "./Bounds.js";
@@ -14,8 +16,8 @@ import { mobile } from "./model.js";
 import * as MV from "./MV+.js";
 
 const program = setupProgram(gl,
-    document.querySelector("#vertexShader").text,
-    document.querySelector("#fragmentShader").text);
+                             VERTEX_SHADER_SOURCE,
+                             FRAGMENT_SHADER_SOURCE);
 if (program === null) {
     throw new Error("Failed to set up program");
 }

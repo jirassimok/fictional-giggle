@@ -5,29 +5,6 @@
         <title>jikomissar</title>
 
         <link rel="stylesheet" type="text/css" href="/styles.css">
-
-        <script id="vertexShader" type="x-shader/x-vertex">
-         attribute vec3 aPosition;
-         attribute vec3 vertexNormal;
-
-         uniform mat4 projectionMatrix;
-         uniform mat4 viewMatrix;
-         uniform mat4 modelMatrix;
-
-         void main() {
-             gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(aPosition, 1);
-         }
-        </script>
-
-        <script id="fragmentShader" type="x-shader/x-fragment">
-         precision mediump float;
-         uniform vec4 color;
-
-         void main()
-         {
-             gl_FragColor = color;
-         }
-        </script>
     </head>
     <body>
         <div id="errorMessage"></div>
