@@ -229,15 +229,6 @@ export class Mobile {
 
 
 /**
- * Get a list of all vertices in a mobile, not transformed
- */
-function mobileVertices(mobile) {
-    return mobile.mesh.vertices.concat(
-        mobile.left ? mobileVertices(mobile.left) : [],
-        mobile.right ? mobileVertices(mobile.right) : []);
-}
-
-/**
  * Get all vertices in a mobile and its children, positioned correctly
  */
 function allVertices(mobile, radius_acc = 0) {
