@@ -1,13 +1,24 @@
+
+struct Light {
+	vec3 position;
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+};
+
+struct Material {
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+	float shininess;
+};
+
 attribute vec3 aPosition;
 attribute vec3 vertexNormal;
 
-uniform vec4 baseColor;
-uniform float shininess;
+uniform Material material;
 
-uniform vec3 lightPosition;
-uniform vec4 ambientProduct;
-uniform vec4 diffuseProduct;
-uniform vec4 specularProduct;
+uniform Light light;
 
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
@@ -27,16 +38,18 @@ void main() {
 	vec3 camera = normalize(-eyePosition);
 
 
-	vec3 eyeLightPosition = (viewMatrix * vec4(lightPosition, 1)).xyz;
+	vec3 eyeLightPosition = (viewMatrix * vec4(light.position, 1)).xyz;
 	vec3 lightToVertex = normalize(eyeLightPosition - eyePosition);
 
 	vec3 reflection = reflect(lightToVertex, eyeNormal);
 
-	vec4 diffuseLight = diffuseProduct * dot(lightToVertex, eyeNormal);
+	vec3 diffuseLight = light.diffuse * material.diffuse * dot(lightToVertex, eyeNormal);
 
-	vec4 specularLight = specularProduct * pow(max(dot(camera, reflection), 0.0), shininess);
+	vec3 specularLight = (light.specular * material.specular
+						  * pow(max(dot(camera, reflection), 0.0), material.shininess));
 
+	vec3 ambientLight = light.ambient * material.ambient;
 
-	finalColor = (diffuseLight + specularLight + ambientProduct);
+	finalColor = vec4(diffuseLight + specularLight + ambientLight, 1);
 	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(aPosition, 1);
 }
