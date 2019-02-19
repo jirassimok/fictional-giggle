@@ -8,6 +8,11 @@ import { normalize, mult, rotateRad, radians as toRadians } from "./MV+.js";
  * @typedef {number[][]} vec3
  */
 
+/*
+ * Functions to copy 3-vectors
+ */
+const copyVector = ([x, y, z]) => Object.freeze([x, y, z]);
+
 /**
  * Represents a mesh of faces
  *
@@ -24,17 +29,31 @@ export class Mesh {
     constructor(vertices, faces, facenormals = null, vertexnormals = null) {
         this.bounds = Bounds.fromVecs(vertices);
 
-        this.vertices = Object.freeze(vertices.map(([x, y, z]) => [x, y, z]));
+        this.vertices = Object.freeze(vertices.map(copyVector));
 
         this.faces = Object.freeze(faces.map(face => Array.from(face)));
 
-        this.faceNormals = (facenormals
-                            ? facenormals
-                            : Object.freeze(this.computeFaceNormals()));
+        this.faceNormals = Object.freeze(facenormals
+                                         ? facenormals.map(copyVector)
+                                         : Object.freeze(this.computeFaceNormals()));
 
-        this.vertexNormals = (vertexnormals
-                              ? vertexnormals
-                              : this.computeVertexNormals());
+        this.vertexNormals = Object.freeze(vertexnormals
+                                           ? vertexnormals.map(copyVector)
+                                           : this.computeVertexNormals());
+    }
+
+    /**
+     * Create a mesh for a regular polyhedron centered at 0.
+     *
+     * The vertex normals are just the normalized vertices.
+     */
+    static unitPoly(vertices, faces) {
+        return new Mesh(
+            vertices,
+            faces,
+            undefined,
+            vertices
+        );
     }
 
     computeFaceNormals() {
