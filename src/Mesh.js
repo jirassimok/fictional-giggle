@@ -24,27 +24,27 @@ export class Mesh {
     constructor(vertices, faces, facenormals = null, vertexnormals = null) {
         this.bounds = Bounds.fromVecs(vertices);
 
-        this._vertices = Object.freeze(vertices.map(([x, y, z]) => [x, y, z]));
+        this.vertices = Object.freeze(vertices.map(([x, y, z]) => [x, y, z]));
 
-        this._faces = Object.freeze(faces.map(face => Array.from(face)));
+        this.faces = Object.freeze(faces.map(face => Array.from(face)));
 
-        this._facenormals = (facenormals
-                             ? facenormals
-                             : Object.freeze(this.computeFaceNormals()));
+        this.faceNormals = (facenormals
+                            ? facenormals
+                            : Object.freeze(this.computeFaceNormals()));
 
-        this._vertexnormals = (vertexnormals
-                               ? vertexnormals
-                               : this.computeVertexNormals());
+        this.vertexNormals = (vertexnormals
+                              ? vertexnormals
+                              : this.computeVertexNormals());
     }
 
     computeFaceNormals() {
-        let face_normals = [];
+        let faceNormals = [];
 
-        for (let face of this._faces) {
+        for (let face of this.faces) {
             // face rotated by 1 vertex
             let face2 = face.slice(1).concat(face[0]),
-                vertexpairs = face.map((_, i) => [this._vertices[face[i]],
-                                                  this._vertices[face2[i]]]);
+                vertexpairs = face.map((_, i) => [this.vertices[face[i]],
+                                                  this.vertices[face2[i]]]);
             let x = 0,
                 y = 0,
                 z = 0;
@@ -55,30 +55,30 @@ export class Mesh {
                 z += (x1 - x2) * (y1 + y2);
             }
 
-            face_normals.push(normalize([x, y, z]));
+            faceNormals.push(normalize([x, y, z]));
         }
 
-        return face_normals;
+        return faceNormals;
     }
 
     computeVertexNormals() {
-        if (this._faces.length === 0) {
-            return Array(this._vertices.length).fill([0, 0, 0]);
+        if (this.faces.length === 0) {
+            return Array(this.vertices.length).fill([0, 0, 0]);
         }
 
         // element i will be the normals of the faces adjoining vertex i
-        let vertexfacenormals = Array(this._vertices.length).fill().map(() => []);
+        let vertexFaceNormals = Array(this.vertices.length).fill().map(() => []);
 
-        for (let f of this._faces.keys()) {
-            let normal = this._facenormals[f];
-            for (let vertex of this._faces[f]) {
-                vertexfacenormals[vertex].push(normal);
+        for (let f of this.faces.keys()) {
+            let normal = this.faceNormals[f];
+            for (let vertex of this.faces[f]) {
+                vertexFaceNormals[vertex].push(normal);
             }
         }
 
-        let vertex_normals = [];
+        let vertexNormals = [];
 
-        for (let normals of vertexfacenormals) {
+        for (let normals of vertexFaceNormals) {
             let x = 0,
                 y = 0,
                 z = 0;
@@ -89,38 +89,10 @@ export class Mesh {
                 z += nz;
             }
 
-            vertex_normals.push(normalize([x, y, z]));
+            vertexNormals.push(normalize([x, y, z]));
         }
 
-        return vertex_normals;
-    }
-
-    /**
-     * @returns {vec3[]} An array of the vertices in this mesh.
-     */
-    get vertices() {
-        return this._vertices;
-    }
-
-    /**
-     * @returns {number[][]} Index array of faces
-     */
-    get faces() {
-        return this._faces;
-    }
-
-    /**
-     * @returns {vec3[]} an array of normals for the faces
-     */
-    get faceNormals() {
-        return this._facenormals;
-    }
-
-    /**
-     * @returns {vec3[]} an array of normals for the vertices
-     */
-    get vertexNormals() {
-        return this._vertexnormals;
+        return vertexNormals;
     }
 
     /**
