@@ -96,12 +96,16 @@ export class Mobile {
      * @param {number} arm_speed The speed of the arms' rotation
      * @param {Mobile} left The element hanging from the left of the mobile
      * @param {Mobile} right The element hanging from the right of the mobile
+     * @param {number[][]} model_matrix A default matrix to apply to the mobile
+     *
+     * The model matrix will only apply to the root of a drawn mobile.
      *
      * The given mesh will be attached to its parent and children by vertical
      * lines connected to its midpoint.
      */
     constructor(mesh, material, arms,
                 radius, parent_height, child_height,
+                model_matrix = MV.mat4(),
                 mesh_speed = DEFAULT_MESH_SPEED, mesh_direction,
                 arm_speed = DEFAULT_ARM_SPEED, arm_direction,
                 left, right) {
@@ -111,6 +115,7 @@ export class Mobile {
         this.radius = radius;
         this.parent_height = parent_height;
         this.child_height = child_height;
+        this.model_matrix = model_matrix;
 
         this.left = left;
         this.right = right;
@@ -175,7 +180,7 @@ export class Mobile {
     /**
      * Draw the mobile
      */
-    draw(modelMatrix = MV.mat4(), root = true) {
+    draw(modelMatrix = this.model_matrix, root = true) {
         // Apply the mesh's rotation
         let meshModelMatrix = MV.mult(modelMatrix, MV.rotateY(this.rotation.position));
         gl.uniformMatrix4fv(this.modelMatrixLocation, false, MV.flatten(meshModelMatrix));
@@ -226,14 +231,17 @@ export class Mobile {
 /**
  * Get all vertices in a mobile and its children, positioned correctly
  */
-function allVertices(mobile, radius_acc = 0) {
+function allVertices(mobile, transform_acc = MV.mat4(), parent_radius = 0) {
     if (!mobile) {
         return [];
     }
-    let mesh = mobile.mesh.translated(radius_acc, 0, 0);
+
+    let transform = mult(transform_acc, mobile.model_matrix, translate(parent_radius, 0, 0)),
+        mesh = mobile.mesh.transformed(transform);
+
     return mesh.vertices.concat(
-        allVertices(mobile.left, radius_acc - mobile.radius),
-        allVertices(mobile.right, radius_acc + mobile.radius)
+        allVertices(mobile.left,  transform, -mobile.radius),
+        allVertices(mobile.right, transform, +mobile.radius)
     );
 }
 
@@ -250,6 +258,7 @@ class MobileBuilder {
             throw new Error("MobileBuilder only accepts meshes");
         }
         this.mesh = mesh;
+        this.hangPoint = [0, 0, 0];
 
         this.material = Object.seal({
             ambient: undefined,
@@ -344,11 +353,28 @@ class MobileBuilder {
             arms.indices.push([0, 2]); // connect mesh to arms
         }
 
+        let model_matrix = translate(this.hangPoint.x,
+                                     this.hangPoint.y,
+                                     this.hangPoint.z);
+
         return new Mobile(mesh, material, arms,
                           this._radius, this.parent_height, this.child_height,
+                          model_matrix,
                           this.spin_speed_source, this.spin_direction,
                           this.arm_speed_source, this.arm_direction,
                           left, right);
+    }
+
+    /**
+     * Set the coordinate from which the mobile will hangs
+     */
+    hangingFrom([x, y, z]) {
+        if (this._parent) {
+            console.log(this._parent);
+            throw new Error("Can not hang a non-root mobile from a point");
+        }
+        this.hangPoint = [x, y, z];
+        return this;
     }
 
     /**
