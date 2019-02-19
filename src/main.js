@@ -25,11 +25,6 @@ if (program === null) {
 gl.useProgram(program);
 
 
-const buffers = Object.freeze({
-    position: gl.createBuffer(), // vertices
-    normal: gl.createBuffer(),   // normal vectors
-});
-
 // Set up the shader variables
 const shader = Object.freeze({
     position:         gl.getAttribLocation(program, "aPosition"),
@@ -100,14 +95,6 @@ class Settings {
  */
 const settings = new Settings();
 
-/**
- * Global animation state
- *
- * @see AnimationState
- */
-const animationState = new AnimationState(settings);
-
-
 
 //// Canvas/GL/Mesh preparation functions
 
@@ -158,38 +145,9 @@ function setProjection(mobile) {
                         MV.flatten(viewMatrix));
 }
 
-
-
 /**
- * Prepare webgl and the animations for a new mesh
+ * Prepare scene for drawing
  */
-function animateMesh(mesh) {
-    animationState.reset();
-    drawMesh(mesh);
-}
-
-/**
- * Draw and animate the shape specified by the arguments
- * @param {Mesh} mesh
- */
-function drawMesh(mesh) {
-    let bounds = mesh.bounds;
-
-    let rotation = MV.rotateX(animationState.xrotation.position);
-
-    let model = rotation;
-
-    gl.uniformMatrix4fv(shader.modelMatrix, false, MV.flatten(model));
-
-    clearCanvas();
-
-    for (let [size, offset] of mesh.faceoffsets) {
-        gl.drawArrays(gl.LINE_LOOP, offset, size);
-    }
-
-    animationState.animate(() => drawMesh(mesh));
-}
-
 function setup() {
     gl.clearColor(0, 0, 0, 1);
     gl.clearDepth(1);
