@@ -258,15 +258,17 @@ class MobileBuilder {
         });
 
         if (parent) {
+            this._parent = parent;
+
             this._radius = parent._radius / 2;
 
             this._shininess = parent._shininess;
             this.parent_height = parent.parent_height;
             this.child_height = parent.child_height;
+
             this.spin_speed_source = parent.spin_speed_source;
             this.arm_speed_source = parent.arm_speed_source;
             this.spin_direction = parent.spin_direction;
-
             this.arm_direction = -parent.arm_direction;
         }
         else {
@@ -466,8 +468,8 @@ class MobileBuilder {
      * Get the parent mobile
      */
     parent() {
-        if (this.parent) {
-            return this.parent;
+        if (this._parent) {
+            return this._parent;
         }
         else {
             throw new Error("Can not get parent of root mobile");
