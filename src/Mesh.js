@@ -42,14 +42,18 @@ export class Mesh {
                                            : this.computeVertexNormals());
 
         if (duplicate && faces.length !== 0) {
-            this.faces = [];
-
             this.vertices = faces.flatMap(
-                (face, i) => {
-                    this.faces.push([3*i, 3*i + 1, 3*i + 2]);
-                    return face.map(v => vertices[v]);
-                });
-            let f = this.faces;
+                face => face.map(
+                    v => vertices[v]));
+
+            this.faces = [];
+            let offset = 0;
+            for (let size of faces.map(face => face.length)) {
+                this.faces.push([...Array(size)]
+                                .map((_, i) => offset + i));
+                offset += size;
+            }
+
 
             this.vertexNormals = faces.flatMap(
                 face => face.map(
