@@ -212,10 +212,7 @@ function setup() {
     gl.uniform4fv(shader.diffuseProduct, diffuseProduct);
     gl.uniform4fv(shader.specularProduct, specularProduct);
 
-    mobile.setup(shader.modelMatrix,
-                 shader.position,
-                 shader.color,
-                 shader.vertexNormal);
+    mobile.setup(shader);
     setProjection(mobile);
 }
 

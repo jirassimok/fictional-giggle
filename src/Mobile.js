@@ -124,37 +124,38 @@ export class Mobile {
     /**
      * Set up the vertex array objects for the mobile and its children
      *
-     * @param {WebGLUniformLocation} modelMatrix The location of the shader's model matrix
-     * @param {GLint} position The location of the shader's position attribute
-     * @param {GLUniformLocation} color The location of the shader's uniform color variable
-     * @param {GLint} vertexNormal The location of the shader's vertex normal attribute
+     * @param {Object} locations The locations of various shader variables
+     * @param {WebGLUniformLocation} locations.modelMatrix The uniform model matrix
+     * @param {GLint} locations.position Vertex position attribute
+     * @param {GLUniformLocation} locations.color Uniform color variable
+     * @param {GLint} locations.vertexNormal Vertex normal attribute
      */
-    setup(modelMatrix, position, color, vertexNormal) {
+    setup(locations) {
         // Save the color are model matrix for draw time
-        this.colorLocation = color;
-        this.modelMatrixLocation = modelMatrix;
+        this.colorLocation = locations.color;
+        this.modelMatrixLocation = locations.modelMatrix;
 
         // Prepare a VAO for the mesh
         if (this.mesh.vertices.length) {
             this.mesh_vao = gl.vao.createVertexArrayOES();
             gl.vao.bindVertexArrayOES(this.mesh_vao);
 
-            setupBuffers(position, this.mesh.vertices, this.mesh.faces);
-            setupBuffers(vertexNormal, this.mesh.vertexNormals, this.mesh.faces);
+            setupBuffers(locations.position, this.mesh.vertices, this.mesh.faces);
+            setupBuffers(locations.vertexNormal, this.mesh.vertexNormals, this.mesh.faces);
         }
 
         // Prepare a VAO for the strings
         this.arm_vao = gl.vao.createVertexArrayOES();
         gl.vao.bindVertexArrayOES(this.arm_vao);
-        setupBuffers(position, this.arms.vertices, this.arms.indices);
+        setupBuffers(locations.position, this.arms.vertices, this.arms.indices);
 
         // Unbind buffers
         gl.vao.bindVertexArrayOES(null);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
-        if (this.left) this.left.setup(modelMatrix, position, color, vertexNormal);
-        if (this.right) this.right.setup(modelMatrix, position, color, vertexNormal);
+        if (this.left) this.left.setup(locations);
+        if (this.right) this.right.setup(locations);
 
         this.rotation.start();
         this.armRotation.start();
