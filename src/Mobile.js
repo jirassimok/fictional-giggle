@@ -47,7 +47,7 @@ function setupBuffers(attribute, data, indices) {
  *
  * @property {Mesh} mesh The mesh hanging from the mobile
  * @property {WireMesh} arms The lines connecting the mobile
- * @property {Float32Array} color The mesh's color
+ * @property {Material} material The mesh's material properties
  *
  * @property {Mobile} left The mobile handing from the left of this one
  * @property {Mobile} right The mobiles handing from the right of this one
@@ -67,10 +67,9 @@ export class Mobile {
     /**
      * Get a {@link MobileBuilder} for a mobile with the given mesh and color
      * @param {Mesh} mesh
-     * @param {number[]} color
      */
-    static builder(mesh, color) {
-        return new MobileBuilder(mesh, color);
+    static builder(mesh) {
+        return new MobileBuilder(mesh);
     }
 
     /**
@@ -78,7 +77,7 @@ export class Mobile {
      * Mobile.builder} instead.
      *
      * @param {Mesh} mesh The mesh at the top of the mobile
-     * @param {Float32Arrray} color The mesh's color
+     * @param {Material} material The mesh's material properties
      * @property {WireMesh} arms The lines connecting the mobile
      * @param {number} radius The radius of the mobile's child arms
      * @param {number} parent_height The length of the upwards arm
@@ -93,13 +92,13 @@ export class Mobile {
      * The given mesh will be attached to its parent and children by vertical
      * lines connected to its midpoint.
      */
-    constructor(mesh, color, arms,
+    constructor(mesh, material, arms,
                 radius, parent_height, child_height,
                 mesh_speed = DEFAULT_MESH_SPEED, mesh_direction,
                 arm_speed = DEFAULT_ARM_SPEED, arm_direction,
                 left, right) {
         this.mesh = mesh;
-        this.color = color;
+        this.material = material;
         this.arms = arms;
         this.radius = radius;
         this.parent_height = parent_height;
@@ -127,12 +126,16 @@ export class Mobile {
      * @param {Object} locations The locations of various shader variables
      * @param {WebGLUniformLocation} locations.modelMatrix The uniform model matrix
      * @param {GLint} locations.position Vertex position attribute
-     * @param {GLUniformLocation} locations.color Uniform color variable
+     * @param {Object} locations.material
+     * @param {GLUniformLocation} locations.material.ambient Ambient coefficient
+     * @param {GLUniformLocation} locations.material.diffuse Diffuse coefficient
+     * @param {GLUniformLocation} locations.material.specular Specular coefficient
+     * @param {GLUniformLocation} locations.material.shininess Material shininess
      * @param {GLint} locations.vertexNormal Vertex normal attribute
      */
     setup(locations) {
         // Save the color are model matrix for draw time
-        this.colorLocation = locations.color;
+        this.materialLocations = locations.material;
         this.modelMatrixLocation = locations.modelMatrix;
 
         // Prepare a VAO for the mesh
@@ -174,7 +177,10 @@ export class Mobile {
         // Draw mesh
         if (this.mesh.vertices.length) {
             // Set color
-            gl.uniform4fv(this.colorLocation, this.color);
+            gl.uniform3fv(this.materialLocations.ambient, this.material.ambient);
+            gl.uniform3fv(this.materialLocations.diffuse, this.material.diffuse);
+            gl.uniform3fv(this.materialLocations.specular, this.material.specular);
+            gl.uniform1f(this.materialLocations.shininess, this.material.shininess);
 
             gl.vao.bindVertexArrayOES(this.mesh_vao);
             gl.drawElements(gl.TRIANGLES, this.mesh.faces.flat(1).length, gl.UNSIGNED_BYTE, 0);
@@ -220,19 +226,24 @@ class MobileBuilder {
      * radius.
      *
      * @param {Mesh} mesh
-     * @param {number[]} color
      * @param {?MobileBuilder} parent
      */
-    constructor(mesh, color, parent = null) {
+    constructor(mesh, parent = null) {
         if (!(mesh instanceof Mesh)) {
             throw new Error("MobileBuilder only accepts meshes");
         }
         this.mesh = mesh;
-        this.color = color;
+
+        this.material = Object.seal({
+            ambient: undefined,
+            diffuse: undefined,
+            specular: undefined,
+        });
 
         if (parent) {
             this._radius = parent._radius / 2;
 
+            this._shininess = parent._shininess;
             this.parent_height = parent.parent_height;
             this.child_height = parent.child_height;
             this.spin_speed_source = parent.spin_speed_source;
@@ -264,7 +275,19 @@ class MobileBuilder {
         let mesh = this.mesh.translated(0, translate_y, 0),
             midpoint = mesh.bounds.midpoint;
 
-        let color = Float32Array.from(this.color);
+        // Set material with defaults
+        let material = {
+            ambient: Float32Array.from(this.material.ambient),
+            diffuse: Float32Array.from(this.material.diffuse),
+            specular: Float32Array.from(this.material.specular)
+        };
+        while (Object.values(material).some(k => k === undefined)) {
+            if (!material.ambient) material.ambient = material.diffuse;
+            if (!material.diffuse) material.diffuse = material.ambient;
+            if (!material.specular) material.specular = material.diffuse;
+        }
+        material.shininess = this._shininess;
+        Object.freeze(material);
 
         let arms = {
             vertices: [
@@ -302,11 +325,58 @@ class MobileBuilder {
             arms.indices.push([0, 2]); // connect mesh to arms
         }
 
-        return new Mobile(mesh, color, arms,
+        return new Mobile(mesh, material, arms,
                           this._radius, this.parent_height, this.child_height,
                           this.spin_speed_source, this.spin_direction,
                           this.arm_speed_source, this.arm_direction,
                           left, right);
+    }
+
+    /**
+     * Set default colors
+     *
+     * Overridden by {@link ambient}, {@link diffuse}, and {@link specular}
+     */
+    color(color) {
+        if (!this.material.ambient) this.material.ambient = color;
+        if (!this.material.diffuse) this.material.diffuse = color;
+        if (!this.material.specular) this.material.specular = color;
+        return this;
+    }
+
+    /**
+     * Set ambient coefficients
+     *
+     * If not set, defaults to diffuse color
+     */
+    ambient(color) {
+        this.material.ambient = color;
+        return this;
+    }
+
+    /**
+     * Set diffuse coefficients
+     *
+     * If not set, defaults to ambient color
+     */
+    diffuse(color) {
+        this.material.diffuse = color;
+        return this;
+    }
+
+    /**
+     * Set diffuse coefficients
+     *
+     * If not set, defaults to diffuse color
+     */
+    specular(color) {
+        this.material.specular = color;
+        return this;
+    }
+
+    shininess(value) {
+        this._shininess = value;
+        return this;
     }
 
     radius(r) {
@@ -347,17 +417,16 @@ class MobileBuilder {
     }
 
     /**
-     * @param {number[]} color
      * @param {Mesh} mesh
      * @returns {MobileBuiler} The left child mobile builder
      *
-     * The child inherits radius, color, heights, speeds, and spin direction
+     * The child inherits radius, heights, shininess, speeds, and spin direction
      * from its parent.
      *
      * The child has half its parent's radius, and the opposite arm direction.
      */
-    left(mesh, color) {
-        this.leftChild = new MobileBuilder(mesh, color, this);
+    left(mesh) {
+        this.leftChild = new MobileBuilder(mesh, this);
         return this.leftChild;
     }
 
@@ -366,13 +435,13 @@ class MobileBuilder {
      * @param {Mesh} mesh
      * @returns {MobileBuilder} The right child mobile builder
      *
-     * The child inherits radius, heights, speeds, and spin direction from its
-     * parent.
+     * The child inherits radius, heights, shininess, speeds, and spin direction
+     * from its parent.
      *
      * The child has half its parent's radius, and the opposite arm direction.
      */
-    right(mesh, color) {
-        this.rightChild = new MobileBuilder(mesh, color, this);
+    right(mesh) {
+        this.rightChild = new MobileBuilder(mesh, this);
         return this.rightChild;
     }
 
@@ -389,13 +458,15 @@ class MobileBuilder {
     }
 
     emptyLeft() {
-        return this.left(new Mesh([vec3(0, 0, 0)], []), [0,0,0,0])
+        return this.left(new Mesh([vec3(0, 0, 0)], []))
+            .color([0,0,0])
             .parentHeight(0)
             .spinSpeed(0);
     }
 
     emptyRight() {
-        return this.right(new Mesh([vec3(0, 0, 0)], []), [0,0,0,0])
+        return this.right(new Mesh([vec3(0, 0, 0)], []))
+            .color([0,0,0])
             .parentHeight(0)
             .spinSpeed(0);
     }
@@ -441,6 +512,12 @@ function assertBuilderComplete(builder) {
     }
     else if (builder.arm_speed_source === undefined && hasAnyChildren) {
         msg = 'missing arm speed';
+    }
+    else if (Object.values(builder.material).some(k => k === undefined)) {
+        msg = 'missing colors';
+    }
+    else if (builder._shininess === undefined) {
+        msg = 'missing shininess';
     }
     else {
         try {
