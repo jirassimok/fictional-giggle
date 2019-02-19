@@ -137,11 +137,13 @@ export class Mesh {
      * Create a mesh like this one, transformed by the given matrix
      */
     transformed(transformation) {
-        let vertices = this.vertices.map(
-            ([x, y, z]) => mult(transformation, [x, y, z, 1]).slice(0, 3)),
-            rotateNormal = ([x, y, z]) => mult(transformation, [x, y, z, 1]).slice(0, 3),
+        let rotateVertex = ([x, y, z]) => mult(transformation, [x, y, z, 1]).slice(0, 3),
+            rotateNormal = ([x, y, z]) => normalize(mult(transformation, [x, y, z, 1]).slice(0, 3));
+
+        let vertices = this.vertices.map(rotateVertex),
             faceNormals = this.faceNormals.map(rotateNormal),
             vertexNormals = this.vertexNormals.map(rotateNormal);
+
         return new Mesh(vertices, this.faces, faceNormals, vertexNormals, false);
     }
 
@@ -177,18 +179,13 @@ export class Mesh {
      */
     radRotated(radians, axis) {
         let rotation = rotateRad(radians, axis),
-            rotateNormal = ([x, y, z]) => {
-                let result = mult(rotation, [x, y, z, 1]);
-                result.pop();
-                return normalize(result);
-            },
-            vertices = this.vertices.map(([x, y, z]) => {
-                let result = mult(rotation, [x, y, z, 1]);
-                result.pop();
-                return result;
-            }),
+            rotateVertex = ([x, y, z]) => mult(rotation, [x, y, z, 1]).slice(0, 3),
+            rotateNormal = ([x, y, z]) => normalize(mult(rotation, [x, y, z, 1]).slice(0, 3));
+
+        let vertices = this.vertices.map(rotateVertex),
             faceNormals = this.faceNormals.map(rotateNormal),
             vertexNormals = this.vertexNormals.map(rotateNormal);
+
         return new Mesh(vertices, this.faces, faceNormals, vertexNormals, false);
     }
 }
