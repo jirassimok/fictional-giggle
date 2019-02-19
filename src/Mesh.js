@@ -26,7 +26,7 @@ const copyVector = ([x, y, z]) => Object.freeze([x, y, z]);
  * which are used without any checks.
  */
 export class Mesh {
-    constructor(vertices, faces, facenormals = null, vertexnormals = null) {
+    constructor(vertices, faces, facenormals = null, vertexnormals = null, duplicate = true) {
         this.bounds = Bounds.fromVecs(vertices);
 
         this.vertices = Object.freeze(vertices.map(copyVector));
@@ -40,6 +40,21 @@ export class Mesh {
         this.vertexNormals = Object.freeze(vertexnormals
                                            ? vertexnormals.map(copyVector)
                                            : this.computeVertexNormals());
+
+        if (duplicate && faces.length !== 0) {
+            this.faces = [];
+
+            this.vertices = faces.flatMap(
+                (face, i) => {
+                    this.faces.push([3*i, 3*i + 1, 3*i + 2]);
+                    return face.map(v => vertices[v]);
+                });
+            let f = this.faces;
+
+            this.vertexNormals = faces.flatMap(
+                face => face.map(
+                    vn => this.vertexNormals[vn]));
+        }
     }
 
     /**
@@ -120,7 +135,7 @@ export class Mesh {
     translated(dx, dy, dz) {
         let vertices = this.vertices.map(
             ([x, y, z]) => [x + dx, y + dy, z + dz]);
-        return new Mesh(vertices, this.faces, this.faceNormals, this.vertexNormals);
+        return new Mesh(vertices, this.faces, this.faceNormals, this.vertexNormals, false);
     }
 
     /**
@@ -129,7 +144,7 @@ export class Mesh {
     scaled(scale) {
         let vertices = this.vertices.map(
             ([x, y, z]) => [x * scale, y * scale, z * scale]);
-        return new Mesh(vertices, this.faces, this.faceNormals, this.vertexNormals);
+        return new Mesh(vertices, this.faces, this.faceNormals, this.vertexNormals, false);
     }
 
     /**
@@ -158,6 +173,6 @@ export class Mesh {
             }),
             faceNormals = this.faceNormals.map(rotateNormal),
             vertexNormals = this.vertexNormals.map(rotateNormal);
-        return new Mesh(vertices, this.faces, faceNormals, vertexNormals);
+        return new Mesh(vertices, this.faces, faceNormals, vertexNormals, false);
     }
 }
