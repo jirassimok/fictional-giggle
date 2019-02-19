@@ -85,38 +85,3 @@ let root = Mobile.builder(cube)
     .spinSpeed(0.05);
 
 export const mobile = root.build();
-
-function merge(...meshes) {
-    return meshes.reduce(merge2);
-}
-/** Join two meshes */
-function merge2(mesh1, mesh2) {
-    return new Mesh(
-        mesh1.vertices.concat(mesh2.vertices),
-        mesh1.faces.concat(mesh2.faces.map(face => face.map(i => i + mesh1.vertices.length)))
-    );
-}
-
-function rotateY(angle, mesh) {
-    let rotation = MV.rotateY(angle);
-    return new Mesh(
-        mesh.vertices.map(v => vec3(MV.mult(rotation, MV.vec4(v)))),
-        mesh.faces
-    );
-}
-
-function rotateX(angle, mesh) {
-    let rotation = MV.rotateX(angle);
-    return new Mesh(
-        mesh.vertices.map(v => vec3(MV.mult(rotation, MV.vec4(v)))),
-        mesh.faces
-    );
-}
-
-function rotate(angle, axis, mesh) {
-    let rotation = MV.rotate(angle, axis);
-    return new Mesh(
-        mesh.vertices.map(v => vec3(MV.mult(rotation, MV.vec4(v)))),
-        mesh.faces
-    );
-}
