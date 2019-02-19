@@ -1,4 +1,21 @@
-// This file necessary to resolve a circular dependency
+// This file is necessary to resolve a circular dependency
+
+/**
+ * The material lighting coefficients and shininess for a material
+ * @typedef {Object} MaterialColor
+ * @property {Float32Array} ambient
+ * @property {Float32Array} diffuse
+ * @property {Float32Array} specular
+ * @property {number} shininess
+ */
+
+/**
+ * The intensities of a light
+ * @typedef {Object} Light
+ * @property {Float32Array} ambient
+ * @property {Float32Array} diffuse
+ * @property {Float32Array} specular
+ */
 
 //// Constants
 
