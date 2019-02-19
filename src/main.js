@@ -167,14 +167,14 @@ function setup() {
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);
 
-    // Place light at center of mesh
+    // Send information about the light to the shaders
     gl.uniform3fv(shader.light.position, light.position);
-
     gl.uniform3fv(shader.light.ambient, light.ambient);
     gl.uniform3fv(shader.light.diffuse, light.diffuse);
     gl.uniform3fv(shader.light.specular, light.specular);
 
     mobile.setup(shader);
+
     setProjection(mobile);
 }
 
