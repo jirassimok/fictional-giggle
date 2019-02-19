@@ -134,6 +134,18 @@ export class Mesh {
     }
 
     /**
+     * Create a mesh like this one, transformed by the given matrix
+     */
+    transformed(transformation) {
+        let vertices = this.vertices.map(
+            ([x, y, z]) => mult(transformation, [x, y, z, 1]).slice(0, 3)),
+            rotateNormal = ([x, y, z]) => mult(transformation, [x, y, z, 1]).slice(0, 3),
+            faceNormals = this.faceNormals.map(rotateNormal),
+            vertexNormals = this.vertexNormals.map(rotateNormal);
+        return new Mesh(vertices, this.faces, faceNormals, vertexNormals, false);
+    }
+
+    /**
      * Create a mesh like this one, translated by the given amounts
      */
     translated(dx, dy, dz) {
