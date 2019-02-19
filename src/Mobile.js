@@ -33,17 +33,20 @@ export let DEFAULT_MESH_SPEED = () => 0.05,
  *
  * @param attribute The WebGL attribute to prepare
  * @param {number[][]} data The data to put in the array buffer
- * @param {number[][]} indices An index array for the data
+ * @param {?number[][]} indices An index array for the data
  */
 function setupBuffers(attribute, data, indices) {
     gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
 
     gl.vertexAttribPointer(attribute, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(attribute);
 
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data.flat(1)), gl.STATIC_DRAW);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(indices.flat(1)), gl.STATIC_DRAW);
+
+    if (indices) {
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(indices.flat(1)), gl.STATIC_DRAW);
+    }
 }
 
 
@@ -148,8 +151,8 @@ export class Mobile {
             this.mesh_vao = gl.vao.createVertexArrayOES();
             gl.vao.bindVertexArrayOES(this.mesh_vao);
 
-            setupBuffers(locations.position, this.mesh.vertices, this.mesh.faces);
-            setupBuffers(locations.vertexNormal, this.mesh.vertexNormals, this.mesh.faces);
+            setupBuffers(locations.position, this.mesh.vertices);
+            setupBuffers(locations.vertexNormal, this.mesh.vertexNormals);
         }
 
         // Prepare a VAO for the strings
@@ -186,7 +189,7 @@ export class Mobile {
             gl.uniform1f(this.materialLocations.shininess, this.material.shininess);
 
             gl.vao.bindVertexArrayOES(this.mesh_vao);
-            gl.drawElements(gl.TRIANGLES, this.mesh.faces.flat(1).length, gl.UNSIGNED_BYTE, 0);
+            gl.drawArrays(gl.TRIANGLES, 0, this.mesh.vertices.length);
         }
 
         // Apply the arms' rotation
