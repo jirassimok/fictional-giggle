@@ -172,14 +172,12 @@ export class Mobile {
     /**
      * Draw the mobile
      */
-    draw(modelMatrix = MV.mat4()) {
+    draw(modelMatrix = MV.mat4(), root = true) {
+        // Apply the mesh's rotation
         let meshModelMatrix = MV.mult(modelMatrix, MV.rotateY(this.rotation.position));
+        gl.uniformMatrix4fv(this.modelMatrixLocation, false, MV.flatten(meshModelMatrix));
 
-        gl.uniformMatrix4fv(this.modelMatrixLocation,
-                            false,
-                            MV.flatten(meshModelMatrix));
-
-        // Draw mesh
+        // Draw mesh (skip empty mobile elements)
         if (this.mesh.vertices.length) {
             // Set color
             gl.uniform3fv(this.materialLocations.ambient, this.material.ambient);
@@ -191,24 +189,32 @@ export class Mobile {
             gl.drawElements(gl.TRIANGLES, this.mesh.faces.flat(1).length, gl.UNSIGNED_BYTE, 0);
         }
 
-        // Draw arms
+        // Apply the arms' rotation
         let armModelMatrix = MV.mult(modelMatrix, MV.rotateY(this.armRotation.position));
-        gl.uniformMatrix4fv(this.modelMatrixLocation,
-                            false,
-                            MV.flatten(armModelMatrix));
+        gl.uniformMatrix4fv(this.modelMatrixLocation, false, MV.flatten(armModelMatrix));
 
+        // Draw arms
+
+        // Set arm color
         gl.uniform3fv(this.materialLocations.ambient, ARM_MATERIAL.ambient);
         gl.uniform3fv(this.materialLocations.diffuse, ARM_MATERIAL.diffuse);
         gl.uniform3fv(this.materialLocations.specular, ARM_MATERIAL.specular);
         gl.uniform1f(this.materialLocations.shininess, ARM_MATERIAL.shininess);
+
         gl.vao.bindVertexArrayOES(this.arm_vao);
         gl.drawElements(gl.LINES, this.arms.indices.flat(1).length, gl.UNSIGNED_BYTE, 0);
 
+        // Draw children
+        // (add a translation by this element's matrix to the children's model matrices)
         if (this.left) {
-            this.left.draw(MV.mult(armModelMatrix, translate(-this.radius, 0, 0)));
+            this.left.draw(MV.mult(armModelMatrix, translate(-this.radius, 0, 0)), false);
         }
         if (this.right) {
-            this.right.draw(MV.mult(armModelMatrix, translate(this.radius, 0, 0)));
+            this.right.draw(MV.mult(armModelMatrix, translate(this.radius, 0, 0)), false);
+        }
+
+        if (root) {
+            gl.vao.bindVertexArrayOES(null);
         }
     }
 }
