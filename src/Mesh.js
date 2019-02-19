@@ -24,6 +24,11 @@ const copyVector = ([x, y, z]) => Object.freeze([x, y, z]);
  *
  * The constructor optionally takes a list of facenormals and vertexnormals,
  * which are used without any checks.
+ *
+ * @param {vec3[]} vertices
+ * @param {number[][]} faces
+ * @param {vec3[]} vertexNormals
+ * @param {vec3[]} faceNormals
  */
 export class Mesh {
     constructor(vertices, faces, facenormals = null, vertexnormals = null, duplicate = true) {
@@ -73,6 +78,38 @@ export class Mesh {
             undefined,
             vertices
         );
+    }
+
+    /**
+     * Create a mesh from an object with the following propertiesj
+     *
+     * @param {Object} json
+     * @param {vec3[]} json.vertices
+     * @param {number[][]} json.faces
+     * @param {?vec3[]} json.vertexNormals
+     * @param {?vec3[]} json.faceNormals
+     *
+     * If both {@code vertexNormals} and {@code faceNormals} are not given,
+     * {@code vertices} and {@code faces} will be passed to the mesh
+     * constructor, where the normals will be calculated and the faces will be
+     * duplicated. Otherwise, all of the values will be used as-is.
+     */
+    static fromJSON({vertices, faces, vertexNormals, faceNormals}) {
+        if (vertexNormals && faceNormals) {
+            return new Mesh(vertices, faces, faceNormals, vertexNormals, false);
+        }
+        else {
+            return new Mesh(vertices, faces);
+        }
+    }
+
+    toJSON() {
+        return {
+            vertices: this.vertices,
+            faces: this.faces,
+            vertexNormals: this.vertexNormals,
+            faceNormals: this.faceNormals
+        };
     }
 
     computeFaceNormals() {
@@ -187,5 +224,13 @@ export class Mesh {
             vertexNormals = this.vertexNormals.map(rotateNormal);
 
         return new Mesh(vertices, this.faces, faceNormals, vertexNormals, false);
+    }
+
+    /**
+     * Create a mesh like this one, but centered at the origin
+     */
+    atZero() {
+        let mp = this.bounds.midpoint;
+        return this.translated(-mp.x, -mp.y, -mp.z);
     }
 }
