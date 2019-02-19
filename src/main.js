@@ -29,7 +29,7 @@ gl.useProgram(program);
 
 // Set up the shader variables
 const shader = Object.freeze({
-    position:         gl.getAttribLocation(program, "aPosition"),
+    position:         gl.getAttribLocation(program, "vertexPosition"),
     vertexNormal:     gl.getAttribLocation(program, "vertexNormal"),
 
     material: Object.freeze({

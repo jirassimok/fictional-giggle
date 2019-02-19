@@ -13,7 +13,12 @@ struct Material {
 	float shininess;
 };
 
-attribute vec3 aPosition;
+struct Vertex {
+	vec3 position;
+	vec3 normal;
+};
+
+attribute vec3 vertexPosition;
 attribute vec3 vertexNormal;
 
 uniform Material material;
@@ -26,30 +31,31 @@ uniform mat4 modelMatrix;
 
 varying vec4 finalColor;
 
+Vertex transformVertex(mat4 tr, Vertex v) {
+	vec4 position = vec4(v.position, 1);
+	vec4 normal = vec4(v.normal, 1);
+	return Vertex((tr * position).xyz, normalize((tr * normal).xyz));
+}
+
 void main() {
 	mat4 modelViewMatrix = viewMatrix * modelMatrix;
 
-	vec4 vPosition = vec4(aPosition, 1);
-	vec4 vNormal = vec4(vertexNormal, 1);
+	Vertex vertex = Vertex(vertexPosition, vertexNormal);
 
-	// From example code
-	vec3 eyePosition = (modelViewMatrix * vec4(aPosition, 1)).xyz;
-	vec3 eyeNormal = normalize(modelViewMatrix * vec4(vertexNormal, 1)).xyz;
-	vec3 camera = normalize(-eyePosition);
-
-
+	// Use eye coordinates
+	Vertex eyeVertex = transformVertex(modelViewMatrix, vertex);
 	vec3 eyeLightPosition = (viewMatrix * vec4(light.position, 1)).xyz;
-	vec3 lightToVertex = normalize(eyeLightPosition - eyePosition);
+	vec3 eye = normalize(-eyeVertex.position);
 
-	vec3 reflection = reflect(lightToVertex, eyeNormal);
-
-	vec3 diffuseLight = light.diffuse * material.diffuse * dot(lightToVertex, eyeNormal);
+	vec3 lightToVertex = normalize(eyeLightPosition - eyeVertex.position);
+	vec3 reflection = reflect(lightToVertex, eyeVertex.normal);
 
 	vec3 specularLight = (light.specular * material.specular
-						  * pow(max(dot(camera, reflection), 0.0), material.shininess));
+						  * pow(max(dot(eye, reflection), 0.0), material.shininess));
 
+	vec3 diffuseLight = light.diffuse * material.diffuse * dot(lightToVertex, eyeVertex.normal);
 	vec3 ambientLight = light.ambient * material.ambient;
 
 	finalColor = vec4(diffuseLight + specularLight + ambientLight, 1);
-	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(aPosition, 1);
+	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertex.position, 1);
 }
