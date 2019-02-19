@@ -10,11 +10,12 @@
  */
 
 /**
- * The intensities of a light
+ * The properties of the scene's light
  * @typedef {Object} Light
- * @property {Float32Array} ambient
- * @property {Float32Array} diffuse
- * @property {Float32Array} specular
+ * @property {Float32Array} position
+ * @property {Float32Array} ambient Ambient intensity
+ * @property {Float32Array} diffuse Diffuse intensity
+ * @property {Float32Array} specular Specular intensity
  */
 
 //// Constants

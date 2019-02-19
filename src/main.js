@@ -15,6 +15,8 @@ import { mobile } from "./model.js";
 
 import * as MV from "./MV+.js";
 
+//// Additional WebGL setup (see setup.js for pre-program initialization)
+
 const program = setupProgram(gl,
                              VERTEX_SHADER_SOURCE,
                              FRAGMENT_SHADER_SOURCE);
@@ -51,7 +53,17 @@ const shader = Object.freeze({
 
 
 
-//// Global animation state
+//// Global state
+
+/**
+ * The scene's light
+ */
+const light = Object.seal({
+    position: new Float32Array([10, 0, 10]),
+    ambient:  new Float32Array([0.3, 0.3, 0.3]),
+    diffuse:  new Float32Array([2, 2, 2]),
+    specular: new Float32Array([2, 2, 2])
+});
 
 /**
  * Container for configural animation settings
@@ -156,13 +168,7 @@ function setup() {
     gl.cullFace(gl.BACK);
 
     // Place light at center of mesh
-    gl.uniform3f(shader.light.position, 10, 0, 10);
-
-    let light = Object.seal({
-        ambient:  vec3(0.3, 0.3, 0.3),
-        diffuse:  vec3(2, 2, 2),
-        specular: vec3(2, 2, 2)
-    });
+    gl.uniform3fv(shader.light.position, light.position);
 
     gl.uniform3fv(shader.light.ambient, light.ambient);
     gl.uniform3fv(shader.light.diffuse, light.diffuse);
