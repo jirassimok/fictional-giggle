@@ -10,7 +10,12 @@ import { AnimationTracker } from "./Animations.js";
 /**
  * Default color for mobile strings
  */
-const ARM_COLOR = vec4(0.62745098, 0.32156863, 0.17647059, 1);
+const ARM_MATERIAL = Object.freeze({
+    ambient: [0.62745098, 0.32156863, 0.17647059],
+    diffuse: [0.62745098, 0.32156863, 0.17647059],
+    specular: [0, 0, 0],
+    shininess: 0
+});
 
            /** Default speed for all mobiles' meshes */
 export let DEFAULT_MESH_SPEED = () => 0.05,
@@ -192,7 +197,10 @@ export class Mobile {
                             false,
                             MV.flatten(armModelMatrix));
 
-        gl.uniform4fv(this.colorLocation, ARM_COLOR);
+        gl.uniform3fv(this.materialLocations.ambient, ARM_MATERIAL.ambient);
+        gl.uniform3fv(this.materialLocations.diffuse, ARM_MATERIAL.diffuse);
+        gl.uniform3fv(this.materialLocations.specular, ARM_MATERIAL.specular);
+        gl.uniform1f(this.materialLocations.shininess, ARM_MATERIAL.shininess);
         gl.vao.bindVertexArrayOES(this.arm_vao);
         gl.drawElements(gl.LINES, this.arms.indices.flat(1).length, gl.UNSIGNED_BYTE, 0);
 
