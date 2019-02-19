@@ -200,13 +200,15 @@ function setup() {
     // Place light at center of mesh
     gl.uniform3f(shader.light.position, 10, 0, 10);
 
-    let ambientIntensity = vec3(0.3, 0.3, 0.3),
-        diffuseIntensity = vec3(2, 2, 2),
-        specularIntensity = vec3(2, 2, 2);
+    let light = Object.seal({
+        ambient:  vec3(0.3, 0.3, 0.3),
+        diffuse:  vec3(2, 2, 2),
+        specular: vec3(2, 2, 2)
+    });
 
-    gl.uniform3fv(shader.light.ambient, ambientIntensity);
-    gl.uniform3fv(shader.light.diffuse, diffuseIntensity);
-    gl.uniform3fv(shader.light.specular, specularIntensity);
+    gl.uniform3fv(shader.light.ambient, light.ambient);
+    gl.uniform3fv(shader.light.diffuse, light.diffuse);
+    gl.uniform3fv(shader.light.specular, light.specular);
 
     mobile.setup(shader);
     setProjection(mobile);
