@@ -224,6 +224,28 @@ export class Mobile {
     }
 
     /**
+     * Make this mobile use vertex normals for shading
+     */
+    useVertexNormals() {
+        if (this.mesh.vertices.length) {
+            gl.vao.bindVertexArrayOES(this.mesh_vao);
+            setupBuffer(this.shader.vertexNormal, this.mesh.vertexNormals, this.buffers.normals);
+            gl.vao.bindVertexArrayOES(null);
+        }
+    }
+
+    /**
+     * Make this mobile use face normals for shading
+     */
+    useFaceNormals() {
+        if (this.mesh.vertices.length) {
+            gl.vao.bindVertexArrayOES(this.mesh_vao);
+            setupBuffer(this.shader.vertexNormal, this.mesh.faceNormals, this.buffers.normals);
+            gl.vao.bindVertexArrayOES(null);
+        }
+    }
+
+    /**
      * Send the material to the shader
      */
     bindMaterial(material = this.material) {
