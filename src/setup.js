@@ -61,3 +61,11 @@ if (gl === null) {
 if (enableAndBindVAO(gl) === null) {
     throw new Error("Failed to load Vertex Array Object extension");
 }
+
+
+//// Remove the message referring viewers to README.md.
+
+// (The message is there in case the program fails completely, such as if it is
+//  viewed un-bundled, in which case this will not be run.)
+
+document.querySelector('#unbundledErrorMessage').outerHTML = '';

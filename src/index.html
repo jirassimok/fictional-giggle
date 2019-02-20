@@ -9,11 +9,24 @@
     <body>
         <div id="errorMessage"></div>
 
+        <div id="unbundledErrorMessage" style="display:none;">
+            <p>You are viewing this page in an un-bundled state; please refer to <code>README.md</code> to view the page.</p>
+        </div>
+
         <canvas id="webglCanvas">
             Please use a browser that supports the <code>canvas</code> tag.
         </canvas>
         <hr>
 
         <script src="/main.js"></script>
+
+        <script>
+         // If the message for a non-bundled file has not been removed, show it.
+         // (If main.js runs, the warning message will have been removed.)
+         let msg = document.querySelector('#unbundledErrorMessage');
+         if (msg) {
+             msg.style.display = 'block';
+         }
+        </script>
     </body>
 </html>
