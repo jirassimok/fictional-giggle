@@ -10,11 +10,8 @@ import * as MV from "./MV+.js";
 import _sphere from "./sphere.json";
 import _cube from "./cube.json";
 
-const sphere = new Mesh(_sphere.vertices.map(vec3),
-                        _sphere.faces);
-
-const cube = new Mesh(_cube.vertices.map(vec3),
-                      _cube.faces);
+const sphere = Mesh.fromJSON(_sphere);
+const cube = Mesh.fromJSON(_cube);
 
 let white = [1, 1, 1],
     black = [0, 0, 0],
@@ -26,7 +23,6 @@ let white = [1, 1, 1],
     magenta = [1, 0, 1],
     yellow = [1, 1, 0],
     pale_purple = [0.5, 0.5, 1];
-
 
 let root = Mobile.builder(cube)
     .color(pale_purple)
