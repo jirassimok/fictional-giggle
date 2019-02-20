@@ -29,28 +29,6 @@ export let DEFAULT_MESH_SPEED = () => 0.05,
  */
 
 /**
- * Prepare buffers for the given {@code vec3(float32)} attribute
- *
- * @param attribute The WebGL attribute to prepare
- * @param {number[][]} data The data to put in the array buffer
- * @param {?number[][]} indices An index array for the data
- */
-function setupBuffers(attribute, data, indices) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-
-    gl.vertexAttribPointer(attribute, 3, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(attribute);
-
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data.flat(1)), gl.STATIC_DRAW);
-
-    if (indices) {
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(indices.flat(1)), gl.STATIC_DRAW);
-    }
-}
-
-
-/**
  * Tree-like structure representing the meshes forming a mobile
  *
  * @property {Mesh} mesh The mesh hanging from the mobile
@@ -67,6 +45,15 @@ function setupBuffers(attribute, data, indices) {
  * @property {WebGLUniformLocation} shader.material.diffuse
  * @property {WebGLUniformLocation} shader.material.specular
  * @property {WebGLUniformLocation} shader.material.shininess
+ *
+ * @property {Object} buffers WebGL buffers for data
+ * @property {WebGLBuffer} buffers.vertices
+ * @property {WebGLBuffer} buffers.normals
+ * @property {WebGLBuffer} buffers.arms
+ * @property {WebGLBuffer} buffers.arm_indices
+ *
+ * @property {WebGLVertexArrayObject} mesh_vao Vertex Array Object for mesh rendering
+ * @property {WebGLVertexArrayObject} arm_vao Vertex Array Object for arm rendering
  *
  * @property {AnimationTracker} rotation The tracker for this mobile element's rotation
  * @property {AnimationTracker} armRotation The tracker for the arms' rotation
@@ -159,19 +146,28 @@ export class Mobile {
             vertexNormal: locations.vertexNormal
         });
 
+        this.buffers = Object.freeze({
+            vertices: gl.createBuffer(),
+            normals: gl.createBuffer(),
+            arms: gl.createBuffer(),
+            arm_indices: gl.createBuffer()
+        });
+
         // Prepare a VAO for the mesh
         if (this.mesh.vertices.length) {
             this.mesh_vao = gl.vao.createVertexArrayOES();
             gl.vao.bindVertexArrayOES(this.mesh_vao);
 
-            setupBuffers(locations.position, this.mesh.vertices);
-            setupBuffers(locations.vertexNormal, this.mesh.vertexNormals);
+            setupBuffer(locations.position, this.mesh.vertices, this.buffers.vertices);
+            setupBuffer(locations.vertexNormal, this.mesh.vertexNormals, this.buffers.normals);
         }
 
         // Prepare a VAO for the strings
         this.arm_vao = gl.vao.createVertexArrayOES();
         gl.vao.bindVertexArrayOES(this.arm_vao);
-        setupBuffers(locations.position, this.arms.vertices, this.arms.indices);
+        setupBuffer(locations.position,
+                    this.arms.vertices, this.buffers.arms,
+                    this.arms.indices, this.buffers.arm_indices);
 
         // Unbind buffers
         gl.vao.bindVertexArrayOES(null);
@@ -240,6 +236,29 @@ export class Mobile {
 
 
 /**
+ * Prepare a buffer for the given {@code vec3(float32)} attribute
+ *
+ * @param attribute The WebGL attribute to prepare
+ * @param {number[][]} data The data to put in the array buffer
+ * @param {WebGLBuffer} dataBuffer
+ * @param {?number[][]} indices An index array for the data
+ * @param {?WebGLBuffer} indexBuffer
+ */
+function setupBuffer(attribute, data, dataBuffer, indices, indexBuffer) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, dataBuffer);
+
+    gl.vertexAttribPointer(attribute, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(attribute);
+
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data.flat(1)), gl.STATIC_DRAW);
+
+    if (indices) {
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(indices.flat(1)), gl.STATIC_DRAW);
+    }
+}
+
+/**
  * Get all vertices in a mobile and its children, positioned correctly
  */
 function allVertices(mobile, transform_acc = MV.mat4(), parent_radius = 0) {
@@ -255,6 +274,8 @@ function allVertices(mobile, transform_acc = MV.mat4(), parent_radius = 0) {
         allVertices(mobile.right, transform, +mobile.radius)
     );
 }
+
+
 
 class MobileBuilder {
     /**
