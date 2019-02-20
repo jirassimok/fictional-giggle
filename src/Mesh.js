@@ -31,22 +31,40 @@ const copyVector = ([x, y, z]) => Object.freeze([x, y, z]);
  * @param {vec3[]} faceNormals
  */
 export class Mesh {
-    constructor(vertices, faces, facenormals = null, vertexnormals = null, duplicate = true) {
+    /**
+     * @param {boolean} [duplicate=true] Whether to perform vertex duplication
+     * @param {boolean} [copy=true] If true, copy the arrays. Disables {@code duplicate}
+     *
+     * Vertex duplication: if {@code duplicate} is true, duplicate vertices so
+     * each face has its own copy of its vertices.
+     *
+     * Copy: if true, create copies of each of the arrays and the arrays they
+     * contain.
+     */
+    constructor(vertices, faces, faceNormals = null, vertexNormals = null, duplicate = true, copy = true) {
         this.bounds = Bounds.fromVecs(vertices);
+
+        if (!copy) {
+            this.vertices = vertices;
+            this.faces = faces;
+            this.vertexNormals = vertexNormals;
+            this.faceNormals = faceNormals;
+            return;
+        }
 
         this.vertices = Object.freeze(vertices.map(copyVector));
 
         this.faces = Object.freeze(faces.map(face => Array.from(face)));
 
-        this.faceNormals = Object.freeze(facenormals
-                                         ? facenormals.map(copyVector)
+        this.faceNormals = Object.freeze(faceNormals
+                                         ? faceNormals.map(copyVector)
                                          : Object.freeze(this.computeFaceNormals()));
 
-        this.vertexNormals = Object.freeze(vertexnormals
-                                           ? vertexnormals.map(copyVector)
+        this.vertexNormals = Object.freeze(vertexNormals
+                                           ? vertexNormals.map(copyVector)
                                            : this.computeVertexNormals());
 
-        if (duplicate && faces.length !== 0) {
+        if (copy && duplicate && faces.length !== 0) {
             this.vertices = faces.flatMap(
                 face => face.map(
                     v => vertices[v]));
@@ -88,15 +106,16 @@ export class Mesh {
      * @param {number[][]} json.faces
      * @param {?vec3[]} json.vertexNormals
      * @param {?vec3[]} json.faceNormals
+     * @param {?boolean} [copy=true] If true, copy the input arrays
      *
      * If both {@code vertexNormals} and {@code faceNormals} are not given,
      * {@code vertices} and {@code faces} will be passed to the mesh
      * constructor, where the normals will be calculated and the faces will be
      * duplicated. Otherwise, all of the values will be used as-is.
      */
-    static fromJSON({vertices, faces, vertexNormals, faceNormals}) {
+    static fromJSON({vertices, faces, vertexNormals, faceNormals}, copy = true) {
         if (vertexNormals && faceNormals) {
-            return new Mesh(vertices, faces, faceNormals, vertexNormals, false);
+            return new Mesh(vertices, faces, faceNormals, vertexNormals, false, copy);
         }
         else {
             return new Mesh(vertices, faces);
