@@ -428,7 +428,6 @@ class MobileBuilder {
      */
     hangingFrom([x, y, z]) {
         if (this._parent) {
-            console.log(this._parent);
             throw new Error("Can not hang a non-root mobile from a point");
         }
         this.hangPoint = [x, y, z];
