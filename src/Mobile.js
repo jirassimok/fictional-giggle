@@ -60,8 +60,13 @@ function setupBuffers(attribute, data, indices) {
  * @property {Mobile} left The mobile handing from the left of this one
  * @property {Mobile} right The mobiles handing from the right of this one
  *
- * @property {WebGLUniformLocation} colorLocation Location of shader color variable
- * @param {WebGLUniformLocation} modelMatrixLocation The location of the shader's model matrix
+ * @property {Object} shader Shader locations
+ * @property {WebGLUniformLocation} shader.modelMatrix
+ * @property {Object} shader.material Material property locations
+ * @property {WebGLUniformLocation} shader.material.ambient
+ * @property {WebGLUniformLocation} shader.material.diffuse
+ * @property {WebGLUniformLocation} shader.material.specular
+ * @property {WebGLUniformLocation} shader.material.shininess
  *
  * @property {AnimationTracker} rotation The tracker for this mobile element's rotation
  * @property {AnimationTracker} armRotation The tracker for the arms' rotation
@@ -147,9 +152,12 @@ export class Mobile {
      * @param {GLint} locations.vertexNormal Vertex normal attribute
      */
     setup(locations) {
-        // Save the color are model matrix for draw time
-        this.materialLocations = locations.material;
-        this.modelMatrixLocation = locations.modelMatrix;
+        // Save locations for draw-time use
+        this.shader = Object.seal({
+            material: locations.material,
+            modelMatrix: locations.modelMatrix,
+            vertexNormal: locations.vertexNormal
+        });
 
         // Prepare a VAO for the mesh
         if (this.mesh.vertices.length) {
@@ -183,31 +191,24 @@ export class Mobile {
     draw(modelMatrix = this.model_matrix, root = true) {
         // Apply the mesh's rotation
         let meshModelMatrix = MV.mult(modelMatrix, MV.rotateY(this.rotation.position));
-        gl.uniformMatrix4fv(this.modelMatrixLocation, false, MV.flatten(meshModelMatrix));
+        gl.uniformMatrix4fv(this.shader.modelMatrix, false, MV.flatten(meshModelMatrix));
 
         // Draw mesh (skip empty mobile elements)
         if (this.mesh.vertices.length) {
             // Set color
-            gl.uniform3fv(this.materialLocations.ambient, this.material.ambient);
-            gl.uniform3fv(this.materialLocations.diffuse, this.material.diffuse);
-            gl.uniform3fv(this.materialLocations.specular, this.material.specular);
-            gl.uniform1f(this.materialLocations.shininess, this.material.shininess);
-
+            this.bindMaterial();
             gl.vao.bindVertexArrayOES(this.mesh_vao);
             gl.drawArrays(gl.TRIANGLES, 0, this.mesh.vertices.length);
         }
 
         // Apply the arms' rotation
         let armModelMatrix = MV.mult(modelMatrix, MV.rotateY(this.armRotation.position));
-        gl.uniformMatrix4fv(this.modelMatrixLocation, false, MV.flatten(armModelMatrix));
+        gl.uniformMatrix4fv(this.shader.modelMatrix, false, MV.flatten(armModelMatrix));
 
         // Draw arms
 
         // Set arm color
-        gl.uniform3fv(this.materialLocations.ambient, ARM_MATERIAL.ambient);
-        gl.uniform3fv(this.materialLocations.diffuse, ARM_MATERIAL.diffuse);
-        gl.uniform3fv(this.materialLocations.specular, ARM_MATERIAL.specular);
-        gl.uniform1f(this.materialLocations.shininess, ARM_MATERIAL.shininess);
+        this.bindMaterial(ARM_MATERIAL);
 
         gl.vao.bindVertexArrayOES(this.arm_vao);
         gl.drawElements(gl.LINES, this.arms.indices.flat(1).length, gl.UNSIGNED_BYTE, 0);
@@ -224,6 +225,16 @@ export class Mobile {
         if (root) {
             gl.vao.bindVertexArrayOES(null);
         }
+    }
+
+    /**
+     * Send the material to the shader
+     */
+    bindMaterial(material = this.material) {
+        gl.uniform3fv(this.shader.material.ambient, material.ambient);
+        gl.uniform3fv(this.shader.material.diffuse, material.diffuse);
+        gl.uniform3fv(this.shader.material.specular, material.specular);
+        gl.uniform1f(this.shader.material.shininess, material.shininess);
     }
 }
 
