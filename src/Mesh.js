@@ -69,6 +69,10 @@ export class Mesh {
                 face => face.map(
                     v => vertices[v]));
 
+            this.faceNormals = faces.flatMap(
+                face => face.map(
+                    normal => this.faceNormals[normal]));
+
             this.faces = [];
             let offset = 0;
             for (let size of faces.map(face => face.length)) {
