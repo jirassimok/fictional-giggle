@@ -271,6 +271,10 @@ class MobileBuilder {
 
             this._radius = parent._radius / 2;
 
+            let mat = parent.material;
+            if (mat.ambient)  this.material.ambient  = Array.from(parent.material.ambient);
+            if (mat.diffuse)  this.material.diffuse  = Array.from(parent.material.diffuse);
+            if (mat.specular) this.material.specular = Array.from(parent.material.specular);
             this._shininess = parent._shininess;
             this.parent_height = parent.parent_height;
             this.child_height = parent.child_height;
@@ -383,39 +387,43 @@ class MobileBuilder {
      * Overridden by {@link ambient}, {@link diffuse}, and {@link specular}
      */
     color(color) {
-        if (!this.material.ambient) this.material.ambient = color;
-        if (!this.material.diffuse) this.material.diffuse = color;
-        if (!this.material.specular) this.material.specular = color;
+        let mat = this.material;
+        if (!mat.ambient  || !mat.ambient.custom_set)  mat.ambient = color;
+        if (!mat.diffuse  || !mat.diffuse.custom_set)  mat.diffuse = color;
+        if (!mat.specular || !mat.specular.custom_set) mat.specular = color;
         return this;
     }
 
     /**
      * Set ambient coefficients
      *
-     * If not set, defaults to diffuse color
+     * If not set, defaults to parent's ambient coefficient
      */
     ambient(color) {
-        this.material.ambient = color;
+        this.material.ambient = Array.from(color);
+        this.material.ambient.custom_set = true;
         return this;
     }
 
     /**
      * Set diffuse coefficients
      *
-     * If not set, defaults to ambient color
+     * If not set, defaults to parent's diffuse coefficient
      */
     diffuse(color) {
-        this.material.diffuse = color;
+        this.material.diffuse = Array.from(color);
+        this.material.diffuse.custom_set = true;
         return this;
     }
 
     /**
      * Set diffuse coefficients
      *
-     * If not set, defaults to diffuse color
+     * If not set, defaults to parent's specular coefficient
      */
     specular(color) {
-        this.material.specular = color;
+        this.material.specular = Array.from(color);
+        this.material.specular.custom_set = true;
         return this;
     }
 
@@ -465,8 +473,8 @@ class MobileBuilder {
      * @param {Mesh} mesh
      * @returns {MobileBuiler} The left child mobile builder
      *
-     * The child inherits radius, heights, shininess, speeds, and spin direction
-     * from its parent.
+     * The child inherits radius, heights, lighting coefficients, shininess,
+     * speeds, and spin direction from its parent.
      *
      * The child has half its parent's radius, and the opposite arm direction.
      */
@@ -480,8 +488,8 @@ class MobileBuilder {
      * @param {Mesh} mesh
      * @returns {MobileBuilder} The right child mobile builder
      *
-     * The child inherits radius, heights, shininess, speeds, and spin direction
-     * from its parent.
+     * The child inherits radius, heights, lighting coefficients, shininess,
+     * speeds, and spin direction from its parent.
      *
      * The child has half its parent's radius, and the opposite arm direction.
      */
@@ -504,14 +512,12 @@ class MobileBuilder {
 
     emptyLeft() {
         return this.left(new Mesh([vec3(0, 0, 0)], []))
-            .color([0,0,0])
             .parentHeight(0)
             .spinSpeed(0);
     }
 
     emptyRight() {
         return this.right(new Mesh([vec3(0, 0, 0)], []))
-            .color([0,0,0])
             .parentHeight(0)
             .spinSpeed(0);
     }
