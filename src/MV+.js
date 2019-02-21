@@ -103,6 +103,13 @@ export function mat2()
 
 //----------------------------------------------------------------------------
 
+/**
+ * Behavior depends on number of numeric arguments:
+ * 0: identity matrix
+ * 1: diagonal matrix of the given value
+ * 16: take input as 4 by 4 matrix, remove last row and column
+ * Other: take 3 arguments at a time as rows
+ */
 export function mat3()
 {
     let v = argumentsToArray(arguments);
@@ -116,6 +123,14 @@ export function mat3()
             vec3( v[0],  0.0,  0.0 ),
             vec3(  0.0, v[0],  0.0 ),
             vec3(  0.0,  0.0, v[0] )
+        ];
+        break;
+
+    case 16:
+        m = [
+            v.slice(0, 3),
+            v.slice(4, 7),
+            v.slice(8, 11)
         ];
         break;
 
