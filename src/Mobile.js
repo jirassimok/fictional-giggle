@@ -229,7 +229,10 @@ export class Mobile {
     useVertexNormals() {
         if (this.mesh.vertices.length) {
             gl.vao.bindVertexArrayOES(this.mesh_vao);
-            setupBuffer(this.shader.vertexNormal, this.mesh.vertexNormals, this.buffers.normals);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.normals);
+            gl.bufferData(gl.ARRAY_BUFFER,
+                          new Float32Array(this.mesh.vertexNormals.flat(1)),
+                          gl.STATIC_DRAW);
             gl.vao.bindVertexArrayOES(null);
         }
     }
@@ -240,7 +243,10 @@ export class Mobile {
     useFaceNormals() {
         if (this.mesh.vertices.length) {
             gl.vao.bindVertexArrayOES(this.mesh_vao);
-            setupBuffer(this.shader.vertexNormal, this.mesh.faceNormals, this.buffers.normals);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.normals);
+            gl.bufferData(gl.ARRAY_BUFFER,
+                          new Float32Array(this.mesh.faceNormals.flat(1)),
+                          gl.STATIC_DRAW);
             gl.vao.bindVertexArrayOES(null);
         }
     }
