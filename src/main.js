@@ -95,48 +95,6 @@ const light = Object.seal({
     positionBuffer: gl.createBuffer(),
 });
 
-/**
- * Container for configural animation settings
- */
-class Settings {
-    constructor() {
-        this.initialize();
-        this.uiElements = [];
-        Object.seal(this); // prevent addition of new properties
-    }
-
-    initialize() {
-    }
-
-    reset() {
-        this.initialize();
-
-        for (let [setting, element] of this.uiElements) {
-            element.value = this[setting];
-        }
-    }
-
-    /**
-     * Register a UI element to reset when settings reset
-     *
-     * @param {String} setting The setting associated with the UI element
-     * @param {Element} element The element to associate with the setting
-     *
-     * When settings are reset, the element's {@code value} will be set to the
-     * setting's value.
-     */
-    bindUI(setting, element) {
-        this.uiElements.push([setting, element]);
-    }
-}
-
-/**
- * Global user-configurable settings object
- *
- * @see Settings
- */
-const settings = new Settings();
-
 
 //// Canvas/GL/Mesh preparation functions
 
