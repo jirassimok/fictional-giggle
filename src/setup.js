@@ -83,13 +83,17 @@ document.querySelector('#unbundledErrorMessage').outerHTML = '';
  * Prepare a buffer for the given {@code vec3(float32)} attribute
  *
  * @param attribute The WebGL attribute to prepare
- * @param {number[][]} data The data to put in the array buffer
+ * @param {(number[][]|Float32Array)} data The data to put in the array buffer
  * @param {WebGLBuffer} dataBuffer The buffer to use
  * @param {?number[][]} indices An index array for the data
  * @param {?WebGLBuffer} indexBuffer The buffer for the index array
  *
  * The index array will be bound to {@code gl.ELEMENT_ARRAY_BUFFER} if
  * {@code indices} is give.
+ *
+ * If {@code data} is a {@code Float32Array}, it will be used as-is. Otherwise,
+ * it will be flattened one level (as {@link Array.flat(1)}) and converted to a
+ * {@code Float32Array}.
  */
 export function setupBuffer(attribute, data, dataBuffer, indices, indexBuffer) {
     gl.bindBuffer(gl.ARRAY_BUFFER, dataBuffer);
@@ -97,7 +101,10 @@ export function setupBuffer(attribute, data, dataBuffer, indices, indexBuffer) {
     gl.vertexAttribPointer(attribute, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(attribute);
 
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data.flat(1)), gl.STATIC_DRAW);
+    if (!(data instanceof Float32Array)) {
+        data = new Float32Array(data.flat(1));
+    }
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
 
     if (indices) {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
