@@ -4,6 +4,12 @@ body {
     color: gray;
 }
 
+canvas#webglCanvas {
+    margin: 0 auto;
+    display: block;
+    border: 1px solid gray;
+}
+
 hr {
     border-color: gray;
 }

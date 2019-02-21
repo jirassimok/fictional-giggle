@@ -1,7 +1,12 @@
 "use strict";
 
 import "./vecarray.js";
-import { gl, X_FIELD_OF_VIEW, ASPECT_RATIO, PERSPECTIVE_NEAR_PLANE, PERSPECTIVE_FAR_PLANE } from "./setup.js";
+import { gl,
+         setupBuffer,
+         X_FIELD_OF_VIEW,
+         ASPECT_RATIO,
+         PERSPECTIVE_NEAR_PLANE,
+         PERSPECTIVE_FAR_PLANE } from "./setup.js";
 import VERTEX_SHADER_SOURCE from "./shader.vert";
 import FRAGMENT_SHADER_SOURCE from "./shader.frag";
 
@@ -49,6 +54,8 @@ const shader = Object.freeze({
     modelMatrix:      gl.getUniformLocation(program, "modelMatrix"),
     viewMatrix:       gl.getUniformLocation(program, "viewMatrix"),
     projectionMatrix: gl.getUniformLocation(program, "projectionMatrix"),
+
+    forceWhite:       gl.getUniformLocation(program, "forceWhite"),
 });
 
 
@@ -62,7 +69,10 @@ const light = Object.seal({
     position: new Float32Array([10, 0, 10]),
     ambient:  new Float32Array([0.3, 0.3, 0.3]),
     diffuse:  new Float32Array([2, 2, 2]),
-    specular: new Float32Array([2, 2, 2])
+    specular: new Float32Array([2, 2, 2]),
+
+    vao: gl.vao.createVertexArrayOES(),
+    positionBuffer: gl.createBuffer(),
 });
 
 /**
@@ -176,11 +186,41 @@ function setup() {
     mobile.setup(shader);
 
     setProjection(mobile);
+
+    // Prepare the light source for rendering
+    gl.vao.bindVertexArrayOES(light.vao);
+
+    setupBuffer(shader.position, light.position, light.positionBuffer);
+    setupBuffer(shader.vertexNormal, [0, 0, 0],  gl.createBuffer());
+
+    gl.vao.bindVertexArrayOES(null);
+
+    // Don't draw all colors as white
+    gl.uniform1i(shader.forceWhite, 0);
 }
 
 function render() {
     clearCanvas();
     mobile.draw();
+
+    // The remainder of this function draws the light source
+
+    // Use an identity model matrix
+    gl.uniformMatrix4fv(shader.modelMatrix, false, new Float32Array([1,0,0,0,
+                                                                     0,1,0,0,
+                                                                     0,0,1,0,
+                                                                     0,0,0,1]));
+
+    // Set forceWhite, which bypasses light calculations
+    gl.uniform1i(shader.forceWhite, 1);
+
+    // Draw the light source as a point
+    gl.vao.bindVertexArrayOES(light.vao);
+    gl.drawArrays(gl.POINTS, 0, 1);
+
+    // Restore to normal state
+    gl.uniform1i(shader.forceWhite, 0);
+    gl.vao.bindVertexArrayOES(null);
 
     window.requestAnimationFrame(render);
 }

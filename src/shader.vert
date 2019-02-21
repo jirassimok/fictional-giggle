@@ -29,6 +29,8 @@ uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 
+uniform int forceWhite; // 0 or 1
+
 varying vec4 finalColor;
 
 Vertex transformVertex(mat4 tr, Vertex v) {
@@ -45,6 +47,7 @@ void main() {
 	// Use eye coordinates
 	Vertex eyeVertex = transformVertex(modelViewMatrix, vertex);
 	vec3 eyeLightPosition = (viewMatrix * vec4(light.position, 1)).xyz;
+	// Eye vector in eye coordinates:
 	vec3 eye = normalize(-eyeVertex.position);
 
 	vec3 lightToVertex = normalize(eyeLightPosition - eyeVertex.position);
@@ -56,6 +59,14 @@ void main() {
 	vec3 diffuseLight = light.diffuse * material.diffuse * dot(lightToVertex, eyeVertex.normal);
 	vec3 ambientLight = light.ambient * material.ambient;
 
-	finalColor = vec4(diffuseLight + specularLight + ambientLight, 1);
+	if (forceWhite <= 0) {
+		finalColor = vec4(diffuseLight + specularLight + ambientLight, 1);
+	}
+	else {
+		finalColor = vec4(1, 1, 1, 1);
+	}
+
 	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertex.position, 1);
+
+	gl_PointSize = 4.0;
 }
