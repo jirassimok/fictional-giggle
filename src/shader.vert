@@ -28,6 +28,7 @@ uniform Light light;
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
+uniform mat3 normalMatrix;
 
 uniform int forceWhite; // 0 or 1
 
@@ -36,7 +37,7 @@ varying vec4 finalColor;
 Vertex transformVertex(mat4 tr, Vertex v) {
 	vec4 position = vec4(v.position, 1);
 	vec4 normal = vec4(v.normal, 1);
-	return Vertex((tr * position).xyz, normalize((tr * normal).xyz));
+	return Vertex((tr * position).xyz, normalMatrix * v.normal);
 }
 
 void main() {
@@ -60,7 +61,7 @@ void main() {
 	vec3 ambientLight = light.ambient * material.ambient;
 
 	if (forceWhite <= 0) {
-		finalColor = vec4(diffuseLight + specularLight + ambientLight, 1);
+		finalColor = vec4(ambientLight + diffuseLight + specularLight, 1);
 	}
 	else {
 		finalColor = vec4(1, 1, 1, 1);

@@ -72,6 +72,7 @@ const shader = Object.freeze({
     }),
 
     modelMatrix:      gl.getUniformLocation(program, "modelMatrix"),
+    normalMatrix:     gl.getUniformLocation(program, "normalMatrix"),
     viewMatrix:       gl.getUniformLocation(program, "viewMatrix"),
     projectionMatrix: gl.getUniformLocation(program, "projectionMatrix"),
 
@@ -183,11 +184,14 @@ function render() {
 
     // The remainder of this function draws the light source
 
-    // Use an identity model matrix
+    // Use an identity model matrix and normal matrix
     gl.uniformMatrix4fv(shader.modelMatrix, false, new Float32Array([1,0,0,0,
                                                                      0,1,0,0,
                                                                      0,0,1,0,
                                                                      0,0,0,1]));
+    gl.uniformMatrix3fv(shader.normalMatrix, false, new Float32Array([1,0,0,
+                                                                      0,1,0,
+                                                                      0,0,1]));
 
     // Set forceWhite, which bypasses light calculations
     gl.uniform1i(shader.forceWhite, 1);

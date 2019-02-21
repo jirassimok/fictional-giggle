@@ -40,6 +40,7 @@ export let DEFAULT_MESH_SPEED = () => 0.05,
  *
  * @property {Object} shader Shader locations
  * @property {WebGLUniformLocation} shader.modelMatrix
+ * @property {WebGLUniformLocation} shader.normalMatrix
  * @property {Object} shader.material Material property locations
  * @property {WebGLUniformLocation} shader.material.ambient
  * @property {WebGLUniformLocation} shader.material.diffuse
@@ -130,6 +131,7 @@ export class Mobile {
      *
      * @param {Object} locations The locations of various shader variables
      * @param {WebGLUniformLocation} locations.modelMatrix The uniform model matrix
+     * @property {WebGLUniformLocation} shader.normalMatrix
      * @param {GLint} locations.position Vertex position attribute
      * @param {Object} locations.material
      * @param {GLUniformLocation} locations.material.ambient Ambient coefficient
@@ -143,7 +145,8 @@ export class Mobile {
         this.shader = Object.seal({
             material: locations.material,
             modelMatrix: locations.modelMatrix,
-            vertexNormal: locations.vertexNormal
+            normalMatrix: locations.normalMatrix,
+            vertexNormal: locations.vertexNormal,
         });
 
         this.buffers = Object.freeze({
@@ -186,8 +189,11 @@ export class Mobile {
      */
     draw(modelMatrix = this.model_matrix, root = true) {
         // Apply the mesh's rotation
-        let meshModelMatrix = MV.mult(modelMatrix, MV.rotateY(this.rotation.position));
+        let meshModelMatrix = MV.mult(modelMatrix, MV.rotateY(this.rotation.position)),
+            meshNormalMatrix = MV.transpose(MV.inverse(MV.mat3(...meshModelMatrix)));
+
         gl.uniformMatrix4fv(this.shader.modelMatrix, false, MV.flatten(meshModelMatrix));
+        gl.uniformMatrix3fv(this.shader.normalMatrix, false, MV.flatten(meshNormalMatrix));
 
         // Draw mesh (skip empty mobile elements)
         if (this.mesh.vertices.length) {
@@ -198,8 +204,11 @@ export class Mobile {
         }
 
         // Apply the arms' rotation
-        let armModelMatrix = MV.mult(modelMatrix, MV.rotateY(this.armRotation.position));
+        let armModelMatrix = MV.mult(modelMatrix, MV.rotateY(this.armRotation.position)),
+            armNormalMatrix = MV.mat3();
+
         gl.uniformMatrix4fv(this.shader.modelMatrix, false, MV.flatten(armModelMatrix));
+        gl.uniformMatrix3fv(this.shader.normalMatrix, false, MV.flatten(armNormalMatrix));
 
         // Draw arms
 
