@@ -4,7 +4,7 @@ import { translate, mult, vec4, vec3 } from "./MV+.js";
 
 import * as MV from "./MV+.js";
 
-import { gl } from "./setup.js";
+import { gl, setupBuffer } from "./setup.js";
 import { AnimationTracker } from "./Animations.js";
 
 /**
@@ -262,29 +262,6 @@ export class Mobile {
     }
 }
 
-
-/**
- * Prepare a buffer for the given {@code vec3(float32)} attribute
- *
- * @param attribute The WebGL attribute to prepare
- * @param {number[][]} data The data to put in the array buffer
- * @param {WebGLBuffer} dataBuffer
- * @param {?number[][]} indices An index array for the data
- * @param {?WebGLBuffer} indexBuffer
- */
-function setupBuffer(attribute, data, dataBuffer, indices, indexBuffer) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, dataBuffer);
-
-    gl.vertexAttribPointer(attribute, 3, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(attribute);
-
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data.flat(1)), gl.STATIC_DRAW);
-
-    if (indices) {
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(indices.flat(1)), gl.STATIC_DRAW);
-    }
-}
 
 /**
  * Get all vertices in a mobile and its children, positioned correctly

@@ -1,4 +1,11 @@
-// This file is necessary to resolve a circular dependency
+/*
+ * This module provides shared WebGL setup and utilities
+ *
+ * It sets up the canvas, loads and exports WebGL, and exports a function to
+ * prepare buffers.
+ *
+ * Performing these actions in main.js would create circular dependencies.
+ */
 
 /**
  * The material lighting coefficients and shininess for a material
@@ -69,3 +76,31 @@ if (enableAndBindVAO(gl) === null) {
 //  viewed un-bundled, in which case this will not be run.)
 
 document.querySelector('#unbundledErrorMessage').outerHTML = '';
+
+//// WebGL utility functions
+
+/**
+ * Prepare a buffer for the given {@code vec3(float32)} attribute
+ *
+ * @param attribute The WebGL attribute to prepare
+ * @param {number[][]} data The data to put in the array buffer
+ * @param {WebGLBuffer} dataBuffer The buffer to use
+ * @param {?number[][]} indices An index array for the data
+ * @param {?WebGLBuffer} indexBuffer The buffer for the index array
+ *
+ * The index array will be bound to {@code gl.ELEMENT_ARRAY_BUFFER} if
+ * {@code indices} is give.
+ */
+export function setupBuffer(attribute, data, dataBuffer, indices, indexBuffer) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, dataBuffer);
+
+    gl.vertexAttribPointer(attribute, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(attribute);
+
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data.flat(1)), gl.STATIC_DRAW);
+
+    if (indices) {
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(indices.flat(1)), gl.STATIC_DRAW);
+    }
+}
