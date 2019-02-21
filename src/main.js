@@ -66,10 +66,10 @@ const shader = Object.freeze({
  * The scene's light
  */
 const light = Object.seal({
-    position: new Float32Array([10, 0, 10]),
+    position: new Float32Array([3, -12, 3]),
     ambient:  new Float32Array([0.3, 0.3, 0.3]),
-    diffuse:  new Float32Array([2, 2, 2]),
-    specular: new Float32Array([2, 2, 2]),
+    diffuse:  new Float32Array([1, 1, 1]),
+    specular: new Float32Array([1, 1, 1]),
 
     vao: gl.vao.createVertexArrayOES(),
     positionBuffer: gl.createBuffer(),
