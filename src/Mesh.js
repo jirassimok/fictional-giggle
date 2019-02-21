@@ -58,7 +58,7 @@ export class Mesh {
 
         this.faceNormals = Object.freeze(faceNormals
                                          ? faceNormals.map(copyVector)
-                                         : Object.freeze(this.computeFaceNormals()));
+                                         : this.computeFaceNormals());
 
         this.vertexNormals = Object.freeze(vertexNormals
                                            ? vertexNormals.map(copyVector)
@@ -68,10 +68,6 @@ export class Mesh {
             this.vertices = faces.flatMap(
                 face => face.map(
                     v => vertices[v]));
-
-            this.faceNormals = faces.flatMap(
-                face => face.map(
-                    normal => this.faceNormals[normal]));
 
             this.faces = [];
             let offset = 0;
@@ -85,6 +81,10 @@ export class Mesh {
             this.vertexNormals = faces.flatMap(
                 face => face.map(
                     vn => this.vertexNormals[vn]));
+
+            this.faceNormals = faces.flatMap(
+                (face, f) => face.map(
+                    fn => this.faceNormals[f]));
         }
     }
 
@@ -136,6 +136,10 @@ export class Mesh {
     }
 
     computeFaceNormals() {
+        if (this.faces.length === 0) {
+            return Array(this.vertices.length).fill([0, 0, 0]);
+        }
+
         let faceNormals = [];
 
         for (let face of this.faces) {
@@ -156,7 +160,7 @@ export class Mesh {
             faceNormals.push(normalize([x, y, z]));
         }
 
-        return faceNormals;
+        return Object.freeze(faceNormals);
     }
 
     computeVertexNormals() {
@@ -190,7 +194,7 @@ export class Mesh {
             vertexNormals.push(normalize([x, y, z]));
         }
 
-        return vertexNormals;
+        return Object.freeze(vertexNormals);
     }
 
     /**
