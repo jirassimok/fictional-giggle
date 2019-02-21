@@ -20,6 +20,26 @@ import { mobile } from "./model.js";
 
 import * as MV from "./MV+.js";
 
+// The position of the light
+let LIGHT_POSITION = [3,-12 ,3];
+
+// View configuration; useful for debugging
+let ZOOM_FACTOR = 1,
+    Y_ROTATION = 0.0;
+
+// Force the camera to use specified values
+let FORCE_EYE = [0, -10, 15],
+    FORCE_AT  = [0,-14,0],
+    FORCE_UP  = [0, 1, 0];
+
+// Zoom by ZOOM_FACTOR and rotate by Y_ROTATION
+FORCE_EYE = MV.mult(MV.rotateY(Y_ROTATION),
+                    vec4(MV.add(MV.scale(ZOOM_FACTOR,
+                                         MV.subtract(FORCE_EYE,
+                                                     FORCE_AT)),
+                                FORCE_AT), 1)).slice(0,3);
+
+
 //// Additional WebGL setup (see setup.js for pre-program initialization)
 
 const program = setupProgram(gl,
@@ -146,11 +166,11 @@ function setProjection(mobile) {
     let projectionMatrix = MV.perspectiveRad(
         fov_y, ASPECT_RATIO, PERSPECTIVE_NEAR_PLANE, PERSPECTIVE_FAR_PLANE);
 
-	let eye = vec3(midpoint.x,
-                   midpoint.y,
-                   camera_z),
-	    at = midpoint,
-	    up = vec3(0, 1, 0);
+	let eye = FORCE_EYE ? FORCE_EYE : vec3(midpoint.x,
+                               midpoint.y,
+                               camera_z),
+	    at = FORCE_AT ? FORCE_AT : midpoint,
+	    up = FORCE_UP ? FORCE_UP : vec3(0, 1, 0);
 
 	var viewMatrix = MV.lookAt(eye, at, up);
 
