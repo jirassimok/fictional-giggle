@@ -227,28 +227,32 @@ export class Mobile {
      * Make this mobile use vertex normals for shading
      */
     useVertexNormals() {
-        if (this.mesh.vertices.length) {
-            gl.vao.bindVertexArrayOES(this.mesh_vao);
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.normals);
-            gl.bufferData(gl.ARRAY_BUFFER,
-                          new Float32Array(this.mesh.vertexNormals.flat(1)),
-                          gl.STATIC_DRAW);
-            gl.vao.bindVertexArrayOES(null);
-        }
+        this.apply(that => {
+            if (that.mesh.vertices.length) {
+                gl.vao.bindVertexArrayOES(that.mesh_vao);
+                gl.bindBuffer(gl.ARRAY_BUFFER, that.buffers.normals);
+                gl.bufferData(gl.ARRAY_BUFFER,
+                              new Float32Array(that.mesh.vertexNormals.flat(1)),
+                              gl.STATIC_DRAW);
+                gl.vao.bindVertexArrayOES(null);
+            }
+        });
     }
 
     /**
      * Make this mobile use face normals for shading
      */
     useFaceNormals() {
-        if (this.mesh.vertices.length) {
-            gl.vao.bindVertexArrayOES(this.mesh_vao);
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.normals);
-            gl.bufferData(gl.ARRAY_BUFFER,
-                          new Float32Array(this.mesh.faceNormals.flat(1)),
-                          gl.STATIC_DRAW);
-            gl.vao.bindVertexArrayOES(null);
+        this.apply(that => {
+            if (this.mesh.vertices.length) {
+                gl.vao.bindVertexArrayOES(that.mesh_vao);
+                gl.bindBuffer(gl.ARRAY_BUFFER, that.buffers.normals);
+                gl.bufferData(gl.ARRAY_BUFFER,
+                              new Float32Array(that.mesh.faceNormals.flat(1)),
+                              gl.STATIC_DRAW);
+                gl.vao.bindVertexArrayOES(null);
         }
+        });
     }
 
     /**
@@ -259,6 +263,15 @@ export class Mobile {
         gl.uniform3fv(this.shader.material.diffuse, material.diffuse);
         gl.uniform3fv(this.shader.material.specular, material.specular);
         gl.uniform1f(this.shader.material.shininess, material.shininess);
+    }
+
+    /**
+     * Apply a function recursively to this mobile and its children
+     */
+    apply(callback) {
+        callback(this);
+        if (this.left) this.left.apply(callback);
+        if (this.right) this.right.apply(callback);
     }
 }
 
