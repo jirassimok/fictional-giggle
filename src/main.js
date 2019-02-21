@@ -207,6 +207,22 @@ function render() {
     window.requestAnimationFrame(render);
 }
 
+
+window.addEventListener('keydown', e => {
+    if (e.ctrlKey || e.altKey || e.metaKey) {
+        return; // Ignore keys with non-shift modifiers
+    }
+
+    switch (e.key) {
+    case 'm':
+        mobile.useVertexNormals();
+        break;
+    case 'M':
+        mobile.useFaceNormals();
+        break;
+    }
+});
+
 clearCanvas();
 setup();
 render();
