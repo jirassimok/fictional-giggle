@@ -5,8 +5,9 @@
  */
 import { mobile } from "./model.js";
 import { Mesh } from "./Mesh.js";
+import * as MV from "./MV+.js";
 
-export { mobile, Mesh };
+export { mobile, Mesh, MV };
 
 // Can be used as default for 'mobile' parameters
 const default_mobile = mobile;
