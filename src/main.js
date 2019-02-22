@@ -143,7 +143,7 @@ function setProjection(mobile) {
 
 	var viewMatrix = MV.lookAt(eye, at, up);
 
-    // // Add margins around the  mesh
+    // Add margins around the mesh
     let margins = MV.scalem(0.9, 0.9, 0.9);
     projectionMatrix = MV.mult(margins, projectionMatrix);
 
