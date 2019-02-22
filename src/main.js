@@ -19,6 +19,7 @@ import { setupProgram } from "./webgl-setup.js";
 import { mobile } from "./model.js";
 
 import * as MV from "./MV+.js";
+import * as Key from "./KeyboardUI.js";
 
 // The position of the light
 let LIGHT_POSITION = [3,-12 ,3];
@@ -287,26 +288,48 @@ window.addEventListener('keydown', e => {
 
     switch (e.key) {
     case 'm':
+        Key.activate('m');
+        //window.setTimeout(() => Key.deactivate('m'), 100);
         mobile.useVertexNormals();
         break;
     case 'M':
+        Key.activate('M');
         mobile.useFaceNormals();
         break;
 
     case 'N': // fallthrough for shifted key
     case 'n':
+        Key.activate('N');
         mobile.useVertexNormals();
         let phong = gl.getUniform(program, shader.usePhongShading);
         gl.uniform1i(shader.usePhongShading, !phong);
         break;
 
     case 'L':
+        Key.activate('L');
         updateLightSourceLines();
         settings.view_lines = !settings.view_lines;
         break;
     case 'l':
+        Key.activate('l');
         settings.view_source = !settings.view_source;
         break;
+    }
+});
+
+window.addEventListener('keyup', e => {
+    if (e.ctrlKey || e.altKey || e.metaKey) {
+        return; // Ignore keys with non-shift modifiers
+    }
+
+    const keys = ['P', 'p', 'M', 'm', 'L', 'l'];
+    const upCaseKeys = ['N'];
+
+    if (keys.includes(e.key)) {
+        Key.deactivate(e.key);
+    }
+    if (upCaseKeys.includes(e.key.toUpperCase())) {
+        Key.deactivate(e.key.toUpperCase());
     }
 });
 
