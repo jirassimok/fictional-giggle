@@ -131,7 +131,7 @@ export class Mobile {
      *
      * @param {Object} locations The locations of various shader variables
      * @param {WebGLUniformLocation} locations.modelMatrix The uniform model matrix
-     * @property {WebGLUniformLocation} shader.normalMatrix
+     * @property {WebGLUniformLocation} shader.normalModelMatrix
      * @param {GLint} locations.position Vertex position attribute
      * @param {Object} locations.material
      * @param {GLUniformLocation} locations.material.ambient Ambient coefficient
@@ -145,7 +145,7 @@ export class Mobile {
         this.shader = Object.seal({
             material: locations.material,
             modelMatrix: locations.modelMatrix,
-            normalMatrix: locations.normalMatrix,
+            normalMatrix: locations.normalModelMatrix,
             vertexNormal: locations.vertexNormal,
         });
 

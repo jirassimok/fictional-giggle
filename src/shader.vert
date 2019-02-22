@@ -28,30 +28,41 @@ uniform Light light;
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
-uniform mat3 normalMatrix;
+uniform mat3 normalModelMatrix;
 
 uniform int forceWhite; // 0 or 1
 
 varying vec4 finalColor;
 
-Vertex transformVertex(mat4 tr, Vertex v) {
+Vertex transformVertex(mat4 tr, mat3 normtr, Vertex v) {
 	vec4 position = vec4(v.position, 1);
-	vec4 normal = vec4(v.normal, 1);
-	return Vertex((tr * position).xyz, normalMatrix * v.normal);
+	return Vertex((tr * position).xyz, normtr * v.normal);
 }
 
 void main() {
 	mat4 modelViewMatrix = viewMatrix * modelMatrix;
+	/*
+
+MV = V * M
+
+N = M.i.t
+U = V.i.t
+
+NU = V.i.t * M.i.t = (MV).i.t
+
+	 */
 
 	Vertex vertex = Vertex(vertexPosition, vertexNormal);
 
 	// Use eye coordinates
-	Vertex eyeVertex = transformVertex(modelViewMatrix, vertex);
+	Vertex eyeVertex = transformVertex(modelViewMatrix, normalModelMatrix, vertex);
+
 	vec3 eyeLightPosition = (viewMatrix * vec4(light.position, 1)).xyz;
 	// Eye vector in eye coordinates:
 	vec3 eye = normalize(-eyeVertex.position);
 
 	vec3 lightToVertex = normalize(eyeLightPosition - eyeVertex.position);
+
 	vec3 reflection = reflect(lightToVertex, eyeVertex.normal);
 
 	vec3 specularLight = (light.specular * material.specular
