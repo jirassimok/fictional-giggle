@@ -13,6 +13,8 @@ struct Material {
 	float shininess;
 };
 
+uniform lowp int usePhongInterpolation;
+
 attribute vec3 vertexPosition;
 attribute vec3 vertexNormal;
 
@@ -30,16 +32,28 @@ uniform int forceWhite; // 0 or 1
 
 varying vec4 finalColor;
 
+varying vec3 vertexPosition_eye;
+varying vec3 vertexNormal_eye;
+varying vec3 lightPosition_eye;
+
+
 void main() {
+	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1);
+	gl_PointSize = 4.0;
+
 	mat4 modelViewMatrix = viewMatrix * modelMatrix;
 	mat3 normalMatrix = mat3(modelViewMatrix);//normalViewMatrix * normalModelMatrix;
 
 	// Use eye coordinates
 
-	vec3 vertexPosition_eye = vec3(modelViewMatrix * vec4(vertexPosition, 1));
-	vec3 vertexNormal_eye = normalMatrix * vertexNormal;
+	vertexPosition_eye = vec3(modelViewMatrix * vec4(vertexPosition, 1));
+	vertexNormal_eye = normalMatrix * vertexNormal;
 
-	vec3 lightPosition_eye = vec3(viewMatrix * vec4(light.position, 1));
+	lightPosition_eye = vec3(viewMatrix * vec4(light.position, 1));
+
+	if (usePhongInterpolation > 0) {
+		return; // For Phong interpolation, leave rest to fragment shader
+	}
 
 	// Eye vector in eye coordinates:
 	vec3 eye = normalize(-vertexPosition_eye);
@@ -58,8 +72,4 @@ void main() {
 	else {
 		finalColor = vec4(1, 1, 1, 1);
 	}
-
-	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1);
-
-	gl_PointSize = 4.0;
 }
