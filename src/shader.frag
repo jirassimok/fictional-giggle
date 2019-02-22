@@ -34,11 +34,11 @@ varying vec3 lightDirection_eye;
 
 void main()
 {
-	if (!usePhongInterpolation) {
-		gl_FragColor = finalColor;
-	}
-	else if (forceWhite) {
+	if (forceWhite) {
 		gl_FragColor = vec4(1, 1, 1, 1);
+	}
+	else if (!usePhongInterpolation) {
+		gl_FragColor = finalColor;
 	}
 	else {
 		vec3 ambientLight = light.ambient * material.ambient;
