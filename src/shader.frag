@@ -36,6 +36,9 @@ void main()
 	if (!usePhongInterpolation) {
 		gl_FragColor = finalColor;
 	}
+	else if (forceWhite) {
+		gl_FragColor = vec4(1, 1, 1, 1);
+	}
 	else {
 		vec3 ambientLight = light.ambient * material.ambient;
 
@@ -58,11 +61,6 @@ void main()
 			specularLight = vec3(0, 0, 0);
 		}
 
-		if (!forceWhite) {
-			gl_FragColor = vec4(ambientLight + diffuseLight + specularLight, 1);
-		}
-		else {
-			gl_FragColor = vec4(1, 1, 1, 1);
-		}
+		gl_FragColor = vec4(ambientLight + diffuseLight + specularLight, 1);
 	}
 }

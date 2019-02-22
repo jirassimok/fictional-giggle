@@ -41,6 +41,11 @@ void main() {
 	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1);
 	gl_PointSize = 4.0;
 
+	if (forceWhite) {
+		finalColor = vec4(1, 1, 1, 1);
+		return;
+	}
+
 	mat4 modelViewMatrix = viewMatrix * modelMatrix;
 
 	// Use eye coordinates
@@ -71,10 +76,5 @@ void main() {
 	vec3 specularLight = (light.specular * material.specular
 						  * pow(max(dot(cameraToVertex, reflection), 0.0), material.shininess));
 
-	if (!forceWhite) {
-		finalColor = vec4(ambientLight + diffuseLight + specularLight, 1);
- 	}
-	else {
-		finalColor = vec4(1, 1, 1, 1);
-	}
+	finalColor = vec4(ambientLight + diffuseLight + specularLight, 1);
 }
