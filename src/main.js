@@ -304,6 +304,7 @@ window.addEventListener('keydown', e => {
         mobile.useVertexNormals();
         let phong = gl.getUniform(program, shader.usePhongShading);
         gl.uniform1i(shader.usePhongShading, !phong);
+        break;
 
     case 'L':
         updateLightSourceLines();
