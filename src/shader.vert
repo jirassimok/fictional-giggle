@@ -1,6 +1,7 @@
 
 struct Light {
 	vec3 position;
+	vec3 direction;
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 specular;
@@ -33,6 +34,7 @@ varying vec4 finalColor;
 varying vec3 vertexPosition_eye;
 varying vec3 vertexNormal_eye;
 varying vec3 lightPosition_eye;
+varying vec3 lightDirection_eye;
 
 
 void main() {
@@ -47,6 +49,7 @@ void main() {
 	vertexNormal_eye = mat3(modelViewMatrix) * vertexNormal;
 
 	lightPosition_eye = vec3(viewMatrix * vec4(light.position, 1));
+	lightDirection_eye = vec3(viewMatrix * vec4(light.direction, 1));
 
 	if (usePhongInterpolation) {
 		return; // For Phong interpolation, leave rest to fragment shader
@@ -62,6 +65,11 @@ void main() {
 
 	vec3 diffuseLight = light.diffuse * material.diffuse * dot(lightToVertex, vertexNormal_eye);
 	vec3 ambientLight = light.ambient * material.ambient;
+
+	if (dot(lightToVertex, -lightDirection_eye) < 0.5) {
+		diffuseLight = vec3(0, 0, 0);
+		specularLight = vec3(0, 0, 0);
+	}
 
 	if (!forceWhite) {
 		finalColor = vec4(ambientLight + diffuseLight + specularLight, 1);

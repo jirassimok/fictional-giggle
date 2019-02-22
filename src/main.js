@@ -66,6 +66,7 @@ const shader = Object.freeze({
 
     light: Object.freeze({
         position:      gl.getUniformLocation(program, "light.position"),
+        direction:     gl.getUniformLocation(program, "light.direction"),
         ambient:       gl.getUniformLocation(program, "light.ambient"),
         diffuse:       gl.getUniformLocation(program, "light.diffuse"),
         specular:      gl.getUniformLocation(program, "light.specular")
@@ -92,10 +93,11 @@ const settings = Object.seal({
  * The scene's light
  */
 const light = Object.seal({
-    position: new Float32Array([3, -12, 3]),
-    ambient:  new Float32Array([0.3, 0.3, 0.3]),
-    diffuse:  new Float32Array([1, 1, 1]),
-    specular: new Float32Array([1, 1, 1]),
+    position:  new Float32Array([3, -12, 3]),
+    direction: new Float32Array(MV.normalize([-1, -1, -1])),
+    ambient:   new Float32Array([0.3, 0.3, 0.3]),
+    diffuse:   new Float32Array([1, 1, 1]),
+    specular:  new Float32Array([1, 1, 1]),
 
     // For drawing the light source
     vao: gl.vao.createVertexArrayOES(),
@@ -220,6 +222,7 @@ function setup() {
 
     // Send information about the light to the shaders
     gl.uniform3fv(shader.light.position, light.position);
+    gl.uniform3fv(shader.light.direction, light.direction);
     gl.uniform3fv(shader.light.ambient, light.ambient);
     gl.uniform3fv(shader.light.diffuse, light.diffuse);
     gl.uniform3fv(shader.light.specular, light.specular);
