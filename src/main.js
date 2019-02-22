@@ -181,7 +181,7 @@ function setup() {
     gl.vao.bindVertexArrayOES(null);
 
     // Don't draw all colors as white
-    gl.uniform1i(shader.forceWhite, true);
+    gl.uniform1i(shader.forceWhite, false);
 
     gl.uniform1i(shader.usePhongShading, false);
 }
