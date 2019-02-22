@@ -11,7 +11,7 @@ import _sphere from "./sphere.mesh.json";
 import _cube from "./cube.json";
 
 const sphere = Mesh.fromJSON(_sphere);
-const cube = Mesh.fromJSON(_cube);
+const cube = Mesh.fromJSON(_cube).scaled(0.75);
 
 let white = [1, 1, 1],
     black = [0, 0, 0],
@@ -29,6 +29,7 @@ let root = Mobile.builder(cube)
     .shininess(100)
     .radius(4)
     .parentHeight(10)
+    .hangingFrom([0, 11, 0])
     .childHeight(0.5)
     .spinSpeed(0.06)
     .armSpeed(0.05),
