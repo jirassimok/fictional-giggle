@@ -180,7 +180,7 @@ function setup() {
     gl.vao.bindVertexArrayOES(null);
 
     // Don't draw all colors as white
-    gl.uniform1i(shader.forceWhite, 0);
+    gl.uniform1i(shader.forceWhite, true);
 }
 
 function render() {
@@ -199,14 +199,14 @@ function render() {
                                                                       0,0,1]));
 
     // Set forceWhite, which bypasses light calculations
-    gl.uniform1i(shader.forceWhite, 1);
+    gl.uniform1i(shader.forceWhite, true);
 
     // Draw the light source as a point
     gl.vao.bindVertexArrayOES(light.vao);
     gl.drawArrays(gl.POINTS, 0, 1);
 
     // Restore to normal state
-    gl.uniform1i(shader.forceWhite, 0);
+    gl.uniform1i(shader.forceWhite, false);
     gl.vao.bindVertexArrayOES(null);
 
     window.requestAnimationFrame(render);
