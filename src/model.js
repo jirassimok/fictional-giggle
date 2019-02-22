@@ -7,7 +7,7 @@ import { vec3 } from "./MV+.js";
 
 import * as MV from "./MV+.js";
 
-import _sphere from "./sphere.json";
+import _sphere from "./sphere.mesh.json";
 import _cube from "./cube.json";
 
 const sphere = Mesh.fromJSON(_sphere);
