@@ -19,6 +19,7 @@ uniform Material material;
 
 uniform Light light;
 
+uniform bool forceWhite;
 uniform bool usePhongInterpolation;
 
 varying vec4 finalColor;
@@ -44,6 +45,11 @@ void main()
 		vec3 diffuseLight = light.diffuse * material.diffuse * dot(lightToVertex, vertexNormal_eye);
 		vec3 ambientLight = light.ambient * material.ambient;
 
-		gl_FragColor = vec4(ambientLight + diffuseLight + specularLight, 1);
+		if (!forceWhite) {
+			gl_FragColor = vec4(ambientLight + diffuseLight + specularLight, 1);
+		}
+		else {
+			gl_FragColor = vec4(1, 1, 1, 1);
+		}
 	}
 }
