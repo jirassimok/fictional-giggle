@@ -87,6 +87,7 @@ const shader = Object.freeze({
 
 const settings = Object.seal({
     view_source: false,
+    view_lines: false,
 });
 
 /**
@@ -98,8 +99,13 @@ const light = Object.seal({
     diffuse:  new Float32Array([1, 1, 1]),
     specular: new Float32Array([1, 1, 1]),
 
+    // For drawing the light source
     vao: gl.vao.createVertexArrayOES(),
     positionBuffer: gl.createBuffer(),
+
+    // For drawing lines to the light source
+    linesVao: gl.vao.createVertexArrayOES(),
+    linesBuffer: gl.createBuffer(),
 });
 
 
@@ -157,6 +163,58 @@ function setProjection(mobile) {
 }
 
 /**
+ * Prepare the light source lines
+ *
+ * @param {Object} keywords Arguments must be given as an object
+ * @param {boolean} keywords.setup If true, set 0-normals
+ */
+function updateLightSourceLines() {
+    let lines = getLightSourceLines();
+
+    gl.vao.bindVertexArrayOES(light.linesVao);
+
+    setupBuffer(shader.position, lines, light.linesBuffer);
+
+    gl.vao.bindVertexArrayOES(null);
+}
+
+/**
+ * Get lines connecting to the light source
+ *
+ * Twelve lines form a rectangular prism with the origin at the opposite corner,
+ * and three additional lines extend along each primary axis from the light source.
+ */
+function getLightSourceLines() {
+    let [x, y, z] = light.position;
+
+    // Make a cube from the origin to the light
+    return new Float32Array([
+        // top square
+        0,0,0,  x,0,0,
+        x,0,0,  x,0,z,
+        x,0,z,  0,0,z,
+        0,0,z,  0,0,0,
+
+        // Bottom square
+        0,y,0,  x,y,0,
+        x,y,0,  x,y,z,
+        x,y,z,  0,y,z,
+        0,y,z,  0,y,0,
+
+        // vertical lines
+        0,0,0,  0,y,0,
+        x,0,0,  x,y,0,
+        x,0,z,  x,y,z,
+        0,0,z,  0,y,z,
+
+        // Axes from light source
+        1000,y,z,  -1000,y,z,
+        x,y,1000,  x,y,-1000,
+        x,1000,z,  x,-1000,z,
+    ]);
+}
+
+/**
  * Prepare scene for drawing
  */
 function setup() {
@@ -182,6 +240,8 @@ function setup() {
     setupBuffer(shader.position, light.position, light.positionBuffer);
     setupBuffer(shader.vertexNormal, [0, 0, 0],  gl.createBuffer());
 
+    updateLightSourceLines();
+
     gl.vao.bindVertexArrayOES(null);
 
     // Don't draw all colors as white
@@ -196,7 +256,7 @@ function render() {
 
     // The remainder of this function draws the light source
 
-    if (settings.view_source) {
+    if (settings.view_source || settings.view_lines) {
         // Use an identity model matrix and normal matrix
         gl.uniformMatrix4fv(shader.modelMatrix, false, new Float32Array([1,0,0,0,
                                                                          0,1,0,0,
@@ -211,6 +271,11 @@ function render() {
         // Draw the light source as a point
         gl.vao.bindVertexArrayOES(light.vao);
         gl.drawArrays(gl.POINTS, 0, 1);
+
+        if (settings.view_lines) {
+            gl.vao.bindVertexArrayOES(light.linesVao);
+            gl.drawArrays(gl.LINES, 0, 30);
+        }
 
         // Restore to normal state
         gl.uniform1i(shader.forceWhite, false);
@@ -240,7 +305,10 @@ window.addEventListener('keydown', e => {
         let phong = gl.getUniform(program, shader.usePhongShading);
         gl.uniform1i(shader.usePhongShading, !phong);
 
-    case 'L': // fallthrough for shifted key
+    case 'L':
+        updateLightSourceLines();
+        settings.view_lines = !settings.view_lines;
+        break;
     case 'l':
         settings.view_source = !settings.view_source;
         break;
