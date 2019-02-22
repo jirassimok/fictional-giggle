@@ -319,10 +319,11 @@ class MobileBuilder {
         this.mesh = mesh;
         this.hangPoint = [0, 0, 0];
 
-        this.material = Object.seal({
+        this._material = Object.seal({
             ambient: undefined,
             diffuse: undefined,
             specular: undefined,
+            shininess: undefined,
         });
 
         if (parent) {
@@ -330,11 +331,11 @@ class MobileBuilder {
 
             this._radius = parent._radius / 2;
 
-            let mat = parent.material;
-            if (mat.ambient)  this.material.ambient  = Array.from(parent.material.ambient);
-            if (mat.diffuse)  this.material.diffuse  = Array.from(parent.material.diffuse);
-            if (mat.specular) this.material.specular = Array.from(parent.material.specular);
-            this._shininess = parent._shininess;
+            let mat = parent._material;
+            if (mat.ambient)  this._material.ambient  = Array.from(mat.ambient);
+            if (mat.diffuse)  this._material.diffuse  = Array.from(mat.diffuse);
+            if (mat.specular) this._material.specular = Array.from(mat.specular);
+            if (mat.shininess) this._material.shininess = mat.shininess;
             this.parent_height = parent.parent_height;
             this.child_height = parent.child_height;
 
@@ -367,18 +368,12 @@ class MobileBuilder {
             midpoint = mesh.bounds.midpoint;
 
         // Set material with defaults
-        let material = {
-            ambient: Float32Array.from(this.material.ambient),
-            diffuse: Float32Array.from(this.material.diffuse),
-            specular: Float32Array.from(this.material.specular)
-        };
-        while (Object.values(material).some(k => k === undefined)) {
-            if (!material.ambient) material.ambient = material.diffuse;
-            if (!material.diffuse) material.diffuse = material.ambient;
-            if (!material.specular) material.specular = material.diffuse;
-        }
-        material.shininess = this._shininess;
-        Object.freeze(material);
+        let material = Object.freeze({
+            ambient: Float32Array.from(this._material.ambient),
+            diffuse: Float32Array.from(this._material.diffuse),
+            specular: Float32Array.from(this._material.specular),
+            shininess: this._material.shininess
+        });
 
         let arms = {
             vertices: [
@@ -445,10 +440,23 @@ class MobileBuilder {
      * Overridden by {@link ambient}, {@link diffuse}, and {@link specular}
      */
     color(color) {
-        let mat = this.material;
-        if (!mat.ambient  || !mat.ambient.custom_set)  mat.ambient = color;
-        if (!mat.diffuse  || !mat.diffuse.custom_set)  mat.diffuse = color;
-        if (!mat.specular || !mat.specular.custom_set) mat.specular = color;
+        let mat = this._material;
+        if (!mat.ambient  || !mat.ambient.custom_set)  mat.ambient = Array.from(color);
+        if (!mat.diffuse  || !mat.diffuse.custom_set)  mat.diffuse = Array.from(color);
+        if (!mat.specular || !mat.specular.custom_set) mat.specular = Array.from(color);
+        return this;
+    }
+
+    /**
+     * Set material properties from object
+     *
+     * @param {Material} mat
+     */
+    material(mat) {
+        this._material.ambient = Array.from(mat.ambient);
+        this._material.diffuse = Array.from(mat.diffuse);
+        this._material.specular = Array.from(mat.specular);
+        this._material.shininess = mat.shininess;
         return this;
     }
 
@@ -458,8 +466,7 @@ class MobileBuilder {
      * If not set, defaults to parent's ambient coefficient
      */
     ambient(color) {
-        this.material.ambient = Array.from(color);
-        this.material.ambient.custom_set = true;
+        this._material.ambient = Array.from(color);
         return this;
     }
 
@@ -469,8 +476,7 @@ class MobileBuilder {
      * If not set, defaults to parent's diffuse coefficient
      */
     diffuse(color) {
-        this.material.diffuse = Array.from(color);
-        this.material.diffuse.custom_set = true;
+        this._material.diffuse = Array.from(color);
         return this;
     }
 
@@ -480,13 +486,12 @@ class MobileBuilder {
      * If not set, defaults to parent's specular coefficient
      */
     specular(color) {
-        this.material.specular = Array.from(color);
-        this.material.specular.custom_set = true;
+        this._material.specular = Array.from(color);
         return this;
     }
 
     shininess(value) {
-        this._shininess = value;
+        this._material.shininess = value;
         return this;
     }
 
@@ -622,11 +627,9 @@ function assertBuilderComplete(builder) {
     else if (builder.arm_speed_source === undefined && hasAnyChildren) {
         msg = 'missing arm speed';
     }
-    else if (Object.values(builder.material).some(k => k === undefined)) {
-        msg = 'missing colors';
-    }
-    else if (builder._shininess === undefined) {
-        msg = 'missing shininess';
+    else if (Object.values(builder._material).some(k => k === undefined)) {
+        console.log(builder._material);
+        msg = 'missing material properties';
     }
     else {
         try {
