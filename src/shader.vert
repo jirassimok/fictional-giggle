@@ -13,8 +13,6 @@ struct Material {
 	float shininess;
 };
 
-uniform lowp int usePhongInterpolation;
-
 attribute vec3 vertexPosition;
 attribute vec3 vertexNormal;
 
@@ -28,10 +26,12 @@ uniform mat4 modelMatrix;
 uniform mat3 normalModelMatrix;
 uniform mat3 normalViewMatrix;
 
-uniform int forceWhite; // 0 or 1
+uniform bool forceWhite;
+uniform bool usePhongInterpolation;
 
 varying vec4 finalColor;
 
+// For Phong interpolation
 varying vec3 vertexPosition_eye;
 varying vec3 vertexNormal_eye;
 varying vec3 lightPosition_eye;
@@ -51,7 +51,7 @@ void main() {
 
 	lightPosition_eye = vec3(viewMatrix * vec4(light.position, 1));
 
-	if (usePhongInterpolation > 0) {
+	if (usePhongInterpolation) {
 		return; // For Phong interpolation, leave rest to fragment shader
 	}
 
@@ -66,9 +66,9 @@ void main() {
 	vec3 diffuseLight = light.diffuse * material.diffuse * dot(lightToVertex, vertexNormal_eye);
 	vec3 ambientLight = light.ambient * material.ambient;
 
-	if (forceWhite <= 0) {
+	if (!forceWhite) {
 		finalColor = vec4(ambientLight + diffuseLight + specularLight, 1);
-	}
+ 	}
 	else {
 		finalColor = vec4(1, 1, 1, 1);
 	}

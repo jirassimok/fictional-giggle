@@ -14,23 +14,23 @@ struct Material {
 	float shininess;
 };
 
-uniform lowp int usePhongInterpolation;
 
 uniform Material material;
 
 uniform Light light;
 
+uniform bool usePhongInterpolation;
 
 varying vec4 finalColor;
 
+// For Phong interpolation
 varying vec3 vertexPosition_eye;
 varying vec3 vertexNormal_eye;
 varying vec3 lightPosition_eye;
 
-
 void main()
 {
-	if (usePhongInterpolation <= 0) {
+	if (!usePhongInterpolation) {
 		gl_FragColor = finalColor;
 	}
 	else {
