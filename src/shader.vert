@@ -69,12 +69,14 @@ void main() {
 		return;
 	}
 
-	vec3 diffuseLight = light.diffuse * material.diffuse * dot(lightToVertex, vertexNormal_eye);
+	vec3 diffuseLight = (light.diffuse * material.diffuse
+						 * dot(lightToVertex, vertexNormal_eye));
 
 	vec3 cameraToVertex = normalize(-vertexPosition_eye);
 	vec3 reflection = reflect(-lightToVertex, vertexNormal_eye);
 	vec3 specularLight = (light.specular * material.specular
-						  * pow(max(dot(cameraToVertex, reflection), 0.0), material.shininess));
+						  * pow(max(dot(cameraToVertex, reflection), 0.0),
+								material.shininess));
 
 	finalColor = vec4(ambientLight + diffuseLight + specularLight, 1);
 }
