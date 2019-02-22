@@ -78,6 +78,7 @@ const shader = Object.freeze({
     projectionMatrix:  gl.getUniformLocation(program, "projectionMatrix"),
 
     forceWhite:        gl.getUniformLocation(program, "forceWhite"),
+    usePhongShading:   gl.getUniformLocation(program, "usePhongInterpolation"),
 });
 
 
@@ -181,6 +182,8 @@ function setup() {
 
     // Don't draw all colors as white
     gl.uniform1i(shader.forceWhite, true);
+
+    gl.uniform1i(shader.usePhongShading, false);
 }
 
 function render() {
@@ -225,6 +228,11 @@ window.addEventListener('keydown', e => {
     case 'M':
         mobile.useFaceNormals();
         break;
+    case 'N': // fallthrough for shifted key
+    case 'n':
+        mobile.useVertexNormals();
+        let phong = gl.getUniform(program, shader.usePhongShading);
+        gl.uniform1i(shader.usePhongShading, !phong);
     }
 });
 
