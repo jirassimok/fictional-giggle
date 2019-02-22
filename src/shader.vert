@@ -23,8 +23,6 @@ uniform Light light;
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
-uniform mat3 normalModelMatrix;
-uniform mat3 normalViewMatrix;
 
 uniform bool forceWhite;
 uniform bool usePhongInterpolation;
@@ -42,12 +40,11 @@ void main() {
 	gl_PointSize = 4.0;
 
 	mat4 modelViewMatrix = viewMatrix * modelMatrix;
-	mat3 normalMatrix = mat3(modelViewMatrix);//normalViewMatrix * normalModelMatrix;
 
 	// Use eye coordinates
 
 	vertexPosition_eye = vec3(modelViewMatrix * vec4(vertexPosition, 1));
-	vertexNormal_eye = normalMatrix * vertexNormal;
+	vertexNormal_eye = mat3(modelViewMatrix) * vertexNormal;
 
 	lightPosition_eye = vec3(viewMatrix * vec4(light.position, 1));
 

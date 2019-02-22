@@ -40,7 +40,6 @@ export let DEFAULT_MESH_SPEED = () => 0.05,
  *
  * @property {Object} shader Shader locations
  * @property {WebGLUniformLocation} shader.modelMatrix
- * @property {WebGLUniformLocation} shader.normalMatrix
  * @property {Object} shader.material Material property locations
  * @property {WebGLUniformLocation} shader.material.ambient
  * @property {WebGLUniformLocation} shader.material.diffuse
@@ -131,7 +130,6 @@ export class Mobile {
      *
      * @param {Object} locations The locations of various shader variables
      * @param {WebGLUniformLocation} locations.modelMatrix The uniform model matrix
-     * @property {WebGLUniformLocation} shader.normalModelMatrix
      * @param {GLint} locations.position Vertex position attribute
      * @param {Object} locations.material
      * @param {GLUniformLocation} locations.material.ambient Ambient coefficient
@@ -145,7 +143,6 @@ export class Mobile {
         this.shader = Object.seal({
             material: locations.material,
             modelMatrix: locations.modelMatrix,
-            normalMatrix: locations.normalModelMatrix,
             vertexNormal: locations.vertexNormal,
         });
 
@@ -193,7 +190,6 @@ export class Mobile {
             meshNormalMatrix = MV.transpose(MV.inverse(MV.mat3(...meshModelMatrix)));
 
         gl.uniformMatrix4fv(this.shader.modelMatrix, false, MV.flatten(meshModelMatrix));
-        gl.uniformMatrix3fv(this.shader.normalMatrix, false, MV.flatten(meshNormalMatrix));
 
         // Draw mesh (skip empty mobile elements)
         if (this.mesh.vertices.length) {
@@ -208,7 +204,6 @@ export class Mobile {
             armNormalMatrix = MV.mat3();
 
         gl.uniformMatrix4fv(this.shader.modelMatrix, false, MV.flatten(armModelMatrix));
-        gl.uniformMatrix3fv(this.shader.normalMatrix, false, MV.flatten(armNormalMatrix));
 
         // Draw arms
 
