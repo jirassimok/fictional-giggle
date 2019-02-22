@@ -85,6 +85,10 @@ const shader = Object.freeze({
 
 //// Global state
 
+const settings = Object.seal({
+    view_source: false,
+});
+
 /**
  * The scene's light
  */
@@ -192,25 +196,26 @@ function render() {
 
     // The remainder of this function draws the light source
 
-    // Use an identity model matrix and normal matrix
-    gl.uniformMatrix4fv(shader.modelMatrix, false, new Float32Array([1,0,0,0,
-                                                                     0,1,0,0,
-                                                                     0,0,1,0,
-                                                                     0,0,0,1]));
-    gl.uniformMatrix3fv(shader.normalMatrix, false, new Float32Array([1,0,0,
-                                                                      0,1,0,
-                                                                      0,0,1]));
+    if (settings.view_source) {
+        // Use an identity model matrix and normal matrix
+        gl.uniformMatrix4fv(shader.modelMatrix, false, new Float32Array([1,0,0,0,
+                                                                         0,1,0,0,
+                                                                         0,0,1,0,
+                                                                         0,0,0,1]));
+        gl.uniformMatrix3fv(shader.normalMatrix, false, new Float32Array([1,0,0,
+                                                                          0,1,0,
+                                                                          0,0,1]));
+        // Set forceWhite, which bypasses light calculations
+        gl.uniform1i(shader.forceWhite, true);
 
-    // Set forceWhite, which bypasses light calculations
-    gl.uniform1i(shader.forceWhite, true);
+        // Draw the light source as a point
+        gl.vao.bindVertexArrayOES(light.vao);
+        gl.drawArrays(gl.POINTS, 0, 1);
 
-    // Draw the light source as a point
-    gl.vao.bindVertexArrayOES(light.vao);
-    gl.drawArrays(gl.POINTS, 0, 1);
-
-    // Restore to normal state
-    gl.uniform1i(shader.forceWhite, false);
-    gl.vao.bindVertexArrayOES(null);
+        // Restore to normal state
+        gl.uniform1i(shader.forceWhite, false);
+        gl.vao.bindVertexArrayOES(null);
+    }
 
     window.requestAnimationFrame(render);
 }
@@ -228,11 +233,17 @@ window.addEventListener('keydown', e => {
     case 'M':
         mobile.useFaceNormals();
         break;
+
     case 'N': // fallthrough for shifted key
     case 'n':
         mobile.useVertexNormals();
         let phong = gl.getUniform(program, shader.usePhongShading);
         gl.uniform1i(shader.usePhongShading, !phong);
+
+    case 'L': // fallthrough for shifted key
+    case 'l':
+        settings.view_source = !settings.view_source;
+        break;
     }
 });
 
