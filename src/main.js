@@ -68,6 +68,7 @@ const shader = Object.freeze({
     light: Object.freeze({
         position:      gl.getUniformLocation(program, "light.position"),
         direction:     gl.getUniformLocation(program, "light.direction"),
+        angle:         gl.getUniformLocation(program, "light.angle"),
         ambient:       gl.getUniformLocation(program, "light.ambient"),
         diffuse:       gl.getUniformLocation(program, "light.diffuse"),
         specular:      gl.getUniformLocation(program, "light.specular")
@@ -96,6 +97,7 @@ const settings = Object.seal({
 const light = Object.seal({
     position:  new Float32Array([3, -12, 3]),
     direction: new Float32Array(MV.normalize([-1, -1, -1])),
+    angle:     0.5,
     ambient:   new Float32Array([0.3, 0.3, 0.3]),
     diffuse:   new Float32Array([1, 1, 1]),
     specular:  new Float32Array([1, 1, 1]),
@@ -224,6 +226,7 @@ function setup() {
     // Send information about the light to the shaders
     gl.uniform3fv(shader.light.position, light.position);
     gl.uniform3fv(shader.light.direction, light.direction);
+    gl.uniform1f(shader.light.angle, light.angle);
     gl.uniform3fv(shader.light.ambient, light.ambient);
     gl.uniform3fv(shader.light.diffuse, light.diffuse);
     gl.uniform3fv(shader.light.specular, light.specular);
@@ -244,7 +247,7 @@ function setup() {
 
     // Don't draw all colors as white
     gl.uniform1i(shader.forceWhite, false);
-
+    // Don't use Phong shading
     gl.uniform1i(shader.usePhongShading, false);
 }
 

@@ -3,6 +3,7 @@ precision highp float;
 struct Light {
 	vec3 position;
 	vec3 direction;
+	float angle;
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 specular;
@@ -58,7 +59,7 @@ void main()
 							  * pow(max(dot(cameraToVertex, reflection), 0.0),
 									material.shininess));
 
-		if (dot(lightToVertex, -lightDirection_eye) < 0.5) {
+		if (dot(lightToVertex, -lightDirection_eye) < light.angle) {
 			diffuseLight = vec3(0, 0, 0);
 			specularLight = vec3(0, 0, 0);
 		}

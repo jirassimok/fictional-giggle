@@ -2,6 +2,7 @@
 struct Light {
 	vec3 position;
 	vec3 direction;
+	float angle;
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 specular;
@@ -64,7 +65,7 @@ void main() {
 
 	vec3 ambientLight = light.ambient * material.ambient;
 
-	if (dot(lightToVertex, -lightDirection_eye) < 0.5) {
+	if (dot(lightToVertex, -lightDirection_eye) < light.angle) {
 		finalColor = vec4(ambientLight, 1);
 		return;
 	}
