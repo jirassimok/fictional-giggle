@@ -55,21 +55,21 @@ void main() {
 		return; // For Phong interpolation, leave rest to fragment shader
 	}
 
-	// Eye vector in eye coordinates:
-	vec3 eye = normalize(-vertexPosition_eye);
-
 	vec3 lightToVertex = normalize(lightPosition_eye - vertexPosition_eye);
-	vec3 reflection = reflect(-lightToVertex, vertexNormal_eye);
-	vec3 specularLight = (light.specular * material.specular
-						  * pow(max(dot(eye, reflection), 0.0), material.shininess));
 
-	vec3 diffuseLight = light.diffuse * material.diffuse * dot(lightToVertex, vertexNormal_eye);
 	vec3 ambientLight = light.ambient * material.ambient;
 
 	if (dot(lightToVertex, -lightDirection_eye) < 0.5) {
-		diffuseLight = vec3(0, 0, 0);
-		specularLight = vec3(0, 0, 0);
+		finalColor = vec4(ambientLight, 1);
+		return;
 	}
+
+	vec3 diffuseLight = light.diffuse * material.diffuse * dot(lightToVertex, vertexNormal_eye);
+
+	vec3 cameraToVertex = normalize(-vertexPosition_eye);
+	vec3 reflection = reflect(-lightToVertex, vertexNormal_eye);
+	vec3 specularLight = (light.specular * material.specular
+						  * pow(max(dot(cameraToVertex, reflection), 0.0), material.shininess));
 
 	if (!forceWhite) {
 		finalColor = vec4(ambientLight + diffuseLight + specularLight, 1);
