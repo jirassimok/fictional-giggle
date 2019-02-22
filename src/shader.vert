@@ -13,11 +13,6 @@ struct Material {
 	float shininess;
 };
 
-struct Vertex {
-	vec3 position;
-	vec3 normal;
-};
-
 attribute vec3 vertexPosition;
 attribute vec3 vertexNormal;
 
@@ -29,46 +24,32 @@ uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 uniform mat3 normalModelMatrix;
+uniform mat3 normalViewMatrix;
 
 uniform int forceWhite; // 0 or 1
 
 varying vec4 finalColor;
 
-Vertex transformVertex(mat4 tr, mat3 normtr, Vertex v) {
-	vec4 position = vec4(v.position, 1);
-	return Vertex((tr * position).xyz, normtr * v.normal);
-}
-
 void main() {
 	mat4 modelViewMatrix = viewMatrix * modelMatrix;
-	/*
-
-MV = V * M
-
-N = M.i.t
-U = V.i.t
-
-NU = V.i.t * M.i.t = (MV).i.t
-
-	 */
-
-	Vertex vertex = Vertex(vertexPosition, vertexNormal);
+	mat3 normalMatrix = mat3(modelViewMatrix);//normalViewMatrix * normalModelMatrix;
 
 	// Use eye coordinates
-	Vertex eyeVertex = transformVertex(modelViewMatrix, normalModelMatrix, vertex);
 
-	vec3 eyeLightPosition = (viewMatrix * vec4(light.position, 1)).xyz;
+	vec3 vertexPosition_eye = vec3(modelViewMatrix * vec4(vertexPosition, 1));
+	vec3 vertexNormal_eye = normalMatrix * vertexNormal;
+
+	vec3 lightPosition_eye = vec3(viewMatrix * vec4(light.position, 1));
+
 	// Eye vector in eye coordinates:
-	vec3 eye = normalize(-eyeVertex.position);
+	vec3 eye = normalize(-vertexPosition_eye);
 
-	vec3 lightToVertex = normalize(eyeLightPosition - eyeVertex.position);
-
-	vec3 reflection = reflect(lightToVertex, eyeVertex.normal);
-
+	vec3 lightToVertex = normalize(lightPosition_eye - vertexPosition_eye);
+	vec3 reflection = reflect(-lightToVertex, vertexNormal_eye);
 	vec3 specularLight = (light.specular * material.specular
 						  * pow(max(dot(eye, reflection), 0.0), material.shininess));
 
-	vec3 diffuseLight = light.diffuse * material.diffuse * dot(lightToVertex, eyeVertex.normal);
+	vec3 diffuseLight = light.diffuse * material.diffuse * dot(lightToVertex, vertexNormal_eye);
 	vec3 ambientLight = light.ambient * material.ambient;
 
 	if (forceWhite <= 0) {
@@ -78,7 +59,7 @@ NU = V.i.t * M.i.t = (MV).i.t
 		finalColor = vec4(1, 1, 1, 1);
 	}
 
-	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertex.position, 1);
+	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1);
 
 	gl_PointSize = 4.0;
 }

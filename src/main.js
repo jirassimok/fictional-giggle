@@ -74,6 +74,7 @@ const shader = Object.freeze({
     modelMatrix:       gl.getUniformLocation(program, "modelMatrix"),
     normalModelMatrix: gl.getUniformLocation(program, "normalModelMatrix"),
     viewMatrix:        gl.getUniformLocation(program, "viewMatrix"),
+    normalViewMatrix:  gl.getUniformLocation(program, "normalViewMatrix"),
     projectionMatrix:  gl.getUniformLocation(program, "projectionMatrix"),
 
     forceWhite:        gl.getUniformLocation(program, "forceWhite"),
@@ -132,6 +133,10 @@ function setProjection(mobile) {
 	    up = FORCE_UP ? FORCE_UP : vec3(0, 1, 0);
 
 	var viewMatrix = MV.lookAt(eye, at, up);
+
+    gl.uniformMatrix3fv(shader.normalViewMatrix,
+                        false,
+                        MV.flatten(MV.transpose(MV.inverse(MV.mat3(...viewMatrix)))));
 
     // // Add margins around the  mesh
     let margins = MV.scalem(0.9, 0.9, 0.9);
