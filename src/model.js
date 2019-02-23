@@ -82,10 +82,11 @@ let root = Mobile.builder(cube)
     .armSpeed(0.1),
 
     rrl = rr.left(sphere.scaled(0.25))
-    .color(blue)
+    .material(mat.pearl)
+    .ambient(mat.pearl.ambient.map(c => c * 2))
     .spinSpeed(0.5),
     rrr = rr.right(cube.scaled(0.25))
-    .color(white)
+    .color(blue)
     .spinSpeed(0.05);
 
 export const mobile = root.build();
