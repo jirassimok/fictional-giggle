@@ -14,7 +14,7 @@ import _cow from "./cow.mesh.json";
 
 const sphere = Mesh.fromJSON(_sphere);
 const cube = Mesh.fromJSON(_cube).scaled(0.75);
-const cow = Mesh.fromJSON(_cow).scaled(0.75).atZero();
+const cow = Mesh.fromJSON(_cow).scaled(0.75).atZero().translated(0.2, 0, 0);
 
 let white = [1, 1, 1],
     black = [0, 0, 0],
@@ -63,7 +63,7 @@ let root = Mobile.builder(cube)
     .childHeight(0.25)
     .spinSpeed(0.3),
 
-    lrl = lr.left(cube.scaled(0.5))
+    lrl = lr.left(cow.scaled(0.5))
     .color(gray)
     .spinSpeed(0.1),
 
