@@ -10,12 +10,7 @@ import { AnimationTracker } from "./Animations.js";
 /**
  * Default color for mobile strings
  */
-const ARM_MATERIAL = Object.freeze({
-    ambient: [0.62745098, 0.32156863, 0.17647059],
-    diffuse: [0.62745098, 0.32156863, 0.17647059],
-    specular: [0, 0, 0],
-    shininess: 0
-});
+const ARM_COLOR = [0.62745098, 0.32156863, 0.17647059];
 
            /** Default speed for all mobiles' meshes */
 export let DEFAULT_MESH_SPEED = () => 0.05,
@@ -136,6 +131,8 @@ export class Mobile {
      * @param {GLUniformLocation} locations.material.diffuse Diffuse coefficient
      * @param {GLUniformLocation} locations.material.specular Specular coefficient
      * @param {GLUniformLocation} locations.material.shininess Material shininess
+     * @param {GLUniformLocation} locations.useForceColor
+     * @param {GLUniformLocation} locations.forceColor
      * @param {GLint} locations.vertexNormal Vertex normal attribute
      */
     setup(locations) {
@@ -144,6 +141,8 @@ export class Mobile {
             material: locations.material,
             modelMatrix: locations.modelMatrix,
             vertexNormal: locations.vertexNormal,
+            useForceColor: locations.useForceColor,
+            forceColor: locations.forceColor
         });
 
         this.buffers = Object.freeze({
@@ -208,10 +207,13 @@ export class Mobile {
         // Draw arms
 
         // Set arm color
-        this.bindMaterial(ARM_MATERIAL);
+        gl.uniform1i(this.shader.useForceColor, true);
+        gl.uniform3fv(this.shader.forceColor, ARM_COLOR);
 
         gl.vao.bindVertexArrayOES(this.arm_vao);
         gl.drawElements(gl.LINES, this.arms.indices.flat(1).length, gl.UNSIGNED_BYTE, 0);
+
+        gl.uniform1i(this.shader.useForceColor, false);
 
         // Draw children
         // (add a translation by this element's matrix to the children's model matrices)
@@ -455,31 +457,16 @@ class MobileBuilder {
         return this;
     }
 
-    /**
-     * Set ambient coefficients
-     *
-     * If not set, defaults to parent's ambient coefficient
-     */
     ambient(color) {
         this._material.ambient = Array.from(color);
         return this;
     }
 
-    /**
-     * Set diffuse coefficients
-     *
-     * If not set, defaults to parent's diffuse coefficient
-     */
     diffuse(color) {
         this._material.diffuse = Array.from(color);
         return this;
     }
 
-    /**
-     * Set diffuse coefficients
-     *
-     * If not set, defaults to parent's specular coefficient
-     */
     specular(color) {
         this._material.specular = Array.from(color);
         return this;
