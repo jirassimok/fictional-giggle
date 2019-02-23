@@ -91,7 +91,7 @@ export class Mobile {
      * The model matrix will only apply to the root of a drawn mobile.
      *
      * The given mesh will be attached to its parent and children by vertical
-     * lines connected to its midpoint.
+     * lines connected to the origin.
      */
     constructor(mesh, material, arms,
                 radius, parent_height, child_height,
@@ -382,7 +382,7 @@ class MobileBuilder {
 
         // Translate vertices and create mesh
         let mesh = this.mesh.translated(0, translate_y, 0),
-            midpoint = mesh.bounds.midpoint;
+            center = [0, translate_y, 0];
 
         // Set material with defaults
         let material = Object.freeze({
@@ -394,19 +394,19 @@ class MobileBuilder {
 
         let arms = {
             vertices: [
-                midpoint, // (0)
+                center, // (0)
                 // (1) Top of upwards connector
-                vec3(midpoint.x, midpoint.y + full_parent_height, midpoint.z),
+                vec3(center.x, center.y + full_parent_height, center.z),
                 // (2) Bottom of downwards connector
-                vec3(midpoint.x, midpoint.y - full_child_height,  midpoint.z),
+                vec3(center.x, center.y - full_child_height,  center.z),
                 // (3) Left end of arm
-                vec3(midpoint.x - this._radius,
-                     midpoint.y - full_child_height,
-                     midpoint.z),
+                vec3(center.x - this._radius,
+                     center.y - full_child_height,
+                     center.z),
                 // (4) Right end of arm
-                vec3(midpoint.x + this._radius,
-                     midpoint.y - full_child_height,
-                     midpoint.z)
+                vec3(center.x + this._radius,
+                     center.y - full_child_height,
+                     center.z)
             ],
             indices: [[0, 1]] // always connect to parent
         };
