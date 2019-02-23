@@ -64,7 +64,7 @@ let root = Mobile.builder(cube)
     .spinSpeed(0.3),
 
     lrl = lr.left(cow.scaled(0.5))
-    .color(gray)
+    .material(mat.gold) /* Ref: Exodus 32 */
     .spinSpeed(0.1),
 
     rl = R.left(sphere)
