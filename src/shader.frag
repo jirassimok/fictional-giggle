@@ -52,7 +52,7 @@ void main()
 		}
 
 		vec3 diffuseLight = (light.diffuse * material.diffuse
-							 * dot(lightToVertex, vertexNormal_eye));
+							 * max(dot(lightToVertex, vertexNormal_eye), 0.0));
 
 		vec3 cameraToVertex = normalize(-vertexPosition_eye);
 		vec3 reflection = reflect(-lightToVertex, vertexNormal_eye);
