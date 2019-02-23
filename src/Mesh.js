@@ -29,6 +29,7 @@ const copyVector = ([x, y, z]) => Object.freeze([x, y, z]);
  * @param {number[][]} faces
  * @param {vec3[]} vertexNormals
  * @param {vec3[]} faceNormals
+ * @param {vec3[]} barycenters
  */
 export class Mesh {
     /**
@@ -85,7 +86,15 @@ export class Mesh {
             this.faceNormals = faces.flatMap(
                 (face, f) => face.map(
                     fn => this.faceNormals[f]));
+
         }
+
+        // Use barycenters of faces
+        this.barycenters = faces.flatMap(
+            face => face
+                .map(f => vertices[f])
+                .reduce(([x1, y1, z1], [x2, y2, z2]) => [x1 + x2, y1 + y2, z1 + z2])
+                .map(c => c / face.length));
     }
 
     /**
