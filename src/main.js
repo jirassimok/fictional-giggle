@@ -53,6 +53,7 @@ const shader = Object.freeze({
 	    specular:      gl.getUniformLocation(program, "material.specular"),
 	    shininess:     gl.getUniformLocation(program, "material.shininess"),
     }),
+    forceColor:        gl.getUniformLocation(program, "forceColor"),
 
     light: Object.freeze({
         position:      gl.getUniformLocation(program, "light.position"),
@@ -67,7 +68,7 @@ const shader = Object.freeze({
     viewMatrix:        gl.getUniformLocation(program, "viewMatrix"),
     projectionMatrix:  gl.getUniformLocation(program, "projectionMatrix"),
 
-    forceWhite:        gl.getUniformLocation(program, "forceWhite"),
+    useForceColor:     gl.getUniformLocation(program, "useForceColor"),
     usePhongShading:   gl.getUniformLocation(program, "usePhongInterpolation"),
 });
 
@@ -235,7 +236,7 @@ function setup() {
     gl.vao.bindVertexArrayOES(null);
 
     // Don't draw all colors as white
-    gl.uniform1i(shader.forceWhite, false);
+    gl.uniform1i(shader.useForceColor, false);
     // Don't use Phong shading
     gl.uniform1i(shader.usePhongShading, false);
 }
@@ -252,8 +253,9 @@ function render() {
                                                                          0,1,0,0,
                                                                          0,0,1,0,
                                                                          0,0,0,1]));
-        // Set forceWhite, which bypasses light calculations
-        gl.uniform1i(shader.forceWhite, true);
+        // Bypass light calculation
+        gl.uniform1i(shader.useForceColor, true);
+        gl.uniform3fv(shader.forceColor, new Float32Array([1, 1, 1]));
 
         // Draw the light source as a point
         gl.vao.bindVertexArrayOES(light.vao);
@@ -265,7 +267,7 @@ function render() {
         }
 
         // Restore to normal state
-        gl.uniform1i(shader.forceWhite, false);
+        gl.uniform1i(shader.useForceColor, false);
         gl.vao.bindVertexArrayOES(null);
     }
 

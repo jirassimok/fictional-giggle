@@ -19,6 +19,7 @@ attribute vec3 vertexPosition;
 attribute vec3 vertexNormal;
 
 uniform Material material;
+uniform vec3 forceColor;
 
 uniform Light light;
 
@@ -26,7 +27,7 @@ uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 
-uniform bool forceWhite;
+uniform bool useForceColor;
 uniform bool usePhongInterpolation;
 
 varying vec4 finalColor;
@@ -42,8 +43,8 @@ void main() {
 	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1);
 	gl_PointSize = 4.0;
 
-	if (forceWhite) {
-		finalColor = vec4(1, 1, 1, 1);
+	if (useForceColor) {
+		finalColor = vec4(forceColor, 1);
 		return;
 	}
 

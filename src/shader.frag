@@ -18,10 +18,11 @@ struct Material {
 
 
 uniform Material material;
+uniform vec3 forceColor;
 
 uniform Light light;
 
-uniform bool forceWhite;
+uniform bool useForceColor;
 uniform bool usePhongInterpolation;
 
 varying vec4 finalColor;
@@ -34,8 +35,8 @@ varying vec3 lightDirection_eye;
 
 void main()
 {
-	if (forceWhite) {
-		gl_FragColor = vec4(1, 1, 1, 1);
+	if (useForceColor) {
+		gl_FragColor = vec4(forceColor, 1);
 	}
 	else if (!usePhongInterpolation) {
 		gl_FragColor = finalColor;
