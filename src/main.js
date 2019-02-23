@@ -68,7 +68,7 @@ const shader = Object.freeze({
     light: Object.freeze({
         position:      gl.getUniformLocation(program, "light.position"),
         direction:     gl.getUniformLocation(program, "light.direction"),
-        angle:         gl.getUniformLocation(program, "light.angle"),
+        cosAngle:      gl.getUniformLocation(program, "light.cosAngle"),
         ambient:       gl.getUniformLocation(program, "light.ambient"),
         diffuse:       gl.getUniformLocation(program, "light.diffuse"),
         specular:      gl.getUniformLocation(program, "light.specular")
@@ -226,7 +226,7 @@ function setup() {
     // Send information about the light to the shaders
     gl.uniform3fv(shader.light.position, light.position);
     gl.uniform3fv(shader.light.direction, light.direction);
-    gl.uniform1f(shader.light.angle, light.angle);
+    gl.uniform1f(shader.light.cosAngle, light.cosAngle);
     gl.uniform3fv(shader.light.ambient, light.ambient);
     gl.uniform3fv(shader.light.diffuse, light.diffuse);
     gl.uniform3fv(shader.light.specular, light.specular);

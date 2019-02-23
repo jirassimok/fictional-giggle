@@ -3,7 +3,7 @@ precision highp float;
 struct Light {
 	vec3 position;
 	vec3 direction;
-	float angle;
+	float cosAngle;
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 specular;
@@ -45,7 +45,7 @@ void main()
 
 		vec3 lightToVertex = normalize(lightPosition_eye - vertexPosition_eye);
 
-		if (dot(lightToVertex, -lightDirection_eye) < 0.5) {
+		if (dot(lightToVertex, -lightDirection_eye) < light.cosAngle) {
 			gl_FragColor = vec4(ambientLight, 1);
 			return;
 		}
@@ -58,11 +58,6 @@ void main()
 		vec3 specularLight = (light.specular * material.specular
 							  * pow(max(dot(cameraToVertex, reflection), 0.0),
 									material.shininess));
-
-		if (dot(lightToVertex, -lightDirection_eye) < light.angle) {
-			diffuseLight = vec3(0, 0, 0);
-			specularLight = vec3(0, 0, 0);
-		}
 
 		gl_FragColor = vec4(ambientLight + diffuseLight + specularLight, 1);
 	}
