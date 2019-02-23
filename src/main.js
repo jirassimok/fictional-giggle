@@ -21,13 +21,16 @@ import { mobile } from "./model.js";
 import * as MV from "./MV+.js";
 import * as Key from "./KeyboardUI.js";
 
-// The position of the light
-let LIGHT_POSITION = [2, -4,  18];
 
 // Force the camera to use specified values
-let FORCE_EYE = undefined,
-    FORCE_AT  = undefined,
-    FORCE_UP  = undefined;
+const FORCE_EYE = [0, -3, 20],
+      FORCE_AT  = [0, -3, 0],
+      FORCE_UP  = undefined;
+
+// Initial values for the light
+const LIGHT_POSITION = [2, -1, 15],
+      LIGHT_DIRECTION = MV.subtract(FORCE_AT, LIGHT_POSITION), // point at same place as camera
+      LIGHT_ANGLE = 15; // in degrees
 
 
 //// Additional WebGL setup (see setup.js for pre-program initialization)
@@ -87,12 +90,12 @@ const settings = Object.seal({
  * The scene's light
  */
 const light = Object.seal({
-    position:  new Float32Array(LIGHT_POSITION),
-    direction: new Float32Array(MV.normalize([0, 0, -1])),
-    cosAngle:  Math.cos(10 * Math.PI / 180),
-    ambient:   new Float32Array([0.3, 0.3, 0.3]),
-    diffuse:   new Float32Array([1, 1, 1]),
-    specular:  new Float32Array([1, 1, 1]),
+    position:  LIGHT_POSITION,
+    direction: MV.normalize(LIGHT_DIRECTION),
+    angle:     LIGHT_ANGLE,
+    ambient:   [0.3, 0.3, 0.3],
+    diffuse:   [1, 1, 1],
+    specular:  [1, 1, 1],
 
     // For drawing the light source
     vao: gl.vao.createVertexArrayOES(),
@@ -207,6 +210,10 @@ function getLightSourceLines() {
     ]);
 }
 
+function updateLightAngle() {
+    gl.uniform1f(shader.light.cosAngle, Math.cos(light.angle * Math.PI / 180));
+}
+
 /**
  * Prepare scene for drawing
  */
@@ -220,10 +227,10 @@ function setup() {
     // Send information about the light to the shaders
     gl.uniform3fv(shader.light.position, light.position);
     gl.uniform3fv(shader.light.direction, light.direction);
-    gl.uniform1f(shader.light.cosAngle, light.cosAngle);
     gl.uniform3fv(shader.light.ambient, light.ambient);
     gl.uniform3fv(shader.light.diffuse, light.diffuse);
     gl.uniform3fv(shader.light.specular, light.specular);
+    updateLightAngle();
 
     mobile.setup(shader);
 
@@ -285,6 +292,16 @@ window.addEventListener('keydown', e => {
     }
 
     switch (e.key) {
+    case 'p':
+        Key.activate('p');
+        light.angle += 1;
+        updateLightAngle();
+        break;
+    case 'P':
+        Key.activate('P');
+        light.angle -= 1;
+        updateLightAngle();
+        break;
     case 'm':
         Key.activate('m');
         //window.setTimeout(() => Key.deactivate('m'), 100);
