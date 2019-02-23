@@ -35,6 +35,8 @@ export let DEFAULT_MESH_SPEED = () => 0.05,
  *
  * @property {Object} shader Shader locations
  * @property {WebGLUniformLocation} shader.modelMatrix
+ * @param {GLUniformLocation} shader.useForceColor
+ * @param {GLUniformLocation} shader.forceColor
  * @property {Object} shader.material Material property locations
  * @property {WebGLUniformLocation} shader.material.ambient
  * @property {WebGLUniformLocation} shader.material.diffuse
@@ -46,6 +48,7 @@ export let DEFAULT_MESH_SPEED = () => 0.05,
  * @property {WebGLBuffer} buffers.normals
  * @property {WebGLBuffer} buffers.arms
  * @property {WebGLBuffer} buffers.arm_indices
+ * @property {WebGLBuffer} buffers.lighting_positions
  *
  * @property {WebGLVertexArrayObject} mesh_vao Vertex Array Object for mesh rendering
  * @property {WebGLVertexArrayObject} arm_vao Vertex Array Object for arm rendering
@@ -134,6 +137,7 @@ export class Mobile {
      * @param {GLUniformLocation} locations.useForceColor
      * @param {GLUniformLocation} locations.forceColor
      * @param {GLint} locations.vertexNormal Vertex normal attribute
+     * @param {GLint} locations.lightingPosition Vertex position for lighting purposes
      */
     setup(locations) {
         // Save locations for draw-time use
@@ -149,7 +153,8 @@ export class Mobile {
             vertices: gl.createBuffer(),
             normals: gl.createBuffer(),
             arms: gl.createBuffer(),
-            arm_indices: gl.createBuffer()
+            arm_indices: gl.createBuffer(),
+            lighting_positions: gl.createBuffer(),
         });
 
         // Prepare a VAO for the mesh
@@ -159,6 +164,7 @@ export class Mobile {
 
             setupBuffer(locations.position, this.mesh.vertices, this.buffers.vertices);
             setupBuffer(locations.vertexNormal, this.mesh.vertexNormals, this.buffers.normals);
+            setupBuffer(locations.lightingPosition, this.mesh.vertices, this.buffers.lighting_positions);
         }
 
         // Prepare a VAO for the strings
@@ -230,32 +236,46 @@ export class Mobile {
     }
 
     /**
-     * Make this mobile use vertex normals for shading
+     * Make this mobile use vertex normals and vertex positions for non-flat shading
      */
     useVertexNormals() {
         this.apply(that => {
             if (that.mesh.vertices.length) {
                 gl.vao.bindVertexArrayOES(that.mesh_vao);
+
                 gl.bindBuffer(gl.ARRAY_BUFFER, that.buffers.normals);
                 gl.bufferData(gl.ARRAY_BUFFER,
                               new Float32Array(that.mesh.vertexNormals.flat(1)),
                               gl.STATIC_DRAW);
+
+                gl.bindBuffer(gl.ARRAY_BUFFER, that.buffers.lighting_positions);
+                gl.bufferData(gl.ARRAY_BUFFER,
+                              new Float32Array(that.mesh.vertices.flat(1)),
+                              gl.STATIC_DRAW);
+
                 gl.vao.bindVertexArrayOES(null);
             }
         });
     }
 
     /**
-     * Make this mobile use face normals for shading
+     * Make this mobile use face normals and barycenters for flat shading
      */
     useFaceNormals() {
         this.apply(that => {
             if (this.mesh.vertices.length) {
                 gl.vao.bindVertexArrayOES(that.mesh_vao);
+
                 gl.bindBuffer(gl.ARRAY_BUFFER, that.buffers.normals);
                 gl.bufferData(gl.ARRAY_BUFFER,
                               new Float32Array(that.mesh.faceNormals.flat(1)),
                               gl.STATIC_DRAW);
+
+                gl.bindBuffer(gl.ARRAY_BUFFER, that.buffers.lighting_positions);
+                gl.bufferData(gl.ARRAY_BUFFER,
+                              new Float32Array(that.mesh.barycenters.flat(1)),
+                              gl.STATIC_DRAW);
+
                 gl.vao.bindVertexArrayOES(null);
         }
         });

@@ -17,6 +17,8 @@ struct Material {
 
 attribute vec3 vertexPosition;
 attribute vec3 vertexNormal;
+// Position of vertex for lighting purposes
+attribute vec3 vertexLightingPosition;
 
 uniform Material material;
 uniform vec3 forceColor;
@@ -54,7 +56,7 @@ void main() {
 		return;
 	}
 
-	vertexPosition_world = vec3(modelMatrix * vec4(vertexPosition, 1));
+	vertexPosition_world = vec3(modelMatrix * vec4(vertexLightingPosition, 1));
 	vertexNormal_world = mat3(modelMatrix) * vertexNormal;
 
 	if (usePhongInterpolation) {
