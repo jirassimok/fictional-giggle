@@ -197,7 +197,7 @@ export class Mobile {
         gl.uniformMatrix4fv(this.shader.modelMatrix, false, MV.flatten(meshModelMatrix));
 
         // Draw mesh (skip empty mobile elements)
-        if (this.mesh.vertices.length) {
+        if (this.mesh.faces.length) {
             // Set color
             this.bindMaterial();
             gl.vao.bindVertexArrayOES(this.mesh_vao);
