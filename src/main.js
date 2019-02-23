@@ -307,17 +307,18 @@ window.addEventListener('keydown', e => {
         Key.activate('m');
         //window.setTimeout(() => Key.deactivate('m'), 100);
         mobile.useVertexNormals();
+        gl.uniform1i(shader.usePhongShading, false);
         break;
     case 'M':
         Key.activate('M');
         mobile.useFaceNormals();
+        gl.uniform1i(shader.usePhongShading, false);
         break;
 
-    case 'N': // fallthrough for shifted key
     case 'n':
-        Key.toggle('N');
-        let phong = gl.getUniform(program, shader.usePhongShading);
-        gl.uniform1i(shader.usePhongShading, !phong);
+        Key.toggle('n');
+        mobile.useVertexNormals();
+        gl.uniform1i(shader.usePhongShading, true);
         break;
 
     case 'L':
@@ -337,7 +338,7 @@ window.addEventListener('keyup', e => {
         return; // Ignore keys with non-shift modifiers
     }
 
-    const keys = ['P', 'p', 'M', 'm', 'L', 'l'];
+    const keys = ['P', 'p', 'M', 'm', 'L', 'l', 'n'];
 
     if (keys.includes(e.key)) {
         Key.deactivate(e.key);
