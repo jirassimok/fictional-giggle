@@ -50,8 +50,11 @@ export let DEFAULT_MESH_SPEED = () => 0.05,
  * @property {WebGLBuffer} buffers.arm_indices
  * @property {WebGLBuffer} buffers.lighting_positions
  *
- * @property {WebGLVertexArrayObject} mesh_vao Vertex Array Object for mesh rendering
+ * @property {WebGLVertexArrayObject} vert_vao Vertex Array Object for flat shading the mesh
+ * @property {WebGLVertexArrayObject} flat_vao Vertex Array Object for flat shading the mesh
  * @property {WebGLVertexArrayObject} arm_vao Vertex Array Object for arm rendering
+ *
+ * @property {WebGLVertexArrayObject} current_mesh_vao Whichever of vert_vao and flat_vao is being used
  *
  * @property {AnimationTracker} rotation The tracker for this mobile element's rotation
  * @property {AnimationTracker} armRotation The tracker for the arms' rotation
@@ -146,7 +149,7 @@ export class Mobile {
             modelMatrix: locations.modelMatrix,
             vertexNormal: locations.vertexNormal,
             useForceColor: locations.useForceColor,
-            forceColor: locations.forceColor
+            forceColor: locations.forceColor,
         });
 
         this.buffers = Object.freeze({
@@ -155,16 +158,26 @@ export class Mobile {
             arms: gl.createBuffer(),
             arm_indices: gl.createBuffer(),
             lighting_positions: gl.createBuffer(),
+            flat_normals: gl.createBuffer(),
         });
 
-        // Prepare a VAO for the mesh
+        // Prepare the VAOs for the mesh
         if (this.mesh.vertices.length) {
-            this.mesh_vao = gl.vao.createVertexArrayOES();
-            gl.vao.bindVertexArrayOES(this.mesh_vao);
+            this.vert_vao = gl.vao.createVertexArrayOES();
+            gl.vao.bindVertexArrayOES(this.vert_vao);
 
             setupBuffer(locations.position, this.mesh.vertices, this.buffers.vertices);
             setupBuffer(locations.vertexNormal, this.mesh.vertexNormals, this.buffers.normals);
-            setupBuffer(locations.lightingPosition, this.mesh.vertices, this.buffers.lighting_positions);
+            setupBuffer(locations.lightingPosition, this.mesh.vertices, this.buffers.vertices);
+
+            this.flat_vao = gl.vao.createVertexArrayOES();
+            gl.vao.bindVertexArrayOES(this.flat_vao);
+
+            setupBuffer(locations.position, this.mesh.vertices, this.buffers.vertices);
+            setupBuffer(locations.vertexNormal, this.mesh.faceNormals, this.buffers.flat_normals);
+            setupBuffer(locations.lightingPosition, this.mesh.barycenters, this.buffers.lighting_positions);
+
+            this.current_mesh_vao = this.vert_vao;
         }
 
         // Prepare a VAO for the strings
@@ -200,7 +213,7 @@ export class Mobile {
         if (this.mesh.faces.length) {
             // Set color
             this.bindMaterial();
-            gl.vao.bindVertexArrayOES(this.mesh_vao);
+            gl.vao.bindVertexArrayOES(this.current_mesh_vao);
             gl.drawArrays(gl.TRIANGLES, 0, this.mesh.vertices.length);
         }
 
@@ -240,20 +253,8 @@ export class Mobile {
      */
     useVertexNormals() {
         this.apply(that => {
-            if (that.mesh.vertices.length) {
-                gl.vao.bindVertexArrayOES(that.mesh_vao);
-
-                gl.bindBuffer(gl.ARRAY_BUFFER, that.buffers.normals);
-                gl.bufferData(gl.ARRAY_BUFFER,
-                              new Float32Array(that.mesh.vertexNormals.flat(1)),
-                              gl.STATIC_DRAW);
-
-                gl.bindBuffer(gl.ARRAY_BUFFER, that.buffers.lighting_positions);
-                gl.bufferData(gl.ARRAY_BUFFER,
-                              new Float32Array(that.mesh.vertices.flat(1)),
-                              gl.STATIC_DRAW);
-
-                gl.vao.bindVertexArrayOES(null);
+            if (that.mesh.faces.length) {
+                that.current_mesh_vao = that.vert_vao;
             }
         });
     }
@@ -263,21 +264,9 @@ export class Mobile {
      */
     useFaceNormals() {
         this.apply(that => {
-            if (this.mesh.vertices.length) {
-                gl.vao.bindVertexArrayOES(that.mesh_vao);
-
-                gl.bindBuffer(gl.ARRAY_BUFFER, that.buffers.normals);
-                gl.bufferData(gl.ARRAY_BUFFER,
-                              new Float32Array(that.mesh.faceNormals.flat(1)),
-                              gl.STATIC_DRAW);
-
-                gl.bindBuffer(gl.ARRAY_BUFFER, that.buffers.lighting_positions);
-                gl.bufferData(gl.ARRAY_BUFFER,
-                              new Float32Array(that.mesh.barycenters.flat(1)),
-                              gl.STATIC_DRAW);
-
-                gl.vao.bindVertexArrayOES(null);
-        }
+            if (this.mesh.faces.length) {
+                that.current_mesh_vao = that.flat_vao;
+            }
         });
     }
 
