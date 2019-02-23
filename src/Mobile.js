@@ -10,7 +10,7 @@ import { AnimationTracker } from "./Animations.js";
 /**
  * Default color for mobile strings
  */
-const ARM_COLOR = [0.62745098, 0.32156863, 0.17647059];
+const ARM_COLOR = [0.62745098, 0.32156863, 0.17647059].map(c => c * 2 / 3);
 
            /** Default speed for all mobiles' meshes */
 export let DEFAULT_MESH_SPEED = () => 0.05,
