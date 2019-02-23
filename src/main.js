@@ -314,8 +314,7 @@ window.addEventListener('keydown', e => {
 
     case 'N': // fallthrough for shifted key
     case 'n':
-        Key.activate('N');
-        mobile.useVertexNormals();
+        Key.toggle('N');
         let phong = gl.getUniform(program, shader.usePhongShading);
         gl.uniform1i(shader.usePhongShading, !phong);
         break;
@@ -338,13 +337,9 @@ window.addEventListener('keyup', e => {
     }
 
     const keys = ['P', 'p', 'M', 'm', 'L', 'l'];
-    const upCaseKeys = ['N'];
 
     if (keys.includes(e.key)) {
         Key.deactivate(e.key);
-    }
-    if (upCaseKeys.includes(e.key.toUpperCase())) {
-        Key.deactivate(e.key.toUpperCase());
     }
 });
 
