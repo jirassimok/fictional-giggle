@@ -22,23 +22,12 @@ import * as MV from "./MV+.js";
 import * as Key from "./KeyboardUI.js";
 
 // The position of the light
-let LIGHT_POSITION = [3,-12 ,3];
-
-// View configuration; useful for debugging
-let ZOOM_FACTOR = 1,
-    Y_ROTATION = 0.0;
+let LIGHT_POSITION = [2, -4,  18];
 
 // Force the camera to use specified values
-let FORCE_EYE = [0, -10, 15],
-    FORCE_AT  = [0,-14,0],
-    FORCE_UP  = [0, 1, 0];
-
-// Zoom by ZOOM_FACTOR and rotate by Y_ROTATION
-FORCE_EYE = MV.mult(MV.rotateY(Y_ROTATION),
-                    vec4(MV.add(MV.scale(ZOOM_FACTOR,
-                                         MV.subtract(FORCE_EYE,
-                                                     FORCE_AT)),
-                                FORCE_AT), 1)).slice(0,3);
+let FORCE_EYE = undefined,
+    FORCE_AT  = undefined,
+    FORCE_UP  = undefined;
 
 
 //// Additional WebGL setup (see setup.js for pre-program initialization)
@@ -95,9 +84,9 @@ const settings = Object.seal({
  * The scene's light
  */
 const light = Object.seal({
-    position:  new Float32Array([3, -12, 3]),
-    direction: new Float32Array(MV.normalize([-1, -1, -1])),
-    angle:     0.5,
+    position:  new Float32Array(LIGHT_POSITION),
+    direction: new Float32Array(MV.normalize([0, 0, -1])),
+    cosAngle:  Math.cos(10 * Math.PI / 180),
     ambient:   new Float32Array([0.3, 0.3, 0.3]),
     diffuse:   new Float32Array([1, 1, 1]),
     specular:  new Float32Array([1, 1, 1]),
