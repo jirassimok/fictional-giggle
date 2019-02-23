@@ -68,6 +68,8 @@ const shader = Object.freeze({
     viewMatrix:        gl.getUniformLocation(program, "viewMatrix"),
     projectionMatrix:  gl.getUniformLocation(program, "projectionMatrix"),
 
+    cameraPosition:    gl.getUniformLocation(program, "cameraPosition"),
+
     useForceColor:     gl.getUniformLocation(program, "useForceColor"),
     usePhongShading:   gl.getUniformLocation(program, "usePhongInterpolation"),
 });
@@ -141,6 +143,8 @@ function setProjection(mobile) {
     // Add margins around the mesh
     let margins = MV.scalem(0.9, 0.9, 0.9);
     projectionMatrix = MV.mult(margins, projectionMatrix);
+
+    gl.uniform3fv(shader.cameraPosition, eye);
 
     gl.uniformMatrix4fv(shader.projectionMatrix,
                         false,
