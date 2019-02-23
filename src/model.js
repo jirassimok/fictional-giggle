@@ -44,21 +44,22 @@ let root = Mobile.builder(cube)
     .armSpeed(0.075),
 
     R = root.right(cube)
-    .color(green)
-    .shininess(20)
+    .material(mat.emerald)
     .parentHeight(2)
     .childHeight(0.5)
     .spinSpeed(0.075)
     .armSpeed(0.125),
 
     ll = L.left(cube)
-    .color(cyan)
+    .material(mat.turquoise)
+    .ambient(mat.turquoise.ambient.map(c => c * 2))
     .parentHeight(1.25)
     .spinSpeed(0.1)
     .armSpeed(0),
 
     lr = L.right(cow)
     .color(yellow)
+    .ambient([0.5, 0.5, 0])
     .radius(0)
     .childHeight(0.25)
     .spinSpeed(0.3),
@@ -68,7 +69,7 @@ let root = Mobile.builder(cube)
     .spinSpeed(0.1),
 
     rl = R.left(sphere)
-    .ambient( [1, 0, 0])
+    .ambient( [0.5, 0, 0])
     .diffuse( [1, 0.8, 0])
     .specular([1, 1, 1])
     .shininess(100)
@@ -86,7 +87,7 @@ let root = Mobile.builder(cube)
     .ambient(mat.pearl.ambient.map(c => c * 2))
     .spinSpeed(0.5),
     rrr = rr.right(cube.scaled(0.25))
-    .color(blue)
+    .material(mat.brass)
     .spinSpeed(0.05);
 
 export const mobile = root.build();
