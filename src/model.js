@@ -10,9 +10,11 @@ import * as MV from "./MV+.js";
 
 import _sphere from "./sphere.mesh.json";
 import _cube from "./cube.json";
+import _cow from "./cow.mesh.json";
 
 const sphere = Mesh.fromJSON(_sphere);
 const cube = Mesh.fromJSON(_cube).scaled(0.75);
+const cow = Mesh.fromJSON(_cow).scaled(0.75).atZero();
 
 let white = [1, 1, 1],
     black = [0, 0, 0],
@@ -55,11 +57,11 @@ let root = Mobile.builder(cube)
     .spinSpeed(0.1)
     .armSpeed(0),
 
-    lr = L.right(sphere)
+    lr = L.right(cow)
     .color(yellow)
     .radius(0)
     .childHeight(0.25)
-    .spinSpeed(0.5),
+    .spinSpeed(0.3),
 
     lrl = lr.left(cube.scaled(0.5))
     .color(gray)
