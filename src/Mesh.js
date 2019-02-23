@@ -91,10 +91,13 @@ export class Mesh {
 
         // Use barycenters of faces
         this.barycenters = faces.flatMap(
-            face => face
-                .map(f => vertices[f])
-                .reduce(([x1, y1, z1], [x2, y2, z2]) => [x1 + x2, y1 + y2, z1 + z2])
-                .map(c => c / face.length));
+            face => {
+                let barycenter = face
+                    .map(f => vertices[f])
+                    .reduce(([x1, y1, z1], [x2, y2, z2]) => [x1 + x2, y1 + y2, z1 + z2])
+                    .map(c => c / face.length);
+                return Array(face.length).fill(barycenter);
+            });
     }
 
     /**
