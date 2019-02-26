@@ -61,7 +61,7 @@ export default class Light {
                 {position, direction, angle, ambient, diffuse, specular}) {
         this.position = position;
         this.direction = normalize(direction);
-        this.angle = angle;
+        this._angle = angle;
         this.ambient = ambient;
         this.diffuse = diffuse;
         this.specular =  specular;
@@ -110,6 +110,14 @@ export default class Light {
         setupBuffer(this.shader.position, lines, this.linesBuffer);
 
         gl.vao.bindVertexArrayOES(null);
+    }
+
+    get angle() {
+        return this._angle;
+    }
+    set angle(value) {
+        this._angle = Math.max(Math.min(value, 180), 0);
+        return value;
     }
 
     get cosAngle() {
