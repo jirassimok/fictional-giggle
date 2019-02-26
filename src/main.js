@@ -46,7 +46,7 @@ gl.useProgram(program);
 const shader = Object.freeze({
     vertexPosition:    gl.getAttribLocation(program, "vertexPosition"),
     vertexNormal:      gl.getAttribLocation(program, "vertexNormal"),
-    lightingPosition:  gl.getAttribLocation(program, "vertexLightingPosition"),
+    reflectionPosition: gl.getAttribLocation(program, "vertexLightingPosition"),
 
     material: Object.freeze({
 	    ambient:       gl.getUniformLocation(program, "material.ambient"),

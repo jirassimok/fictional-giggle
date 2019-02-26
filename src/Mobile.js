@@ -132,6 +132,7 @@ export class Mobile {
      * @param {Object} locations The locations of various shader variables
      * @param {WebGLUniformLocation} locations.modelMatrix The uniform model matrix
      * @param {GLint} locations.vertexPosition
+     * @param {GLint} locations.reflectionPosition Vertex position for lighting purposes
      * @param {Object} locations.material
      * @param {GLUniformLocation} locations.material.ambient Ambient coefficient
      * @param {GLUniformLocation} locations.material.diffuse Diffuse coefficient
@@ -140,7 +141,6 @@ export class Mobile {
      * @param {GLUniformLocation} locations.useForceColor
      * @param {GLUniformLocation} locations.forceColor
      * @param {GLint} locations.vertexNormal Vertex normal attribute
-     * @param {GLint} locations.lightingPosition Vertex position for lighting purposes
      */
     setup(locations) {
         // Save locations for draw-time use
@@ -168,14 +168,14 @@ export class Mobile {
 
             setupBuffer(locations.vertexPosition, this.mesh.vertices, this.buffers.vertices);
             setupBuffer(locations.vertexNormal, this.mesh.vertexNormals, this.buffers.normals);
-            setupBuffer(locations.lightingPosition, this.mesh.vertices, this.buffers.vertices);
+            setupBuffer(locations.reflectionPosition, this.mesh.vertices, this.buffers.vertices);
 
             this.flat_vao = gl.vao.createVertexArrayOES();
             gl.vao.bindVertexArrayOES(this.flat_vao);
 
             setupBuffer(locations.vertexPosition, this.mesh.vertices, this.buffers.vertices);
             setupBuffer(locations.vertexNormal, this.mesh.faceNormals, this.buffers.flat_normals);
-            setupBuffer(locations.lightingPosition, this.mesh.barycenters, this.buffers.lighting_positions);
+            setupBuffer(locations.reflectionPosition, this.mesh.barycenters, this.buffers.lighting_positions);
 
             this.current_mesh_vao = this.vert_vao;
         }
