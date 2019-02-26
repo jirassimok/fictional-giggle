@@ -69,8 +69,11 @@ export default class AbstractModel {
         this.vaos.active = this.vaos.flat;
     }
 
+    // TODO: bind this.shader.material during or before setup
     /**
      * Send the material to the shader
+     *
+     * NOTE: This function expects {@code shader.material} to be bound
      */
     bindMaterial(material = this.material) {
         gl.uniform3fv(this.shader.material.ambient, material.ambient);
