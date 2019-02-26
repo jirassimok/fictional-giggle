@@ -44,35 +44,35 @@ gl.useProgram(program);
 
 // Set up the shader variables
 const shader = Object.freeze({
-    vertexPosition:    gl.getAttribLocation(program, "vertexPosition"),
-    vertexNormal:      gl.getAttribLocation(program, "vertexNormal"),
+    vertexPosition:     gl.getAttribLocation(program, "vertexPosition"),
+    vertexNormal:       gl.getAttribLocation(program, "vertexNormal"),
     reflectionPosition: gl.getAttribLocation(program, "vertexLightingPosition"),
 
     material: Object.freeze({
-	    ambient:       gl.getUniformLocation(program, "material.ambient"),
-	    diffuse:       gl.getUniformLocation(program, "material.diffuse"),
-	    specular:      gl.getUniformLocation(program, "material.specular"),
-	    shininess:     gl.getUniformLocation(program, "material.shininess"),
+        ambient:        gl.getUniformLocation(program, "material.ambient"),
+        diffuse:        gl.getUniformLocation(program, "material.diffuse"),
+        specular:       gl.getUniformLocation(program, "material.specular"),
+        shininess:      gl.getUniformLocation(program, "material.shininess"),
     }),
-    forceColor:        gl.getUniformLocation(program, "forceColor"),
+    forceColor:         gl.getUniformLocation(program, "forceColor"),
 
     light: Object.freeze({
-        position:      gl.getUniformLocation(program, "light.position"),
-        direction:     gl.getUniformLocation(program, "light.direction"),
-        cosAngle:      gl.getUniformLocation(program, "light.cosAngle"),
-        ambient:       gl.getUniformLocation(program, "light.ambient"),
-        diffuse:       gl.getUniformLocation(program, "light.diffuse"),
-        specular:      gl.getUniformLocation(program, "light.specular")
+        position:       gl.getUniformLocation(program, "light.position"),
+        direction:      gl.getUniformLocation(program, "light.direction"),
+        cosAngle:       gl.getUniformLocation(program, "light.cosAngle"),
+        ambient:        gl.getUniformLocation(program, "light.ambient"),
+        diffuse:        gl.getUniformLocation(program, "light.diffuse"),
+        specular:       gl.getUniformLocation(program, "light.specular")
     }),
 
-    modelMatrix:       gl.getUniformLocation(program, "modelMatrix"),
-    viewMatrix:        gl.getUniformLocation(program, "viewMatrix"),
-    projectionMatrix:  gl.getUniformLocation(program, "projectionMatrix"),
+    modelMatrix:        gl.getUniformLocation(program, "modelMatrix"),
+    viewMatrix:         gl.getUniformLocation(program, "viewMatrix"),
+    projectionMatrix:   gl.getUniformLocation(program, "projectionMatrix"),
 
-    cameraPosition:    gl.getUniformLocation(program, "cameraPosition"),
+    cameraPosition:     gl.getUniformLocation(program, "cameraPosition"),
 
-    useForceColor:     gl.getUniformLocation(program, "useForceColor"),
-    usePhongShading:   gl.getUniformLocation(program, "usePhongInterpolation"),
+    useForceColor:      gl.getUniformLocation(program, "useForceColor"),
+    usePhongShading:    gl.getUniformLocation(program, "usePhongInterpolation"),
 });
 
 
