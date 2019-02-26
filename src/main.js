@@ -156,6 +156,50 @@ function setProjection(mobile) {
 }
 
 /**
+ * Prepare GL data for rendering the light source
+ */
+function setupLightSource() {
+    // Prepare the light source for rendering
+    gl.vao.bindVertexArrayOES(light.vao);
+
+    setupBuffer(shader.position, light.position, light.positionBuffer);
+    setupBuffer(shader.vertexNormal, [0, 0, 0],  gl.createBuffer());
+
+    updateLightSourceLines();
+
+    gl.vao.bindVertexArrayOES(null);
+}
+
+/**
+ * Draw the light source
+ *
+ * @param {boolean} draw_lines If truthy, also draw the guide lines to the light source
+ */
+function drawLightSource(draw_lines = false) {
+    // Use an identity model matrix and normal matrix
+    gl.uniformMatrix4fv(shader.modelMatrix, false, new Float32Array([1,0,0,0,
+                                                                     0,1,0,0,
+                                                                     0,0,1,0,
+                                                                     0,0,0,1]));
+    // Bypass light calculation
+    gl.uniform1i(shader.useForceColor, true);
+    gl.uniform3fv(shader.forceColor, new Float32Array([1, 1, 1]));
+
+    // Draw the light source as a point
+    gl.vao.bindVertexArrayOES(light.vao);
+    gl.drawArrays(gl.POINTS, 0, 1);
+
+    if (draw_lines) {
+        gl.vao.bindVertexArrayOES(light.linesVao);
+        gl.drawArrays(gl.LINES, 0, 30);
+    }
+
+    // Restore to normal state
+    gl.uniform1i(shader.useForceColor, false);
+    gl.vao.bindVertexArrayOES(null);
+}
+
+/**
  * Prepare the light source lines
  *
  * @param {Object} keywords Arguments must be given as an object
@@ -231,17 +275,9 @@ function setup() {
 
     mobile.setup(shader);
 
+    setupLightSource();
+
     setProjection(mobile);
-
-    // Prepare the light source for rendering
-    gl.vao.bindVertexArrayOES(light.vao);
-
-    setupBuffer(shader.position, light.position, light.positionBuffer);
-    setupBuffer(shader.vertexNormal, [0, 0, 0],  gl.createBuffer());
-
-    updateLightSourceLines();
-
-    gl.vao.bindVertexArrayOES(null);
 
     // Don't draw all colors as white
     gl.uniform1i(shader.useForceColor, false);
@@ -254,29 +290,8 @@ function render() {
     mobile.draw();
 
     // The remainder of this function draws the light source
-
     if (settings.view_source || settings.view_lines) {
-        // Use an identity model matrix and normal matrix
-        gl.uniformMatrix4fv(shader.modelMatrix, false, new Float32Array([1,0,0,0,
-                                                                         0,1,0,0,
-                                                                         0,0,1,0,
-                                                                         0,0,0,1]));
-        // Bypass light calculation
-        gl.uniform1i(shader.useForceColor, true);
-        gl.uniform3fv(shader.forceColor, new Float32Array([1, 1, 1]));
-
-        // Draw the light source as a point
-        gl.vao.bindVertexArrayOES(light.vao);
-        gl.drawArrays(gl.POINTS, 0, 1);
-
-        if (settings.view_lines) {
-            gl.vao.bindVertexArrayOES(light.linesVao);
-            gl.drawArrays(gl.LINES, 0, 30);
-        }
-
-        // Restore to normal state
-        gl.uniform1i(shader.useForceColor, false);
-        gl.vao.bindVertexArrayOES(null);
+        drawLightSource(settings.view_lines);
     }
 
     window.requestAnimationFrame(render);
