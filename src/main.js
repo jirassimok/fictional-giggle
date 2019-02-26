@@ -159,9 +159,6 @@ function setup() {
 
     mobile.setup(shader);
 
-    // Prepare the light in the shader
-    light.setup();
-
     setProjection(mobile);
 
     // Don't draw all colors as white

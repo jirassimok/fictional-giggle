@@ -84,16 +84,7 @@ export class Light {
                 specular: light.specular,
             }),
         });
-    }
 
-    get cosAngle() {
-        return Math.cos(this.angle * Math.PI / 180);
-    }
-
-    /**
-     * Prepare GL data for rendering the light source
-     */
-    setup() {
         gl.uniform3fv(this.shader.light.position, this.position);
         gl.uniform3fv(this.shader.light.direction, this.direction);
         gl.uniform3fv(this.shader.light.ambient, this.ambient);
@@ -114,6 +105,10 @@ export class Light {
         setupBuffer(this.shader.position, lines, this.linesBuffer);
 
         gl.vao.bindVertexArrayOES(null);
+    }
+
+    get cosAngle() {
+        return Math.cos(this.angle * Math.PI / 180);
     }
 
     /**
