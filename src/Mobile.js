@@ -162,7 +162,7 @@ export class Mobile {
         });
 
         // Prepare the VAOs for the mesh
-        if (this.mesh.vertices.length) {
+        if (this.mesh.faces.length) {
             this.vert_vao = gl.vao.createVertexArrayOES();
             gl.vao.bindVertexArrayOES(this.vert_vao);
 
