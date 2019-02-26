@@ -131,7 +131,7 @@ export class Mobile {
      *
      * @param {Object} locations The locations of various shader variables
      * @param {WebGLUniformLocation} locations.modelMatrix The uniform model matrix
-     * @param {GLint} locations.position Vertex position attribute
+     * @param {GLint} locations.vertexPosition
      * @param {Object} locations.material
      * @param {GLUniformLocation} locations.material.ambient Ambient coefficient
      * @param {GLUniformLocation} locations.material.diffuse Diffuse coefficient
@@ -166,14 +166,14 @@ export class Mobile {
             this.vert_vao = gl.vao.createVertexArrayOES();
             gl.vao.bindVertexArrayOES(this.vert_vao);
 
-            setupBuffer(locations.position, this.mesh.vertices, this.buffers.vertices);
+            setupBuffer(locations.vertexPosition, this.mesh.vertices, this.buffers.vertices);
             setupBuffer(locations.vertexNormal, this.mesh.vertexNormals, this.buffers.normals);
             setupBuffer(locations.lightingPosition, this.mesh.vertices, this.buffers.vertices);
 
             this.flat_vao = gl.vao.createVertexArrayOES();
             gl.vao.bindVertexArrayOES(this.flat_vao);
 
-            setupBuffer(locations.position, this.mesh.vertices, this.buffers.vertices);
+            setupBuffer(locations.vertexPosition, this.mesh.vertices, this.buffers.vertices);
             setupBuffer(locations.vertexNormal, this.mesh.faceNormals, this.buffers.flat_normals);
             setupBuffer(locations.lightingPosition, this.mesh.barycenters, this.buffers.lighting_positions);
 
@@ -183,7 +183,7 @@ export class Mobile {
         // Prepare a VAO for the strings
         this.arm_vao = gl.vao.createVertexArrayOES();
         gl.vao.bindVertexArrayOES(this.arm_vao);
-        setupBuffer(locations.position,
+        setupBuffer(locations.vertexPosition,
                     this.arms.vertices, this.buffers.arms,
                     this.arms.indices, this.buffers.arm_indices);
 
