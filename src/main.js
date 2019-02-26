@@ -9,7 +9,7 @@ import { gl,
 import VERTEX_SHADER_SOURCE from "./shader.vert";
 import FRAGMENT_SHADER_SOURCE from "./shader.frag";
 
-import { Light } from "./Light.js";
+import Light from "./Light.js";
 import { vec3 } from "./MV+.js";
 import { setupProgram } from "./webgl-setup.js";
 

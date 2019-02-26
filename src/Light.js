@@ -30,7 +30,7 @@ const IDMAT4 = new Float32Array([1,0,0,0,
  * @param {GLUniformLocation} shader.light.diffuse
  * @param {GLUniformLocation} shader.light.specular
  */
-export class Light {
+export default class Light {
     // JSDoc does not handle renamed destructured parameters
     // {position: vertexPosition}
     /**
