@@ -48,7 +48,7 @@ export let DEFAULT_MESH_SPEED = () => 0.05,
  * @property {WebGLBuffer} buffers.normals
  * @property {WebGLBuffer} buffers.arms
  * @property {WebGLBuffer} buffers.arm_indices
- * @property {WebGLBuffer} buffers.lighting_positions
+ * @property {WebGLBuffer} buffers.reflection_positions
  *
  * @property {WebGLVertexArrayObject} vert_vao Vertex Array Object for flat shading the mesh
  * @property {WebGLVertexArrayObject} flat_vao Vertex Array Object for flat shading the mesh
@@ -156,7 +156,7 @@ export class Mobile {
             normals: gl.createBuffer(),
             arms: gl.createBuffer(),
             arm_indices: gl.createBuffer(),
-            lighting_positions: gl.createBuffer(),
+            reflection_positions: gl.createBuffer(),
             flat_normals: gl.createBuffer(),
         });
 
@@ -174,7 +174,7 @@ export class Mobile {
 
             setupBuffer(locations.vertexPosition, this.mesh.vertices, this.buffers.vertices);
             setupBuffer(locations.vertexNormal, this.mesh.faceNormals, this.buffers.flat_normals);
-            setupBuffer(locations.reflectionPosition, this.mesh.barycenters, this.buffers.lighting_positions);
+            setupBuffer(locations.reflectionPosition, this.mesh.barycenters, this.buffers.reflection_positions);
 
             this.current_mesh_vao = this.vert_vao;
         }
