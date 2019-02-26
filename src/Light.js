@@ -1,6 +1,11 @@
 import { normalize } from "./MV+.js";
 import { gl, setupBuffer } from "./setup.js";
 
+const IDMAT4 = new Float32Array([1,0,0,0,
+                                 0,1,0,0,
+                                 0,0,1,0,
+                                 0,0,0,1]);
+
 /**
  * A spot light
  *
@@ -118,12 +123,8 @@ export class Light {
      */
     draw(draw_lines = false) {
         // Use an identity model matrix and normal matrix
-        gl.uniformMatrix4fv(this.shader.modelMatrix,
-                            false,
-                            new Float32Array([1,0,0,0,
-                                              0,1,0,0,
-                                              0,0,1,0,
-                                              0,0,0,1]));
+        gl.uniformMatrix4fv(this.shader.modelMatrix, false, IDMAT4);
+
         // Bypass light calculation
         gl.uniform1i(this.shader.useForceColor, true);
         gl.uniform3f(this.shader.forceColor, 1, 1, 1);
