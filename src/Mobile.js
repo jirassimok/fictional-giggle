@@ -162,19 +162,33 @@ export class Mobile {
 
         // Prepare the VAOs for the mesh
         if (this.mesh.faces.length) {
+            // VAO for vertex shading
             this.vert_vao = gl.vao.createVertexArrayOES();
             gl.vao.bindVertexArrayOES(this.vert_vao);
 
-            setupBuffer(locations.vertexPosition, this.mesh.vertices, this.buffers.vertices);
-            setupBuffer(locations.vertexNormal, this.mesh.vertexNormals, this.buffers.normals);
-            setupBuffer(locations.reflectionPosition, this.mesh.vertices, this.buffers.vertices);
+            setupBuffer(locations.vertexPosition,
+                        this.mesh.vertices, this.buffers.vertices);
 
+            setupBuffer(locations.vertexNormal,
+                        this.mesh.vertexNormals, this.buffers.normals);
+
+            // Reflect at each vertex
+            setupBuffer(locations.reflectionPosition,
+                        this.mesh.vertices, this.buffers.vertices);
+
+            // VAO for flat shading
             this.flat_vao = gl.vao.createVertexArrayOES();
             gl.vao.bindVertexArrayOES(this.flat_vao);
 
-            setupBuffer(locations.vertexPosition, this.mesh.vertices, this.buffers.vertices);
-            setupBuffer(locations.vertexNormal, this.mesh.faceNormals, this.buffers.flat_normals);
-            setupBuffer(locations.reflectionPosition, this.mesh.barycenters, this.buffers.reflection_positions);
+            setupBuffer(locations.vertexPosition,
+                        this.mesh.vertices, this.buffers.vertices);
+
+            setupBuffer(locations.vertexNormal,
+                        this.mesh.faceNormals, this.buffers.flat_normals);
+
+            // Reflect from the barycenter of each face
+            setupBuffer(locations.reflectionPosition,
+                        this.mesh.barycenters, this.buffers.reflection_positions);
 
             this.current_mesh_vao = this.vert_vao;
         }
