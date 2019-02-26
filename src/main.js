@@ -2,7 +2,6 @@
 
 import "./vecarray.js";
 import { gl,
-         setupBuffer,
          X_FIELD_OF_VIEW,
          ASPECT_RATIO,
          PERSPECTIVE_NEAR_PLANE,
@@ -10,6 +9,7 @@ import { gl,
 import VERTEX_SHADER_SOURCE from "./shader.vert";
 import FRAGMENT_SHADER_SOURCE from "./shader.frag";
 
+import { Light } from "./Light.js";
 import { vec3 } from "./MV+.js";
 import { setupProgram } from "./webgl-setup.js";
 
@@ -87,21 +87,13 @@ const settings = Object.seal({
 /**
  * The scene's light
  */
-const light = Object.seal({
+const light = new Light(shader, {
     position:  LIGHT_POSITION,
     direction: MV.normalize(LIGHT_DIRECTION),
     angle:     LIGHT_ANGLE,
     ambient:   [0.3, 0.3, 0.3],
     diffuse:   [1, 1, 1],
     specular:  [1, 1, 1],
-
-    // For drawing the light source
-    vao: gl.vao.createVertexArrayOES(),
-    positionBuffer: gl.createBuffer(),
-
-    // For drawing lines to the light source
-    linesVao: gl.vao.createVertexArrayOES(),
-    linesBuffer: gl.createBuffer(),
 });
 
 
@@ -156,106 +148,6 @@ function setProjection(mobile) {
 }
 
 /**
- * Prepare GL data for rendering the light source
- */
-function setupLightSource() {
-    // Prepare the light source for rendering
-    gl.vao.bindVertexArrayOES(light.vao);
-
-    setupBuffer(shader.position, light.position, light.positionBuffer);
-    setupBuffer(shader.vertexNormal, [0, 0, 0],  gl.createBuffer());
-
-    updateLightSourceLines();
-
-    gl.vao.bindVertexArrayOES(null);
-}
-
-/**
- * Draw the light source
- *
- * @param {boolean} draw_lines If truthy, also draw the guide lines to the light source
- */
-function drawLightSource(draw_lines = false) {
-    // Use an identity model matrix and normal matrix
-    gl.uniformMatrix4fv(shader.modelMatrix, false, new Float32Array([1,0,0,0,
-                                                                     0,1,0,0,
-                                                                     0,0,1,0,
-                                                                     0,0,0,1]));
-    // Bypass light calculation
-    gl.uniform1i(shader.useForceColor, true);
-    gl.uniform3fv(shader.forceColor, new Float32Array([1, 1, 1]));
-
-    // Draw the light source as a point
-    gl.vao.bindVertexArrayOES(light.vao);
-    gl.drawArrays(gl.POINTS, 0, 1);
-
-    if (draw_lines) {
-        gl.vao.bindVertexArrayOES(light.linesVao);
-        gl.drawArrays(gl.LINES, 0, 30);
-    }
-
-    // Restore to normal state
-    gl.uniform1i(shader.useForceColor, false);
-    gl.vao.bindVertexArrayOES(null);
-}
-
-/**
- * Prepare the light source lines
- *
- * @param {Object} keywords Arguments must be given as an object
- * @param {boolean} keywords.setup If true, set 0-normals
- */
-function updateLightSourceLines() {
-    let lines = getLightSourceLines();
-
-    gl.vao.bindVertexArrayOES(light.linesVao);
-
-    setupBuffer(shader.position, lines, light.linesBuffer);
-
-    gl.vao.bindVertexArrayOES(null);
-}
-
-/**
- * Get lines connecting to the light source
- *
- * Twelve lines form a rectangular prism with the origin at the opposite corner,
- * and three additional lines extend along each primary axis from the light source.
- */
-function getLightSourceLines() {
-    let [x, y, z] = light.position;
-
-    // Make a cube from the origin to the light
-    return new Float32Array([
-        // top square
-        0,0,0,  x,0,0,
-        x,0,0,  x,0,z,
-        x,0,z,  0,0,z,
-        0,0,z,  0,0,0,
-
-        // Bottom square
-        0,y,0,  x,y,0,
-        x,y,0,  x,y,z,
-        x,y,z,  0,y,z,
-        0,y,z,  0,y,0,
-
-        // vertical lines
-        0,0,0,  0,y,0,
-        x,0,0,  x,y,0,
-        x,0,z,  x,y,z,
-        0,0,z,  0,y,z,
-
-        // Axes from light source
-        1000,y,z,  -1000,y,z,
-        x,y,1000,  x,y,-1000,
-        x,1000,z,  x,-1000,z,
-    ]);
-}
-
-function updateLightAngle() {
-    gl.uniform1f(shader.light.cosAngle, Math.cos(light.angle * Math.PI / 180));
-}
-
-/**
  * Prepare scene for drawing
  */
 function setup() {
@@ -265,17 +157,10 @@ function setup() {
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);
 
-    // Send information about the light to the shaders
-    gl.uniform3fv(shader.light.position, light.position);
-    gl.uniform3fv(shader.light.direction, light.direction);
-    gl.uniform3fv(shader.light.ambient, light.ambient);
-    gl.uniform3fv(shader.light.diffuse, light.diffuse);
-    gl.uniform3fv(shader.light.specular, light.specular);
-    updateLightAngle();
-
     mobile.setup(shader);
 
-    setupLightSource();
+    // Prepare the light in the shader
+    light.setup();
 
     setProjection(mobile);
 
@@ -291,7 +176,7 @@ function render() {
 
     // The remainder of this function draws the light source
     if (settings.view_source || settings.view_lines) {
-        drawLightSource(settings.view_lines);
+        light.draw(settings.view_lines);
     }
 
     window.requestAnimationFrame(render);
@@ -306,13 +191,11 @@ window.addEventListener('keydown', e => {
     switch (e.key) {
     case 'p':
         Key.activate('p');
-        light.angle += 1;
-        updateLightAngle();
+        light.addAngle(1);
         break;
     case 'P':
         Key.activate('P');
-        light.angle -= 1;
-        updateLightAngle();
+        light.addAngle(-1);
         break;
     case 'm':
         Key.activate('m');
@@ -334,7 +217,6 @@ window.addEventListener('keydown', e => {
 
     case 'L':
         Key.activate('L');
-        updateLightSourceLines();
         settings.view_lines = !settings.view_lines;
         break;
     case 'l':
