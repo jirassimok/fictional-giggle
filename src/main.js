@@ -10,10 +10,7 @@ import { gl,
 import VERTEX_SHADER_SOURCE from "./shader.vert";
 import FRAGMENT_SHADER_SOURCE from "./shader.frag";
 
-import { AnimationState } from "./Animations.js";
-import { Bounds } from "./Bounds.js";
-import { Mesh } from "./Mesh.js";
-import { vec2, vec3, vec4 } from "./MV+.js";
+import { vec3 } from "./MV+.js";
 import { setupProgram } from "./webgl-setup.js";
 
 import { mobile } from "./model.js";
@@ -114,7 +111,6 @@ function clearCanvas() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 }
 
-// TODO: Update projection for project 3
 /**
  * Set up the projection and view matrices based on the mesh
  *
