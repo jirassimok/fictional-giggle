@@ -132,6 +132,7 @@ export class Mobile {
      * @param {Object} locations The locations of various shader variables
      * @param {WebGLUniformLocation} locations.modelMatrix The uniform model matrix
      * @param {GLint} locations.vertexPosition
+     * @param {GLint} locations.vertexNormal
      * @param {GLint} locations.reflectionPosition Vertex position for lighting purposes
      * @param {Object} locations.material
      * @param {GLUniformLocation} locations.material.ambient Ambient coefficient
@@ -140,14 +141,12 @@ export class Mobile {
      * @param {GLUniformLocation} locations.material.shininess Material shininess
      * @param {GLUniformLocation} locations.useForceColor
      * @param {GLUniformLocation} locations.forceColor
-     * @param {GLint} locations.vertexNormal Vertex normal attribute
      */
     setup(locations) {
         // Save locations for draw-time use
         this.shader = Object.freeze({
             material: locations.material,
             modelMatrix: locations.modelMatrix,
-            vertexNormal: locations.vertexNormal,
             useForceColor: locations.useForceColor,
             forceColor: locations.forceColor,
         });
