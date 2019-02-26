@@ -144,7 +144,7 @@ export class Mobile {
      */
     setup(locations) {
         // Save locations for draw-time use
-        this.shader = Object.seal({
+        this.shader = Object.freeze({
             material: locations.material,
             modelMatrix: locations.modelMatrix,
             vertexNormal: locations.vertexNormal,
