@@ -1,3 +1,4 @@
+import AbstractModel from "./AbstractModel.js";
 import Bounds from "./Bounds.js";
 import Mesh from "./Mesh.js";
 import { translate, mult, vec4, vec3 } from "./MV+.js";
@@ -50,11 +51,12 @@ export let DEFAULT_MESH_SPEED = () => 0.05,
  * @property {WebGLBuffer} buffers.arm_indices
  * @property {WebGLBuffer} buffers.reflection_positions
  *
- * @property {WebGLVertexArrayObject} vert_vao Vertex Array Object for flat shading the mesh
- * @property {WebGLVertexArrayObject} flat_vao Vertex Array Object for flat shading the mesh
- * @property {WebGLVertexArrayObject} arm_vao Vertex Array Object for arm rendering
+ * @property {Object} vaos
+ * @property {WebGLVertexArrayObject} vaos.vert Vertex Array Object for flat shading the mesh
+ * @property {WebGLVertexArrayObject} vaos.flat Vertex Array Object for flat shading the mesh
+ * @property {WebGLVertexArrayObject} vaos.active Whichever of vaos.vert and vaos.flat is being used
  *
- * @property {WebGLVertexArrayObject} current_mesh_vao Whichever of vert_vao and flat_vao is being used
+ * @property {WebGLVertexArrayObject} arm_vao Vertex Array Object for arm rendering
  *
  * @property {AnimationTracker} rotation The tracker for this mobile element's rotation
  * @property {AnimationTracker} armRotation The tracker for the arms' rotation
@@ -64,7 +66,7 @@ export let DEFAULT_MESH_SPEED = () => 0.05,
  * @property {number} parent_height The length of the upwards arm
  * @property {number} child_height The length of the downwards arm
  */
-export default class Mobile {
+export default class Mobile extends AbstractModel {
     /**
      * Get a {@link MobileBuilder} for a mobile with the given mesh and color
      * @param {Mesh} mesh
@@ -102,8 +104,7 @@ export default class Mobile {
                 mesh_speed = DEFAULT_MESH_SPEED, mesh_direction,
                 arm_speed = DEFAULT_ARM_SPEED, arm_direction,
                 left, right) {
-        this.mesh = mesh;
-        this.material = material;
+        super(material, mesh);
         this.arms = arms;
         this.radius = radius;
         this.parent_height = parent_height;
@@ -151,46 +152,13 @@ export default class Mobile {
             forceColor: locations.forceColor,
         });
 
-        this.buffers = Object.freeze({
-            vertices: gl.createBuffer(),
-            normals: gl.createBuffer(),
-            arms: gl.createBuffer(),
-            arm_indices: gl.createBuffer(),
-            reflection_positions: gl.createBuffer(),
-            flat_normals: gl.createBuffer(),
-        });
+        this.buffers.arms = gl.createBuffer();
+        this.buffers.arm_indices = gl.createBuffer();
+        Object.freeze(this.buffers);
 
         // Prepare the VAOs for the mesh
         if (this.mesh.faces.length) {
-            // VAO for vertex shading
-            this.vert_vao = gl.vao.createVertexArrayOES();
-            gl.vao.bindVertexArrayOES(this.vert_vao);
-
-            setupBuffer(locations.vertexPosition,
-                        this.mesh.vertices, this.buffers.vertices);
-
-            setupBuffer(locations.vertexNormal,
-                        this.mesh.vertexNormals, this.buffers.normals);
-
-            // Reflect at each vertex
-            setupBuffer(locations.reflectionPosition,
-                        this.mesh.vertices, this.buffers.vertices);
-
-            // VAO for flat shading
-            this.flat_vao = gl.vao.createVertexArrayOES();
-            gl.vao.bindVertexArrayOES(this.flat_vao);
-
-            setupBuffer(locations.vertexPosition,
-                        this.mesh.vertices, this.buffers.vertices);
-
-            setupBuffer(locations.vertexNormal,
-                        this.mesh.faceNormals, this.buffers.flat_normals);
-
-            // Reflect from the barycenter of each face
-            setupBuffer(locations.reflectionPosition,
-                        this.mesh.barycenters, this.buffers.reflection_positions);
-
-            this.current_mesh_vao = this.vert_vao;
+            super.setup(locations);
         }
 
         // Prepare a VAO for the strings
@@ -226,7 +194,7 @@ export default class Mobile {
         if (this.mesh.faces.length) {
             // Set color
             this.bindMaterial();
-            gl.vao.bindVertexArrayOES(this.current_mesh_vao);
+            gl.vao.bindVertexArrayOES(this.vaos.active);
             gl.drawArrays(gl.TRIANGLES, 0, this.mesh.vertices.length);
         }
 
@@ -267,7 +235,7 @@ export default class Mobile {
     useVertexShading() {
         this.apply(that => {
             if (that.mesh.faces.length) {
-                that.current_mesh_vao = that.vert_vao;
+                that.vaos.active = that.vaos.vert;
             }
         });
     }
@@ -277,20 +245,10 @@ export default class Mobile {
      */
     useFaceShading() {
         this.apply(that => {
-            if (this.mesh.faces.length) {
-                that.current_mesh_vao = that.flat_vao;
+            if (that.mesh.faces.length) {
+                that.vaos.active = that.vaos.flat;
             }
         });
-    }
-
-    /**
-     * Send the material to the shader
-     */
-    bindMaterial(material = this.material) {
-        gl.uniform3fv(this.shader.material.ambient, material.ambient);
-        gl.uniform3fv(this.shader.material.diffuse, material.diffuse);
-        gl.uniform3fv(this.shader.material.specular, material.specular);
-        gl.uniform1f(this.shader.material.shininess, material.shininess);
     }
 
     /**

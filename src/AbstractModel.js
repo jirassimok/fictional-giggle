@@ -4,15 +4,17 @@ export default class AbstractModel {
     constructor(material, mesh) {
         this.material = material;
         this.mesh = mesh;
-    }
 
-    setup(locations) {
-        this.buffers = Object.freeze({
+        this.buffers = {
             vertices: gl.createBuffer(),
             normals: gl.createBuffer(),
             reflection_positions: gl.createBuffer(),
             flat_normals: gl.createBuffer(),
-        });
+        };
+    }
+
+    setup(locations) {
+        Object.freeze(this.buffers);
 
         this.vaos = Object.seal({
             vert: gl.vao.createVertexArrayOES(),
