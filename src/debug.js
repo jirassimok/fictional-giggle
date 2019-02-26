@@ -4,7 +4,7 @@
  * To use these, import and re-export them from main.js.
  */
 import { mobile } from "./model.js";
-import { Mesh } from "./Mesh.js";
+import Mesh from "./Mesh.js";
 import * as MV from "./MV+.js";
 
 export { mobile, Mesh, MV };

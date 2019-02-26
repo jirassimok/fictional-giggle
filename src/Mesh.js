@@ -1,6 +1,6 @@
 "use strict";
 
-import { Bounds } from "./Bounds.js";
+import Bounds from "./Bounds.js";
 import { normalize, mult, rotateRad, radians as toRadians } from "./MV+.js";
 
 /**
@@ -31,7 +31,7 @@ const copyVector = ([x, y, z]) => Object.freeze([x, y, z]);
  * @param {vec3[]} faceNormals
  * @param {vec3[]} barycenters
  */
-export class Mesh {
+export default class Mesh {
     /**
      * @param {boolean} [duplicate=true] Whether to perform vertex duplication
      * @param {boolean} [copy=true] If true, copy the arrays. Disables {@code duplicate}

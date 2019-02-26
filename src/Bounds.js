@@ -7,7 +7,7 @@ import { vec3, ortho } from "./MV+.js";
 /**
  * Class representing the extent of a data file's contents.
  */
-export class Bounds {
+export default class Bounds {
     constructor(left, right, bottom, top, near = 1, far = -1) {
         this.left = left;
         this.right = right;

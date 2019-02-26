@@ -1,8 +1,8 @@
 /*
  * Definitions of meshes and the mobile
  */
-import { Mesh } from "./Mesh.js";
-import { Mobile } from "./Mobile.js";
+import Mesh from "./Mesh.js";
+import Mobile from "./Mobile.js";
 import { vec3 } from "./MV+.js";
 
 import * as mat from "./materials.js";

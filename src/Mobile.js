@@ -1,5 +1,5 @@
-import { Bounds } from "./Bounds.js";
-import { Mesh } from "./Mesh.js";
+import Bounds from "./Bounds.js";
+import Mesh from "./Mesh.js";
 import { translate, mult, vec4, vec3 } from "./MV+.js";
 
 import * as MV from "./MV+.js";
@@ -64,7 +64,7 @@ export let DEFAULT_MESH_SPEED = () => 0.05,
  * @property {number} parent_height The length of the upwards arm
  * @property {number} child_height The length of the downwards arm
  */
-export class Mobile {
+export default class Mobile {
     /**
      * Get a {@link MobileBuilder} for a mobile with the given mesh and color
      * @param {Mesh} mesh
