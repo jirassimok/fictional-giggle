@@ -19,10 +19,12 @@
 /**
  * The properties of the scene's light
  * @typedef {Object} Light
- * @property {Float32Array} position
- * @property {Float32Array} ambient Ambient intensity
- * @property {Float32Array} diffuse Diffuse intensity
- * @property {Float32Array} specular Specular intensity
+ * @property {number[]} position
+ * @property {number[]} direction
+ * @property {number} angle The spot light radius
+ * @property {number[]} ambient Ambient intensity
+ * @property {number[]} diffuse Diffuse intensity
+ * @property {number[]} specular Specular intensity
  */
 
 //// Constants
