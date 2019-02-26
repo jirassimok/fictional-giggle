@@ -302,18 +302,18 @@ window.addEventListener('keydown', e => {
     case 'm':
         Key.activate('m');
         //window.setTimeout(() => Key.deactivate('m'), 100);
-        mobile.useVertexNormals();
+        mobile.useVertexShading();
         gl.uniform1i(shader.usePhongShading, false);
         break;
     case 'M':
         Key.activate('M');
-        mobile.useFaceNormals();
+        mobile.useFaceShading();
         gl.uniform1i(shader.usePhongShading, false);
         break;
 
     case 'n':
         Key.toggle('n');
-        mobile.useVertexNormals();
+        mobile.useVertexShading();
         gl.uniform1i(shader.usePhongShading, true);
         break;
 

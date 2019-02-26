@@ -251,7 +251,7 @@ export class Mobile {
     /**
      * Make this mobile use vertex normals and vertex positions for non-flat shading
      */
-    useVertexNormals() {
+    useVertexShading() {
         this.apply(that => {
             if (that.mesh.faces.length) {
                 that.current_mesh_vao = that.vert_vao;
@@ -262,7 +262,7 @@ export class Mobile {
     /**
      * Make this mobile use face normals and barycenters for flat shading
      */
-    useFaceNormals() {
+    useFaceShading() {
         this.apply(that => {
             if (this.mesh.faces.length) {
                 that.current_mesh_vao = that.flat_vao;
