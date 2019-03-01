@@ -50,14 +50,15 @@ void main()
 			gl_FragColor = vec4(ambientLight, 1);
 			return;
 		}
+		vec3 vertexNormal = normalize(vertexNormal_world);
 
 		vec3 diffuseLight = (light.diffuse * material.diffuse
-							 * max(0.0, dot(vertexToLight, vertexNormal_world)));
+							 * max(0.0, dot(vertexToLight, vertexNormal)));
 
 		vec3 vertexToCamera = normalize(cameraPosition - vertexPosition_world);
 
 		// Reflection of light off vertex
-		vec3 reflection = reflect(vertexToLight, vertexNormal_world);
+		vec3 reflection = reflect(vertexToLight, vertexNormal);
 		vec3 specularLight = (light.specular * material.specular
 							  * pow(max(0.0, dot(-vertexToCamera, reflection)),
 									material.shininess));
