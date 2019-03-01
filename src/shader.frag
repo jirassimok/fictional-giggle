@@ -45,11 +45,11 @@ void main()
 	if (useForceColor) {
 		gl_FragColor = vec4(forceColor, 1);
 	}
+	else if (useTexture) {
+		gl_FragColor = vec4(1, 1, 1, 1);//texture2D(Texture, fragTextureCoordinate);
+	}
 	else if (!usePhongInterpolation) {
 		gl_FragColor = finalColor;
-	}
-	else if (useTexture) {
-		gl_FragColor = texture2D(Texture, fragTextureCoordinate);
 	}
 	else {
 		vec3 vertexToLight = normalize(light.position - vertexPosition_world);
