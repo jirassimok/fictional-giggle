@@ -51,6 +51,7 @@ const shader = Object.freeze({
     vertexPosition:     gl.getAttribLocation(program, "vertexPosition"),
     vertexNormal:       gl.getAttribLocation(program, "vertexNormal"),
     reflectionPosition: gl.getAttribLocation(program, "vertexLightingPosition"),
+    textureCoordinate:  gl.getAttribLocation(program, "textureCoordinate"),
 
     material: Object.freeze({
         ambient:        gl.getUniformLocation(program, "material.ambient"),
@@ -80,7 +81,6 @@ const shader = Object.freeze({
 
     forceColor:         gl.getUniformLocation(program, "forceColor"),
     texture:            gl.getUniformLocation(program, "Texture"),
-    textureCoordinate:  gl.getUniformLocation(program, "textureCoordinate"),
 });
 
 
