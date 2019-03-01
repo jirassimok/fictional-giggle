@@ -4,10 +4,34 @@
  */
 function uiKey(key) {
     if (typeof key === "string") {
+        key = keyToClass(key);
         return document.querySelector(`kbd.key.${key}`);
     }
     else {
         return key;
+    }
+}
+
+const KEY_NAMES = new Map()
+      .set(' ', 'SPACE')
+      .set('.', 'PERIOD')
+      .set(',', 'COMMA')
+      .set(';', 'SEMICOLON')
+      .set("'", 'APOSTROPHE');
+
+/**
+ * Get the CSS class for a key
+ *
+ * Includes a limited subset of ASCII identifiers.
+ */
+function keyToClass(key) {
+    if (/^[A-Za-z_]/.test(key)) {
+        return key;
+    } else if (/^\d/.test(key)) {
+        return '_' + key; // prefix numbers with an underscore
+    }
+    else {
+        return KEY_NAMES.get(key);
     }
 }
 
