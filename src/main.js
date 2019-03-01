@@ -57,7 +57,6 @@ const shader = Object.freeze({
         specular:       gl.getUniformLocation(program, "material.specular"),
         shininess:      gl.getUniformLocation(program, "material.shininess"),
     }),
-    forceColor:         gl.getUniformLocation(program, "forceColor"),
 
     light: Object.freeze({
         position:       gl.getUniformLocation(program, "light.position"),
@@ -76,6 +75,11 @@ const shader = Object.freeze({
 
     useForceColor:      gl.getUniformLocation(program, "useForceColor"),
     usePhongShading:    gl.getUniformLocation(program, "usePhongInterpolation"),
+    useTexture:         gl.getUniformLocation(program, "useTexture"),
+
+    forceColor:         gl.getUniformLocation(program, "forceColor"),
+    texture:            gl.getUniformLocation(program, "Texture"),
+    textureCoordinate:  gl.getUniformLocation(program, "textureCoordinate"),
 });
 
 
@@ -167,10 +171,9 @@ function setup() {
 
     setProjection(mobile);
 
-    // Don't draw all colors as white
     gl.uniform1i(shader.useForceColor, false);
-    // Use Phong shading
     gl.uniform1i(shader.usePhongShading, true);
+    gl.uniform1i(shader.useTexture, false);
 }
 
 function render() {
