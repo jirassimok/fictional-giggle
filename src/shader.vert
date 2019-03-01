@@ -19,7 +19,6 @@ struct Material {
 uniform bool useForceColor;
 uniform bool usePhongInterpolation;
 uniform bool useTexture;
-uniform bool ambientOnly;
 
 // Force color mode
 uniform vec3 forceColor;
@@ -59,11 +58,7 @@ void main() {
 	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1);
 	gl_PointSize = 4.0;
 
-	if (ambientOnly) {
-		finalColor = vec4(light.ambient * material.ambient, 1);
-		return;
-	}
-	else if (useForceColor) {
+	if (useForceColor) {
 		finalColor = vec4(forceColor, 1);
 		return;
 	}

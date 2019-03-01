@@ -76,7 +76,6 @@ const shader = Object.freeze({
     useForceColor:      gl.getUniformLocation(program, "useForceColor"),
     usePhongShading:    gl.getUniformLocation(program, "usePhongInterpolation"),
     useTexture:         gl.getUniformLocation(program, "useTexture"),
-    ambientOnly:        gl.getUniformLocation(program, "ambientOnly"),
 
     forceColor:         gl.getUniformLocation(program, "forceColor"),
     texture:            gl.getUniformLocation(program, "Texture"),
@@ -175,7 +174,6 @@ function setup() {
     gl.uniform1i(shader.useForceColor, false);
     gl.uniform1i(shader.usePhongShading, true);
     gl.uniform1i(shader.useTexture, false);
-    gl.uniform1i(shader.ambientOnly, false);
 }
 
 function render() {
@@ -184,12 +182,10 @@ function render() {
     walls.draw();
 
     gl.disable(gl.DEPTH_TEST);
-    gl.uniform1i(shader.ambientOnly, true);
 
     mobile.draw(MV.mult(MV.translate(0, 0, walls.bounds.far), light.shadow_transform), true);
 
     gl.enable(gl.DEPTH_TEST);
-    gl.uniform1i(shader.ambientOnly, false);
 
     mobile.draw();
 
