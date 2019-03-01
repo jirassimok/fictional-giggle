@@ -59,7 +59,6 @@ void main() {
 	gl_PointSize = 4.0;
 
 	if (useForceColor) {
-		finalColor = vec4(forceColor, 1);
 		return;
 	}
 	else if (useTexture) {
