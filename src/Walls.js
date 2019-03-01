@@ -4,6 +4,10 @@ import AbstractModel from "./AbstractModel.js";
 import Bounds from "./Bounds.js";
 import Mesh from "./Mesh.js";
 
+import stone_texture from "../textures/stones.bmp";
+import grass_texture from "../textures/grass.bmp";
+
+
 const IDMAT4 = new Float32Array([1,0,0,0,
                                  0,1,0,0,
                                  0,0,1,0,
@@ -77,6 +81,7 @@ export default class Walls extends AbstractModel {
             modelMatrix: locations.modelMatrix,
             material: locations.material,
             useTexture: locations.useTexture,
+            texture: locations.texture,
         });
 
         this.buffers.texture = gl.createBuffer();
@@ -85,20 +90,53 @@ export default class Walls extends AbstractModel {
         gl.vao.bindVertexArrayOES(this.vaos.vert);
         setupVec2Buffer(locations.textureCoordinate, tex_coords, this.buffers.texture);
         gl.vao.bindVertexArrayOES(null);
+
+        this.texture_buffers = Object.freeze({
+            stone: gl.createTexture(),
+            grass: gl.createTexture(),
+        });
+
+        this.textures = Object.freeze({
+            stone: 1,
+            grass: 2,
+        });
+
+        gl.activeTexture(gl.TEXTURE0 + this.textures.stone);
+        gl.bindTexture(gl.TEXTURE_2D, this.texture_buffers.stone);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+                      new Uint8Array([128, 128, 128, 255]));
+
+        gl.activeTexture(gl.TEXTURE0 + this.textures.grass);
+        gl.bindTexture(gl.TEXTURE_2D, this.texture_buffers.grass);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+                      new Uint8Array([0, 128, 0, 255]));
+
+        let {stone, grass} = this.textures;
+
+        this.walls = Object.freeze([
+            {offset:  0, texture: stone},
+            {offset:  4, texture: grass},
+            {offset:  8, texture: stone},
+            {offset: 12, texture: stone},
+            {offset: 16, texture: stone},
+            {offset: 20, texture: stone},
+        ]);
     }
 
     draw() {
+        gl.uniform1i(this.shader.useTexture, true);
         this.setUniforms();
 
         gl.uniformMatrix4fv(this.shader.modelMatrix, false, IDMAT4);
 
-        gl.uniform1i(this.shader.useTexture, true);
-
         gl.vao.bindVertexArrayOES(this.vaos.active);
-        for (let offset of [0, 4, 8, 12, 16, 20]) {
+
+        for (let {offset, texture} of this.walls) {
+            gl.uniform1i(this.shader.texture, texture);
             gl.drawArrays(gl.TRIANGLE_FAN, offset, 4);
         }
 
+        gl.uniform1i(this.shader.texture, 0);
         gl.uniform1i(this.shader.useTexture, false);
     }
 }
