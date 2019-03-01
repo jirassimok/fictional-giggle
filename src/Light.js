@@ -1,5 +1,6 @@
-import { normalize } from "./MV+.js";
 import { gl, setupBuffer } from "./setup.js";
+
+import { mat4, mult, normalize, translate } from "./MV+.js";
 
 const IDMAT4 = new Float32Array([1,0,0,0,
                                  0,1,0,0,
@@ -116,6 +117,18 @@ export default class Light {
         setupBuffer(this.shader.position, lines, this.linesBuffer);
 
         gl.vao.bindVertexArrayOES(null);
+
+        // Prepare the shadow transformation matrix
+        let shadow_matrix = mat4();
+        shadow_matrix[3][3] = 0;
+        shadow_matrix[3][2] = -1 / position.z;
+
+        this._shadow_transform = mult(
+            translate(position.x, position.y, position.z),
+            shadow_matrix,
+            translate(-position.x, -position.y, -position.z),
+        );
+
     }
 
     get angle() {
@@ -128,6 +141,13 @@ export default class Light {
 
     get cosAngle() {
         return Math.cos(this.angle * Math.PI / 180);
+    }
+
+    /**
+     * Get the shadow transformation matrix for this light
+     */
+    get shadow_transform() {
+        return this._shadow_transform;
     }
 
     /**
