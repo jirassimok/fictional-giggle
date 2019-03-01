@@ -156,4 +156,8 @@ export class AnimationTracker {
         }
         return this.lastupdated !== null;
     }
+
+    reset() {
+        this._position = 0;
+    }
 }
