@@ -217,7 +217,14 @@ export function equal(u, v)
 
 //----------------------------------------------------------------------------
 
-export function add(u, v)
+export function add(...m) {
+    if (m.length === 0) {
+        throw "add(): trying to multiply no matrices";
+    }
+    return m.reduce(_add);
+}
+
+export function _add(u, v)
 {
     let result = [];
 
