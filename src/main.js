@@ -148,6 +148,7 @@ function setProjection(mobile) {
 
     // Set view matrix of camera state object
     camera.viewMatrix = viewMatrix;
+    camera.up = up;
 
     // Add margins around the mesh
     let margins = MV.scalem(0.9, 0.9, 0.9);
@@ -261,6 +262,11 @@ window.addEventListener('keydown', e => {
     }
 
     switch (e.key.toUpperCase()) {
+    case 'U':
+        Key.activate('U');
+        camera.reorient();
+        break;
+
     case 'W':
         startMovement(e, 'z', 1);
         break;
@@ -294,7 +300,7 @@ window.addEventListener('keyup', e => {
         return; // Ignore keys with non-shift modifiers
     }
 
-    const keys = ['P', 'p', 'M', 'm', 'L', 'l', 'n'];
+    const keys = ['P', 'p', 'M', 'm', 'L', 'l', 'n', 'U', 'u'];
 
     if (keys.includes(e.key)) {
         Key.deactivate(e.key);

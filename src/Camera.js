@@ -18,6 +18,7 @@ export default class Camera {
         ];
 
         this.viewMatrix = null;
+        this.up = null;
 
         this.shader = Object.freeze({
             viewMatrix: locations.viewMatrix,
@@ -48,15 +49,50 @@ export default class Camera {
             ry = this.ry.position,
             rz = this.rz.position;
 
-        this.animations.forEach(a => a.reset());
-
-        this.viewMatrix = MV.mult(
+        let rotation = MV.mult(
             MV.rotateX(rx),
             MV.rotateY(ry),
             MV.rotateZ(rz),
+        );
+        this.animations.forEach(a => a.reset());
+
+        this.viewMatrix = MV.mult(
+            rotation,
             MV.translate(dx, dy, dz),
             this.viewMatrix);
 
+        this.up = MV.mult(MV.mat3(...rotation), this.up);
+
         gl.uniformMatrix4fv(this.shader.viewMatrix, false, MV.flatten(this.viewMatrix));
+    }
+
+    reorient(up = [0, 1, 0]) {
+        let v = MV.cross(this.up, up),
+            cos = MV.dot(this.up, up),
+            coeff = 1 / (1 + cos);
+
+        let skewSymCross = MV.mat3(
+            [  0,   -v[2],  v[1] ],
+            [ v[2],   0,   -v[0] ],
+            [-v[1],  v[0],   0   ],
+        );
+
+        let ssc2 = MV.mult(skewSymCross, skewSymCross);
+
+        for (let i of [0, 1, 2]) {
+            for (let j of [0, 1, 2]) {
+                ssc2[i][j] *= coeff;
+            }
+        }
+
+        let transform = MV.add(MV.mat3(), skewSymCross, ssc2);
+
+        this.up = MV.mult(transform, this.up);
+
+        this.viewMatrix = MV.mult(MV.mat4(
+            [...transform[0], 0],
+            [...transform[1], 0],
+            [...transform[2], 0],
+        ), this.viewMatrix);
     }
 }
