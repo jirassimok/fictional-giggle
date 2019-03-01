@@ -175,6 +175,7 @@ function setup() {
     gl.uniform1i(shader.useForceColor, false);
     gl.uniform1i(shader.usePhongShading, true);
     gl.uniform1i(shader.useTexture, false);
+    gl.uniform1i(shader.ambientOnly, false);
 }
 
 function render() {
@@ -183,6 +184,10 @@ function render() {
     if (settings.view_source || settings.view_lines) {
         light.draw();
     }
+
+    gl.uniform1i(shader.ambientOnly, true);
+    models.draw(light.shadow_transform, true);
+    gl.uniform1i(shader.ambientOnly, false);
 
     window.requestAnimationFrame(render);
 }
