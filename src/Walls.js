@@ -65,6 +65,8 @@ export default class Walls extends AbstractModel {
     constructor(locations, material, mesh) {
         super(material, mesh);
 
+        this.bounds = this.mesh.bounds;
+
         this.shader = Object.freeze({
             modelMatrix: locations.modelMatrix,
             material: locations.material,
