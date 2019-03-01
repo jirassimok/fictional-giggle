@@ -9,6 +9,7 @@ import { gl,
 import VERTEX_SHADER_SOURCE from "./shader.vert";
 import FRAGMENT_SHADER_SOURCE from "./shader.frag";
 
+import Camera from "./Camera.js";
 import Light from "./Light.js";
 import MultiModel from "./MultiModel.js";
 import Walls from "./Walls.js";
@@ -107,6 +108,9 @@ const walls = Walls.from(shader, scaleAmbient(materials.pearl, 2), -12, 12, -10,
 
 const models = new MultiModel(mobile, walls);
 
+const camera = new Camera(shader);
+
+
 //// Canvas/GL/Mesh preparation functions
 
 function clearCanvas() {
@@ -141,6 +145,9 @@ function setProjection(mobile) {
 	    up = FORCE_UP ? FORCE_UP : vec3(0, 1, 0);
 
 	let viewMatrix = MV.lookAt(eye, at, up);
+
+    // Set view matrix of camera state object
+    camera.viewMatrix = viewMatrix;
 
     // Add margins around the mesh
     let margins = MV.scalem(0.9, 0.9, 0.9);
@@ -193,6 +200,8 @@ function render() {
         light.draw();
     }
 
+    camera.update();
+
     window.requestAnimationFrame(render);
 }
 
@@ -237,6 +246,41 @@ window.addEventListener('keydown', e => {
         settings.view_source = !settings.view_source;
         break;
     }
+
+    switch (e.key.toUpperCase()) {
+    case 'W':
+        Key.activate('W');
+        camera.startMoving('z', 1);
+        break;
+    case 'S':
+        Key.activate('S');
+        camera.startMoving('z', -1);
+        break;
+    case 'A':
+        Key.activate('A');
+        camera.startMoving('ry', -1);
+        break;
+    case 'D':
+        Key.activate('D');
+        camera.startMoving('ry', 1);
+        break;
+    case 'R':
+        Key.activate('R');
+        camera.startMoving('y', -1);
+        break;
+    case 'F':
+        Key.activate('F');
+        camera.startMoving('y', 1);
+        break;
+    case 'Q':
+        Key.activate('Q');
+        camera.startMoving('x', 1);
+        break;
+    case 'E':
+        Key.activate('E');
+        camera.startMoving('x', -1);
+        break;
+    }
 });
 
 window.addEventListener('keyup', e => {
@@ -248,6 +292,41 @@ window.addEventListener('keyup', e => {
 
     if (keys.includes(e.key)) {
         Key.deactivate(e.key);
+    }
+
+    switch (e.key.toUpperCase()) {
+    case 'W':
+        Key.deactivate('W');
+        camera.stopMoving('z', 1);
+        break;
+    case 'S':
+        Key.deactivate('S');
+        camera.stopMoving('z', -1);
+        break;
+    case 'A':
+        Key.deactivate('A');
+        camera.stopMoving('ry', -1);
+        break;
+    case 'D':
+        Key.deactivate('D');
+        camera.stopMoving('ry', 1);
+        break;
+    case 'R':
+        Key.deactivate('R');
+        camera.stopMoving('y', -1);
+        break;
+    case 'F':
+        Key.deactivate('F');
+        camera.stopMoving('y', 1);
+        break;
+    case 'Q':
+        Key.deactivate('Q');
+        camera.stopMoving('x', 1);
+        break;
+    case 'E':
+        Key.deactivate('E');
+        camera.stopMoving('x', -1);
+        break;
     }
 });
 
