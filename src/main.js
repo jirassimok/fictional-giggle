@@ -180,14 +180,22 @@ function setup() {
 
 function render() {
     clearCanvas();
-    models.draw();
+
+    walls.draw();
+
+    gl.disable(gl.DEPTH_TEST);
+    gl.uniform1i(shader.ambientOnly, true);
+
+    mobile.draw(MV.mult(MV.translate(0, 0, walls.bounds.far), light.shadow_transform), true);
+
+    gl.enable(gl.DEPTH_TEST);
+    gl.uniform1i(shader.ambientOnly, false);
+
+    mobile.draw();
+
     if (settings.view_source || settings.view_lines) {
         light.draw();
     }
-
-    gl.uniform1i(shader.ambientOnly, true);
-    models.draw(light.shadow_transform, true);
-    gl.uniform1i(shader.ambientOnly, false);
 
     window.requestAnimationFrame(render);
 }
