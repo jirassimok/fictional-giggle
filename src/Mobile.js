@@ -185,7 +185,7 @@ export default class Mobile extends AbstractModel {
     /**
      * Draw the mobile
      */
-    draw(model_matrix = IDMAT4, root = true) {
+    draw(model_matrix = IDMAT4, skip_arms = false, root = true) {
         let modelMatrix = MV.mult(model_matrix, this.model_matrix);
 
         // Apply the mesh's rotation
@@ -209,23 +209,24 @@ export default class Mobile extends AbstractModel {
         gl.uniformMatrix4fv(this.shader.modelMatrix, false, MV.flatten(armModelMatrix));
 
         // Draw arms
+        if (!skip_arms) {
+            // Set arm color
+            gl.uniform1i(this.shader.useForceColor, true);
+            gl.uniform3fv(this.shader.forceColor, ARM_COLOR);
 
-        // Set arm color
-        gl.uniform1i(this.shader.useForceColor, true);
-        gl.uniform3fv(this.shader.forceColor, ARM_COLOR);
+            gl.vao.bindVertexArrayOES(this.arm_vao);
+            gl.drawElements(gl.LINES, this.arms.indices.flat(1).length, gl.UNSIGNED_BYTE, 0);
 
-        gl.vao.bindVertexArrayOES(this.arm_vao);
-        gl.drawElements(gl.LINES, this.arms.indices.flat(1).length, gl.UNSIGNED_BYTE, 0);
-
-        gl.uniform1i(this.shader.useForceColor, false);
+            gl.uniform1i(this.shader.useForceColor, false);
+        }
 
         // Draw children
         // (add a translation by this element's matrix to the children's model matrices)
         if (this.left) {
-            this.left.draw(MV.mult(armModelMatrix, translate(-this.radius, 0, 0)), false);
+            this.left.draw(MV.mult(armModelMatrix, translate(-this.radius, 0, 0)), skip_arms, false);
         }
         if (this.right) {
-            this.right.draw(MV.mult(armModelMatrix, translate(this.radius, 0, 0)), false);
+            this.right.draw(MV.mult(armModelMatrix, translate(this.radius, 0, 0)), skip_arms, false);
         }
 
         if (root) {
