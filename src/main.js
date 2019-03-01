@@ -10,6 +10,7 @@ import VERTEX_SHADER_SOURCE from "./shader.vert";
 import FRAGMENT_SHADER_SOURCE from "./shader.frag";
 
 import Light from "./Light.js";
+import MultiModel from "./MultiModel.js";
 import Walls from "./Walls.js";
 import * as materials from "./materials.js";
 import { vec3 } from "./MV+.js";
@@ -100,6 +101,7 @@ const light = new Light(shader, {
 
 const walls = Walls.from(shader, materials.pearl, -12, 12, -10, 6, 10, -10);
 
+const models = new MultiModel(mobile, walls);
 
 //// Canvas/GL/Mesh preparation functions
 
@@ -173,8 +175,7 @@ function setup() {
 
 function render() {
     clearCanvas();
-    mobile.draw();
-    walls.draw();
+    models.draw();
     if (settings.view_source || settings.view_lines) {
         light.draw();
     }
@@ -199,21 +200,18 @@ window.addEventListener('keydown', e => {
         break;
     case 'm':
         Key.activate('m');
-        mobile.useVertexShading();
-        walls.useVertexShading();
+        models.useVertexShading();
         gl.uniform1i(shader.usePhongShading, false);
         break;
     case 'M':
         Key.activate('M');
-        mobile.useFaceShading();
-        walls.useFaceShading();
+        models.useFaceShading();
         gl.uniform1i(shader.usePhongShading, false);
         break;
 
     case 'n':
         Key.toggle('n');
-        mobile.useVertexShading();
-        walls.useVertexShading();
+        models.useVertexShading();
         gl.uniform1i(shader.usePhongShading, true);
         break;
 
