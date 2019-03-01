@@ -8,6 +8,8 @@ import * as MV from "./MV+.js";
 import { gl, setupBuffer } from "./setup.js";
 import { AnimationTracker } from "./Animations.js";
 
+const IDMAT4 = MV.mat4();
+
 /**
  * Default color for mobile strings
  */
@@ -183,7 +185,9 @@ export default class Mobile extends AbstractModel {
     /**
      * Draw the mobile
      */
-    draw(modelMatrix = this.model_matrix, root = true) {
+    draw(model_matrix = IDMAT4, root = true) {
+        let modelMatrix = MV.mult(model_matrix, this.model_matrix);
+
         // Apply the mesh's rotation
         let meshModelMatrix = MV.mult(modelMatrix, MV.rotateY(this.rotation.position)),
             meshNormalMatrix = MV.transpose(MV.inverse(MV.mat3(...meshModelMatrix)));
