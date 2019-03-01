@@ -9,9 +9,13 @@ export default class Camera {
         this.x = new AnimationTracker(() => 0.01);
         this.y = new AnimationTracker(() => 0.01);
         this.z = new AnimationTracker(() => 0.01);
+        this.rx = new AnimationTracker(() => 0.1);
         this.ry = new AnimationTracker(() => 0.1);
+        this.rz = new AnimationTracker(() => 0.1);
 
-        this.animations = [this.x, this.y, this.z, this.ry];
+        this.animations = [
+            this.x, this.y, this.z, this.rx, this.ry, this.rz
+        ];
 
         this.viewMatrix = null;
 
@@ -40,11 +44,13 @@ export default class Camera {
         let dx = this.x.position,
             dy = this.y.position,
             dz = this.z.position,
+            rx = this.rx.position,
             ry = this.ry.position;
 
         this.animations.forEach(a => a.reset());
 
         this.viewMatrix = MV.mult(
+            MV.rotateX(rx),
             MV.rotateY(ry),
             MV.translate(dx, dy, dz),
             this.viewMatrix);

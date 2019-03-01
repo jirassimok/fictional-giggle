@@ -245,40 +245,39 @@ window.addEventListener('keydown', e => {
         Key.activate('l');
         settings.view_source = !settings.view_source;
         break;
+
+    case 'ArrowUp':
+        startMovement(e, 'rx', -1);
+        break;
+    case 'ArrowDown':
+        startMovement(e, 'rx', 1);
+        break;
+    case 'ArrowLeft':
+        startMovement(e, 'ry', -1);
+        break;
+    case 'ArrowRight':
+        startMovement(e, 'ry', 1);
+        break;
     }
 
     switch (e.key.toUpperCase()) {
     case 'W':
-        Key.activate('W');
-        camera.startMoving('z', 1);
+        startMovement(e, 'z', 1);
         break;
     case 'S':
-        Key.activate('S');
-        camera.startMoving('z', -1);
+        startMovement(e, 'z', -1);
         break;
     case 'A':
-        Key.activate('A');
-        camera.startMoving('ry', -1);
+        startMovement(e, 'x', 1);
         break;
     case 'D':
-        Key.activate('D');
-        camera.startMoving('ry', 1);
+        startMovement(e, 'x', -1);
         break;
     case 'R':
-        Key.activate('R');
-        camera.startMoving('y', -1);
+        startMovement(e, 'y', -1);
         break;
     case 'F':
-        Key.activate('F');
-        camera.startMoving('y', 1);
-        break;
-    case 'Q':
-        Key.activate('Q');
-        camera.startMoving('x', 1);
-        break;
-    case 'E':
-        Key.activate('E');
-        camera.startMoving('x', -1);
+        startMovement(e, 'y', 1);
         break;
     }
 });
@@ -294,41 +293,55 @@ window.addEventListener('keyup', e => {
         Key.deactivate(e.key);
     }
 
+    switch (e.key) {
+    case 'ArrowUp':
+        stopMovement(e, 'rx', -1);
+        break;
+    case 'ArrowDown':
+        stopMovement(e, 'rx', 1);
+        break;
+    case 'ArrowLeft':
+        stopMovement(e, 'ry', -1);
+        break;
+    case 'ArrowRight':
+        stopMovement(e, 'ry', 1);
+        break;
+    }
+
     switch (e.key.toUpperCase()) {
     case 'W':
-        Key.deactivate('W');
-        camera.stopMoving('z', 1);
+        stopMovement(e, 'z', 1);
         break;
     case 'S':
-        Key.deactivate('S');
-        camera.stopMoving('z', -1);
+        stopMovement(e, 'z', -1);
         break;
     case 'A':
-        Key.deactivate('A');
-        camera.stopMoving('ry', -1);
+        stopMovement(e, 'x', 1);
         break;
     case 'D':
-        Key.deactivate('D');
-        camera.stopMoving('ry', 1);
+        stopMovement(e, 'x', -1);
         break;
     case 'R':
-        Key.deactivate('R');
-        camera.stopMoving('y', -1);
+        stopMovement(e, 'y', -1);
         break;
     case 'F':
-        Key.deactivate('F');
-        camera.stopMoving('y', 1);
-        break;
-    case 'Q':
-        Key.deactivate('Q');
-        camera.stopMoving('x', 1);
-        break;
-    case 'E':
-        Key.deactivate('E');
-        camera.stopMoving('x', -1);
+        stopMovement(e, 'y', 1);
         break;
     }
 });
+
+
+function startMovement(event, axis, dir) {
+    Key.activate(event.key);
+    camera.startMoving(axis, dir);
+    event.preventDefault();
+}
+
+function stopMovement(event, axis, dir) {
+    Key.deactivate(event.key);
+    camera.stopMoving(axis, dir);
+    event.preventDefault();
+}
 
 clearCanvas();
 setup();
