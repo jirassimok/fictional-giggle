@@ -15,14 +15,26 @@ struct Material {
 	float shininess;
 };
 
+// Mode switches
+uniform bool useForceColor;
+uniform bool usePhongInterpolation;
+uniform bool useTexture;
+
+// Force color mode
+uniform vec3 forceColor;
+
+// Texture mode
+varying vec2 fragTextureCoordinate;
+attribute vec2 textureCoordinate;
+
+// Lighting modes
+
 attribute vec3 vertexPosition;
 attribute vec3 vertexNormal;
 // Position of vertex for lighting purposes
 attribute vec3 vertexLightingPosition;
 
 uniform Material material;
-uniform vec3 forceColor;
-
 uniform Light light;
 
 uniform mat4 projectionMatrix;
@@ -31,14 +43,9 @@ uniform mat4 modelMatrix;
 
 uniform vec3 cameraPosition;
 
-uniform bool useForceColor;
-uniform bool usePhongInterpolation;
-
 varying vec4 finalColor;
 
-// For Phong interpolation
-varying vec3 vertexPosition_eye;
-varying vec3 vertexNormal_eye;
+// Fragment (Phong) shading mode
 varying vec3 lightPosition_eye;
 varying vec3 lightDirection_eye;
 
@@ -53,6 +60,10 @@ void main() {
 
 	if (useForceColor) {
 		finalColor = vec4(forceColor, 1);
+		return;
+	}
+	else if (useTexture) {
+		fragTextureCoordinate = textureCoordinate;
 		return;
 	}
 

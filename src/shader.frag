@@ -16,22 +16,29 @@ struct Material {
 	float shininess;
 };
 
-
-uniform Material material;
-uniform vec3 forceColor;
-
-uniform Light light;
-
-uniform vec3 cameraPosition;
-
+// Mode switches
 uniform bool useForceColor;
 uniform bool usePhongInterpolation;
+uniform bool useTexture;
 
+// Force color mode
+uniform vec3 forceColor;
+
+// Texture mode
+uniform sampler2D Texture;
+varying vec2 fragTextureCoordinate;
+
+// Vertex (not-Phong) shading mode
 varying vec4 finalColor;
 
-// For Phong interpolation
+// Fragment (Phong) shading mode
+uniform Material material;
+uniform Light light;
+uniform vec3 cameraPosition;
+
 varying vec3 vertexPosition_world;
 varying vec3 vertexNormal_world;
+
 
 void main()
 {
@@ -40,6 +47,9 @@ void main()
 	}
 	else if (!usePhongInterpolation) {
 		gl_FragColor = finalColor;
+	}
+	else if (useTexture) {
+		gl_FragColor = texture2D(Texture, fragTextureCoordinate);
 	}
 	else {
 		vec3 vertexToLight = normalize(light.position - vertexPosition_world);
