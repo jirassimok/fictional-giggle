@@ -1,4 +1,4 @@
-import { gl, setupBuffer } from "./setup.js";
+import { gl, setupBuffer, setupVec2Buffer } from "./setup.js";
 
 import AbstractModel from "./AbstractModel.js";
 import Bounds from "./Bounds.js";
@@ -57,12 +57,18 @@ export default class Walls extends AbstractModel {
                 [16, 17, 18, 19], // top
                 [20, 21, 22, 23], // near
             ],
-            mesh = new Mesh(vertices, faces);
+            mesh = new Mesh(vertices, faces),
+            tex_coords = Array(6).fill([
+                0, 0,
+                0, 1,
+                1, 1,
+                1, 0
+            ]);
 
-        return new Walls(locations, material, mesh);
+        return new Walls(locations, material, mesh, tex_coords);
     }
 
-    constructor(locations, material, mesh) {
+    constructor(locations, material, mesh, tex_coords) {
         super(material, mesh);
 
         this.bounds = this.mesh.bounds;
@@ -70,9 +76,15 @@ export default class Walls extends AbstractModel {
         this.shader = Object.freeze({
             modelMatrix: locations.modelMatrix,
             material: locations.material,
+            useTexture: locations.useTexture,
         });
 
+        this.buffers.texture = gl.createBuffer();
         super.setup(locations);
+
+        gl.vao.bindVertexArrayOES(this.vaos.vert);
+        setupVec2Buffer(locations.textureCoordinate, tex_coords, this.buffers.texture);
+        gl.vao.bindVertexArrayOES(null);
     }
 
     draw() {
@@ -80,9 +92,13 @@ export default class Walls extends AbstractModel {
 
         gl.uniformMatrix4fv(this.shader.modelMatrix, false, IDMAT4);
 
+        gl.uniform1i(this.shader.useTexture, true);
+
         gl.vao.bindVertexArrayOES(this.vaos.active);
         for (let offset of [0, 4, 8, 12, 16, 20]) {
             gl.drawArrays(gl.TRIANGLE_FAN, offset, 4);
         }
+
+        gl.uniform1i(this.shader.useTexture, false);
     }
 }
