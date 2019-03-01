@@ -92,3 +92,11 @@ let root = Mobile.builder(cube)
 
 export const mobile = root.build();
 
+export function scaleAmbient(material, scale) {
+    return Object.freeze({
+        ambient: Object.freeze(material.ambient.map(c => c * scale)),
+        diffuse: material.diffuse,
+        specular: material.specular,
+        shininess: material.shininess,
+    });
+}

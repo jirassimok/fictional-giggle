@@ -16,7 +16,7 @@ import * as materials from "./materials.js";
 import { vec3 } from "./MV+.js";
 import { setupProgram } from "./webgl-setup.js";
 
-import { mobile } from "./model.js";
+import { mobile, scaleAmbient } from "./model.js";
 
 import * as MV from "./MV+.js";
 import * as Key from "./KeyboardUI.js";
@@ -103,7 +103,7 @@ const light = new Light(shader, {
     specular:  [1, 1, 1],
 }, () => settings.view_lines);
 
-const walls = Walls.from(shader, materials.pearl, -12, 12, -10, 6, 10, -10);
+const walls = Walls.from(shader, scaleAmbient(materials.pearl, 2), -12, 12, -10, 6, 10, -10);
 
 const models = new MultiModel(mobile, walls);
 
