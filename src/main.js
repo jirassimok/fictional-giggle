@@ -279,6 +279,13 @@ window.addEventListener('keydown', e => {
     case 'F':
         startMovement(e, 'y', 1);
         break;
+
+    case '1':
+        startMovement(e, 'rz', -1);
+        break;
+    case '3':
+        startMovement(e, 'rz', 1);
+        break;
     }
 });
 
@@ -326,6 +333,13 @@ window.addEventListener('keyup', e => {
         break;
     case 'F':
         stopMovement(e, 'y', 1);
+        break;
+
+    case '1':
+        stopMovement(e, 'rz', -1);
+        break;
+    case '3':
+        stopMovement(e, 'rz', 1);
         break;
     }
 });

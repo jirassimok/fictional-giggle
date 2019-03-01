@@ -45,13 +45,15 @@ export default class Camera {
             dy = this.y.position,
             dz = this.z.position,
             rx = this.rx.position,
-            ry = this.ry.position;
+            ry = this.ry.position,
+            rz = this.rz.position;
 
         this.animations.forEach(a => a.reset());
 
         this.viewMatrix = MV.mult(
             MV.rotateX(rx),
             MV.rotateY(ry),
+            MV.rotateZ(rz),
             MV.translate(dx, dy, dz),
             this.viewMatrix);
 
