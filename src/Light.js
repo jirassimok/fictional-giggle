@@ -55,16 +55,22 @@ export default class Light {
      * @param {GLUniformLocation} loc.light.ambient
      * @param {GLUniformLocation} loc.light.diffuse
      * @param {GLUniformLocation} loc.light.specular
+     *
+     * @param {function():boolean} drawLinesSetting A function to call to
+     *     determine whether to draw lines
      */
     constructor({position: vertexPosition,
                  vertexNormal, modelMatrix, forceColor, useForceColor, light},
-                {position, direction, angle, ambient, diffuse, specular}) {
+                {position, direction, angle, ambient, diffuse, specular},
+                drawLinesSetting = () => false) {
         this.position = position;
         this.direction = normalize(direction);
         this._angle = angle;
         this.ambient = ambient;
         this.diffuse = diffuse;
         this.specular =  specular;
+
+        this.shouldDrawLines = drawLinesSetting;
 
         // For drawing the light source
         this.vao = gl.vao.createVertexArrayOES();
@@ -127,7 +133,8 @@ export default class Light {
     /**
      * Draw the light source
      *
-     * @param {boolean} draw_lines If truthy, also draw the guide lines to the light source
+     * @param {boolean} draw_lines If truthy, also draw the guide lines to the
+     *     light source regardless of the value of the settings function.
      */
     draw(draw_lines = false) {
         // Use an identity model matrix and normal matrix
@@ -141,7 +148,7 @@ export default class Light {
         gl.vao.bindVertexArrayOES(this.vao);
         gl.drawArrays(gl.POINTS, 0, 1);
 
-        if (draw_lines) {
+        if (draw_lines || this.shouldDrawLines()) {
             gl.vao.bindVertexArrayOES(this.linesVao);
             gl.drawArrays(gl.LINES, 0, 30);
         }

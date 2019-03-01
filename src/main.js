@@ -96,7 +96,7 @@ const light = new Light(shader, {
     ambient:   [0.3, 0.3, 0.3],
     diffuse:   [1, 1, 1],
     specular:  [1, 1, 1],
-});
+}, () => settings.view_lines);
 
 const walls = Walls.from(shader, materials.pearl, -12, 12, -10, 6, 10, -10);
 
@@ -175,10 +175,8 @@ function render() {
     clearCanvas();
     mobile.draw();
     walls.draw();
-
-    // The remainder of this function draws the light source
     if (settings.view_source || settings.view_lines) {
-        light.draw(settings.view_lines);
+        light.draw();
     }
 
     window.requestAnimationFrame(render);
