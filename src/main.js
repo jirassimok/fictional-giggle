@@ -140,7 +140,7 @@ function setProjection(mobile) {
 	    at = FORCE_AT ? FORCE_AT : midpoint,
 	    up = FORCE_UP ? FORCE_UP : vec3(0, 1, 0);
 
-	var viewMatrix = MV.lookAt(eye, at, up);
+	let viewMatrix = MV.lookAt(eye, at, up);
 
     // Add margins around the mesh
     let margins = MV.scalem(0.9, 0.9, 0.9);
