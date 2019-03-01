@@ -20,6 +20,7 @@ struct Material {
 uniform bool useForceColor;
 uniform bool usePhongInterpolation;
 uniform bool useTexture;
+uniform bool ambientOnly;
 
 // Force color mode
 uniform vec3 forceColor;
@@ -45,7 +46,7 @@ void main()
 	if (useForceColor) {
 		gl_FragColor = vec4(forceColor, 1);
 	}
-	else if (!usePhongInterpolation) {
+	else if (!usePhongInterpolation || ambientOnly) {
 		gl_FragColor = finalColor;
 	}
 	else if (useTexture) {

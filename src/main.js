@@ -76,6 +76,7 @@ const shader = Object.freeze({
     useForceColor:      gl.getUniformLocation(program, "useForceColor"),
     usePhongShading:    gl.getUniformLocation(program, "usePhongInterpolation"),
     useTexture:         gl.getUniformLocation(program, "useTexture"),
+    ambientOnly:        gl.getUniformLocation(program, "ambientOnly"),
 
     forceColor:         gl.getUniformLocation(program, "forceColor"),
     texture:            gl.getUniformLocation(program, "Texture"),
