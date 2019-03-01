@@ -30,7 +30,7 @@ const FORCE_EYE = [0, -3, 20],
 // Initial values for the light
 const LIGHT_POSITION = [2, -1, 15],
       LIGHT_DIRECTION = MV.subtract(FORCE_AT, LIGHT_POSITION), // point at same place as camera
-      LIGHT_ANGLE = 15; // in degrees
+      LIGHT_ANGLE = 30; // in degrees
 
 
 //// Additional WebGL setup (see setup.js for pre-program initialization)
@@ -169,8 +169,8 @@ function setup() {
 
     // Don't draw all colors as white
     gl.uniform1i(shader.useForceColor, false);
-    // Don't use Phong shading
-    gl.uniform1i(shader.usePhongShading, false);
+    // Use Phong shading
+    gl.uniform1i(shader.usePhongShading, true);
 }
 
 function render() {
