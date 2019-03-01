@@ -51,6 +51,10 @@ export default class AbstractModel {
         this.vaos.active = this.vaos.vert;
     }
 
+    draw() {
+        throw new Error("Not implemented");
+    }
+
     setUniforms() {
         this.bindMaterial();
     }
