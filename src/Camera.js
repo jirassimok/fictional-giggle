@@ -22,6 +22,7 @@ export default class Camera {
 
         this.shader = Object.freeze({
             viewMatrix: locations.viewMatrix,
+            cameraPosition: locations.cameraPosition,
         });
     }
 
@@ -54,16 +55,22 @@ export default class Camera {
             MV.rotateY(ry),
             MV.rotateZ(rz),
         );
+
         this.animations.forEach(a => a.reset());
 
         this.viewMatrix = MV.mult(
             rotation,
             MV.translate(dx, dy, dz),
-            this.viewMatrix);
+            this.viewMatrix
+        );
 
         this.up = MV.mult(MV.mat3(...rotation), this.up);
+        // Multiply inverse of view matrix by origin to get camera position
+        let eye = MV.mult(MV.inverse(this.viewMatrix),
+                          [[0], [0], [0], [1]]).slice(0, 3);
 
         gl.uniformMatrix4fv(this.shader.viewMatrix, false, MV.flatten(this.viewMatrix));
+        gl.uniform3fv(this.shader.cameraPosition, MV.flatten(eye));
     }
 
     reorient(up = [0, 1, 0]) {
