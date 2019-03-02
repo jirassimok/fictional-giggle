@@ -139,7 +139,6 @@ export default class Walls extends AbstractModel {
             gl.drawArrays(gl.TRIANGLE_FAN, offset, 4);
         }
 
-        gl.uniform1i(this.shader.texture, 0);
         gl.uniform1i(this.shader.useTexture, false);
     }
 }
