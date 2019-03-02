@@ -198,7 +198,11 @@ function render() {
 
     walls.draw();
 
+    gl.uniform1i(shader.useReflect, settings.reflect);
+    gl.uniform1i(shader.useRefract, settings.refract);
     mobile.draw();
+    gl.uniform1i(shader.useReflect, false);
+    gl.uniform1i(shader.useRefract, false);
 
     if (settings.view_source || settings.view_lines) {
         light.draw();
@@ -271,20 +275,16 @@ window.addEventListener('keydown', e => {
     case 'c':
         Key.activate('c');
         settings.reflect = !settings.reflect;
-        gl.uniform1i(shader.useReflect, settings.reflect);
         if (settings.reflect) {
             settings.refract = false;
-            gl.uniform1i(shader.useRefract, false);
         }
         break;
 
     case 'd':
         Key.activate('d');
         settings.refract = !settings.refract;
-        gl.uniform1i(shader.useRefract, settings.refract);
         if (settings.refract) {
             settings.reflect = false;
-            gl.uniform1i(shader.useReflect, false);
         }
         break;
 
