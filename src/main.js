@@ -78,6 +78,8 @@ const shader = Object.freeze({
     useForceColor:      gl.getUniformLocation(program, "useForceColor"),
     usePhongShading:    gl.getUniformLocation(program, "usePhongInterpolation"),
     useTexture:         gl.getUniformLocation(program, "useTexture"),
+    useReflect:         gl.getUniformLocation(program, "useReflect"),
+    useRefract:         gl.getUniformLocation(program, "useRefract"),
 
     forceColor:         gl.getUniformLocation(program, "forceColor"),
     texture:            gl.getUniformLocation(program, "Texture"),
@@ -91,6 +93,8 @@ const settings = Object.seal({
     view_source: false,
     view_lines: false,
     texture_walls: true,
+    reflect: false,
+    refract: false,
 });
 
 /**
@@ -184,6 +188,8 @@ function setup() {
     gl.uniform1i(shader.useForceColor, false);
     gl.uniform1i(shader.usePhongShading, true);
     gl.uniform1i(shader.useTexture, false);
+    gl.uniform1i(shader.useReflect, settings.reflect);
+    gl.uniform1i(shader.useRefract, settings.refract);
 }
 
 function render() {
@@ -255,15 +261,34 @@ window.addEventListener('keydown', e => {
     case 'ArrowRight':
         startMovement(e, 'ry', 1);
         break;
-    }
 
-    switch (e.key.toUpperCase()) {
-    case 'B':
-        Key.activate('B');
+    case 'b':
+        Key.activate('b');
         settings.texture_walls = !settings.texture_walls;
         break;
 
-    case 'U':
+    case 'c':
+        Key.activate('c');
+        settings.reflect = !settings.reflect;
+        gl.uniform1i(shader.useReflect, settings.reflect);
+        if (settings.reflect) {
+            settings.refract = false;
+            gl.uniform1i(shader.useRefract, false);
+        }
+        break;
+
+    case 'd':
+        Key.activate('d');
+        settings.refract = !settings.refract;
+        gl.uniform1i(shader.useRefract, settings.refract);
+        if (settings.refract) {
+            settings.reflect = false;
+            gl.uniform1i(shader.useReflect, false);
+        }
+        break;
+
+    case 'U': // fallthrough
+    case 'u':
         Key.activate('U');
         camera.reorient();
         break;
@@ -287,10 +312,12 @@ window.addEventListener('keydown', e => {
         startMovement(e, 'y', 1);
         break;
 
-    case '1':
+    case '1': // fallthrough
+    case '!':
         startMovement(e, 'rz', -1);
         break;
-    case '3':
+    case '3': // fallthrough
+    case '#':
         startMovement(e, 'rz', 1);
         break;
     }
@@ -301,7 +328,7 @@ window.addEventListener('keyup', e => {
         return; // Ignore keys with non-shift modifiers
     }
 
-    const keys = ['P', 'p', 'M', 'm', 'L', 'l', 'n', 'U', 'u', 'B', 'b'];
+    const keys = ['P', 'p', 'M', 'm', 'L', 'l', 'n', 'U', 'u', 'b', 'c', 'd'];
 
     if (keys.includes(e.key)) {
         Key.deactivate(e.key);
@@ -342,10 +369,12 @@ window.addEventListener('keyup', e => {
         stopMovement(e, 'y', 1);
         break;
 
-    case '1':
+    case '1': // fallthrough
+    case '!':
         stopMovement(e, 'rz', -1);
         break;
-    case '3':
+    case '3': // fallthrough
+    case '#':
         stopMovement(e, 'rz', 1);
         break;
     }

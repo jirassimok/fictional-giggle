@@ -20,6 +20,9 @@ struct Material {
 uniform bool useForceColor;
 uniform bool usePhongInterpolation;
 uniform bool useTexture;
+uniform bool useReflect;
+uniform bool useRefract;
+
 
 // Force color mode
 uniform vec3 forceColor;
@@ -27,6 +30,9 @@ uniform vec3 forceColor;
 // Texture mode
 uniform sampler2D Texture;
 varying vec2 fragTextureCoordinate;
+
+// Reflect/Refract modes
+uniform samplerCube environment;
 
 // Vertex (not-Phong) shading mode
 varying vec4 finalColor;
@@ -50,6 +56,14 @@ void main()
 	}
 	else if (!usePhongInterpolation) {
 		gl_FragColor = finalColor;
+	}
+	else if (useReflect) {
+		vec3 vertexToCamera = normalize(cameraPosition - vertexPosition_world);
+		vec3 reflection = reflect(vertexToCamera, vertexNormal_world);
+		gl_FragColor = textureCube(environment, reflection);
+	}
+	else if (useRefract) {
+		vec3 vertexToCamera = normalize(cameraPosition - vertexPosition_world);
 	}
 	else {
 		vec3 vertexToLight = normalize(light.position - vertexPosition_world);

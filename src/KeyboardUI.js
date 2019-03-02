@@ -17,7 +17,9 @@ const KEY_NAMES = new Map()
       .set('.', 'PERIOD')
       .set(',', 'COMMA')
       .set(';', 'SEMICOLON')
-      .set("'", 'APOSTROPHE');
+      .set("'", 'APOSTROPHE')
+      .set("!", 'EXCLAMATION_MARK')
+      .set("#", 'POUND');
 
 /**
  * Get the CSS class for a key
