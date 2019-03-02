@@ -61,13 +61,20 @@ export default class Walls extends AbstractModel {
                 [16, 17, 18, 19], // top
                 [20, 21, 22, 23], // near
             ],
-            mesh = new Mesh(vertices, faces),
-            tex_coords = Array(6).fill([
-                0, 0,
-                0, 1,
-                1, 1,
-                1, 0
-            ]);
+            mesh = new Mesh(vertices, faces);
+
+        let w = mesh.bounds.width / 10,
+            h = mesh.bounds.height / 10,
+            d = mesh.bounds.depth / 10;
+
+        let tex_coords = new Float32Array([
+            [d,0,  0,0,  0,h,  d,h], // left
+            [w,0,  0,0,  0,d,  w,d], // bottom
+            [w,h,  w,0,  0,0,  0,h], // far
+            [0,h,  d,h,  d,0,  0,0], // right
+            [0,d,  w,d,  w,0,  0,0], // top
+            [w,h,  w,0,  0,0,  0,h], // near
+        ].flat(1));
 
         return new Walls(locations, material, mesh, tex_coords);
     }
@@ -91,25 +98,13 @@ export default class Walls extends AbstractModel {
         setupVec2Buffer(locations.textureCoordinate, tex_coords, this.buffers.texture);
         gl.vao.bindVertexArrayOES(null);
 
-        this.texture_buffers = Object.freeze({
-            stone: gl.createTexture(),
-            grass: gl.createTexture(),
-        });
-
         this.textures = Object.freeze({
             stone: 1,
             grass: 2,
         });
 
-        gl.activeTexture(gl.TEXTURE0 + this.textures.stone);
-        gl.bindTexture(gl.TEXTURE_2D, this.texture_buffers.stone);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
-                      new Uint8Array([128, 128, 128, 255]));
-
-        gl.activeTexture(gl.TEXTURE0 + this.textures.grass);
-        gl.bindTexture(gl.TEXTURE_2D, this.texture_buffers.grass);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
-                      new Uint8Array([0, 128, 0, 255]));
+        prepareAsyncTexture(this.textures.stone, stone_texture, [128, 128, 128]);
+        prepareAsyncTexture(this.textures.grass, grass_texture, [0, 128, 0]);
 
         let {stone, grass} = this.textures;
 
@@ -140,3 +135,32 @@ export default class Walls extends AbstractModel {
         gl.uniform1i(this.shader.useTexture, false);
     }
 }
+
+/**
+ * Load a texture asynchronously
+ *
+ * @param {number} index The texture index to save this texture as
+ * @param {string} url The path to the texture image
+ * @param {UINT8[]} placeholder_color An RGB color to use until the texture loads
+ */
+function prepareAsyncTexture(index, url, placeholder_color = [255, 0, 255]) {
+    let buffer = gl.createTexture();
+
+    gl.activeTexture(gl.TEXTURE0 + index);
+
+    gl.bindTexture(gl.TEXTURE_2D, buffer);
+
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+                  new Uint8Array([...placeholder_color, 255]));
+
+    let image = document.createElement('img');
+
+    image.addEventListener('load', () => {
+        gl.activeTexture(gl.TEXTURE0 + index);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+        gl.generateMipmap(gl.TEXTURE_2D);
+    });
+
+    image.src = url;
+}
+

@@ -175,6 +175,9 @@ function setup() {
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);
 
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+
     mobile.setup(shader);
 
     setProjection(mobile);
