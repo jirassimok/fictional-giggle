@@ -46,7 +46,7 @@ void main()
 		gl_FragColor = vec4(forceColor, 1);
 	}
 	else if (useTexture) {
-		gl_FragColor = vec4(1, 1, 1, 1);//texture2D(Texture, fragTextureCoordinate);
+		gl_FragColor = texture2D(Texture, fragTextureCoordinate);
 	}
 	else if (!usePhongInterpolation) {
 		gl_FragColor = finalColor;
