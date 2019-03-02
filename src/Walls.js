@@ -6,6 +6,7 @@ import Mesh from "./Mesh.js";
 
 import stone_texture from "../textures/stones.bmp";
 import grass_texture from "../textures/grass.bmp";
+import sky_texture from "../textures/sky.jpg";
 
 
 const IDMAT4 = new Float32Array([1,0,0,0,
@@ -101,20 +102,22 @@ export default class Walls extends AbstractModel {
         this.textures = Object.freeze({
             stone: 1,
             grass: 2,
+            sky: 3,
         });
 
         prepareAsyncTexture(this.textures.stone, stone_texture, [128, 128, 128]);
         prepareAsyncTexture(this.textures.grass, grass_texture, [0, 128, 0]);
+        prepareAsyncTexture(this.textures.sky, sky_texture, [135, 206, 236]);
 
-        let {stone, grass} = this.textures;
+        let {stone, grass, sky} = this.textures;
 
         this.walls = Object.freeze([
-            {offset:  0, texture: stone},
-            {offset:  4, texture: grass},
-            {offset:  8, texture: stone},
-            {offset: 12, texture: stone},
-            {offset: 16, texture: stone},
-            {offset: 20, texture: stone},
+            {offset:  0, texture: stone}, // left
+            {offset:  4, texture: grass}, // bottom
+            {offset:  8, texture: stone}, // far
+            {offset: 12, texture: stone}, // right
+            {offset: 16, texture: sky}, // top
+            {offset: 20, texture: stone}, // near
         ]);
     }
 
