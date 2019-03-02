@@ -83,6 +83,7 @@ const shader = Object.freeze({
 
     forceColor:         gl.getUniformLocation(program, "forceColor"),
     texture:            gl.getUniformLocation(program, "Texture"),
+    environmentTexture: gl.getUniformLocation(program, "environment"),
 });
 
 

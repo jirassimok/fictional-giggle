@@ -120,22 +120,18 @@ export default class Walls extends AbstractModel {
             stone: 1,
             grass: 2,
             sky: 3,
-            env: {
-                left: 4,
-                right: 5,
-                top: 6,
-                bottom: 7,
-                near: 8,
-                far: 9,
-            }
+            env: 4,
         });
 
         prepareAsyncTexture(this.textures.stone, stone_texture, [128, 128, 128]);
         prepareAsyncTexture(this.textures.grass, grass_texture, [0, 128, 0]);
         prepareAsyncTexture(this.textures.sky, sky_texture, [135, 206, 236]);
 
+        let env_texture = gl.createTexture();
+
         const cubeMap = (side, gl_side) =>
-              prepareAsyncTexture(this.textures.env[side], ENV_MAP[side], [255, 0, 255], gl.TEXTURE_CUBE_MAP, gl_side);
+              prepareAsyncTexture(this.textures.env, ENV_MAP[side], [255, 0, 255],
+                                  gl.TEXTURE_CUBE_MAP, gl_side, env_texture);
 
         cubeMap('right',  gl.TEXTURE_CUBE_MAP_POSITIVE_X);
         cubeMap('left',   gl.TEXTURE_CUBE_MAP_NEGATIVE_X);
@@ -143,6 +139,8 @@ export default class Walls extends AbstractModel {
         cubeMap('bottom', gl.TEXTURE_CUBE_MAP_NEGATIVE_Y);
         cubeMap('near',   gl.TEXTURE_CUBE_MAP_POSITIVE_Z);
         cubeMap('far',    gl.TEXTURE_CUBE_MAP_NEGATIVE_Z);
+
+        gl.uniform1i(locations.environmentTexture, this.textures.env);
 
         let {stone, grass, sky} = this.textures;
 
@@ -184,9 +182,8 @@ export default class Walls extends AbstractModel {
  * @param {UINT8[]} placeholder_color An RGB color to use until the texture loads
  */
 function prepareAsyncTexture(index, url, placeholder_color = [255, 0, 255],
-                             target = gl.TEXTURE_2D, cube_side = gl.TEXTURE_2D) {
-    let buffer = gl.createTexture();
-
+                             target = gl.TEXTURE_2D, cube_side = gl.TEXTURE_2D,
+                             buffer = gl.createTexture()) {
     gl.activeTexture(gl.TEXTURE0 + index);
 
     gl.bindTexture(target, buffer);
