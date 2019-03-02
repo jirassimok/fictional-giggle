@@ -16,20 +16,6 @@ Most of the functions in the source code are documented in their files.
 
 The following files are of particular note:
 
-## `model.js`
-
-The mobile model is constructed in this file. Editing it would allow arbitrary
-mobiles to be made easily.
-
-## `Mobile.js`
-
-This file contains the `Mobile` class, which contains and draws the meshes and
-arms of a Mobile.
-
-## `setup.js`
-
-This file contains initial WebGL setup.
-
 ## `main.js`
 
 This file sets up the world to draw, and renders it.
@@ -47,6 +33,42 @@ shading.
 
 The fragment shader can use a constant color or a color provided by the vertex
 shader, or it can perform lighting calculations for fragment (Phong) shading.
+
+## `model.js`
+
+The mobile model is constructed in this file. Editing it would allow arbitrary
+mobiles to be made easily.
+
+## `Light.js`
+
+This file contains a class that contains information about the light and can
+draw the light source.
+
+## `AbstractModel.js`
+
+This file contains a class with operations shared by some of the other models.
+
+## `Mobile.js`
+
+This file contains the `Mobile` class, which contains and draws the meshes and
+arms of a Mobile.
+
+## `Walls.js`
+
+This file contains the `Walls` class, which contains and draws the meshes
+representing the scene's walls, as well as loading and configuring the textures.
+
+## `setup.js`
+
+This file contains initial WebGL setup.
+
+## `Mesh.js` and `Bounds.js`
+
+These files contain classes that represent meshes and their bounding boxes.
+
+## `debug.js`
+
+This file includes functions that can be used to aid in debugging the program.
 
 ## JSON files
 

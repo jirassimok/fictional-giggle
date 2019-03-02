@@ -1,3 +1,12 @@
+/*
+ * Extra features:
+ *
+ * - The camera may be moved and rotated with WASDRF, the arrow keys, 1, and 3.
+ *   - To reorient the camera upwards, press 'U'.
+ *
+ * - Phong shading is still supported.
+ * - The light source may be displayed by pressing 'L'.
+ */
 "use strict";
 
 import "./vecarray.js";
