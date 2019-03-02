@@ -90,6 +90,7 @@ const shader = Object.freeze({
 const settings = Object.seal({
     view_source: false,
     view_lines: false,
+    texture_walls: true,
 });
 
 /**
@@ -104,7 +105,8 @@ const light = new Light(shader, {
     specular:  [1, 1, 1],
 }, () => settings.view_lines);
 
-const walls = Walls.from(shader, scaleAmbient(materials.pearl, 2), -12, 12, -10, 6, 10, -10);
+const walls = Walls.from(shader, () => settings.texture_walls,
+                         scaleAmbient(materials.pearl, 2), -12, 12, -10, 6, 10, -10);
 
 const models = new MultiModel(mobile, walls);
 
@@ -265,6 +267,11 @@ window.addEventListener('keydown', e => {
     }
 
     switch (e.key.toUpperCase()) {
+    case 'B':
+        Key.activate('B');
+        settings.texture_walls = !settings.texture_walls;
+        break;
+
     case 'U':
         Key.activate('U');
         camera.reorient();
@@ -303,7 +310,7 @@ window.addEventListener('keyup', e => {
         return; // Ignore keys with non-shift modifiers
     }
 
-    const keys = ['P', 'p', 'M', 'm', 'L', 'l', 'n', 'U', 'u'];
+    const keys = ['P', 'p', 'M', 'm', 'L', 'l', 'n', 'U', 'u', 'B', 'b'];
 
     if (keys.includes(e.key)) {
         Key.deactivate(e.key);

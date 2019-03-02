@@ -15,7 +15,7 @@ const IDMAT4 = new Float32Array([1,0,0,0,
                                  0,0,0,1]);
 
 export default class Walls extends AbstractModel {
-    static from(locations, material, left, right, bottom, top, near, far) {
+    static from(locations, texture_wall_setting, material, left, right, bottom, top, near, far) {
         let b = new Bounds(left, right, bottom, top, near, far),
             vertices = [
                 // left
@@ -77,11 +77,13 @@ export default class Walls extends AbstractModel {
             [w,h,  w,0,  0,0,  0,h], // near
         ].flat(1));
 
-        return new Walls(locations, material, mesh, tex_coords);
+        return new Walls(locations, texture_wall_setting, material, mesh, tex_coords);
     }
 
-    constructor(locations, material, mesh, tex_coords) {
+    constructor(locations, texture_wall_setting, material, mesh, tex_coords) {
         super(material, mesh);
+
+        this.useTexture = texture_wall_setting;
 
         this.bounds = this.mesh.bounds;
 
@@ -122,8 +124,11 @@ export default class Walls extends AbstractModel {
     }
 
     draw() {
-        gl.uniform1i(this.shader.useTexture, true);
         this.setUniforms();
+
+        if (this.useTexture()) {
+            gl.uniform1i(this.shader.useTexture, true);
+        }
 
         gl.uniformMatrix4fv(this.shader.modelMatrix, false, IDMAT4);
 
@@ -166,4 +171,3 @@ function prepareAsyncTexture(index, url, placeholder_color = [255, 0, 255]) {
 
     image.src = url;
 }
-
