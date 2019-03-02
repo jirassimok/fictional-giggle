@@ -21,7 +21,7 @@ const ENV_MAP = {
     near: near_texture,
     far: far_texture,
     top: top_texture,
-    bottom: top_texture,
+    bottom: bottom_texture,
 };
 
 const IDMAT4 = new Float32Array([1,0,0,0,
