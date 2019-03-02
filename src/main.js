@@ -194,12 +194,6 @@ function render() {
 
     walls.draw();
 
-    gl.disable(gl.DEPTH_TEST);
-
-    mobile.draw(MV.mult(MV.translate(0, 0, walls.bounds.far), light.shadow_transform), true);
-
-    gl.enable(gl.DEPTH_TEST);
-
     mobile.draw();
 
     if (settings.view_source || settings.view_lines) {
