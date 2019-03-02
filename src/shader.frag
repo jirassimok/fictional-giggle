@@ -45,6 +45,8 @@ uniform vec3 cameraPosition;
 varying vec3 vertexPosition_world;
 varying vec3 vertexNormal_world;
 
+varying vec3 reflection;
+varying vec3 refraction;
 
 void main()
 {
@@ -55,15 +57,15 @@ void main()
 		gl_FragColor = texture2D(Texture, fragTextureCoordinate);
 	}
 	else if (!usePhongInterpolation) {
-		gl_FragColor = finalColor;
-	}
-	else if (useReflect) {
-		vec3 vertexToCamera = normalize(cameraPosition - vertexPosition_world);
-		vec3 reflection = reflect(vertexToCamera, vertexNormal_world);
-		gl_FragColor = textureCube(environment, reflection);
-	}
-	else if (useRefract) {
-		vec3 vertexToCamera = normalize(cameraPosition - vertexPosition_world);
+		if (useReflect) {
+			gl_FragColor = finalColor * textureCube(environment, reflection);
+		}
+		else if (useRefract) {
+
+		}
+		else {
+			gl_FragColor = finalColor;
+		}
 	}
 	else {
 		vec3 vertexToLight = normalize(light.position - vertexPosition_world);
@@ -82,11 +84,21 @@ void main()
 		vec3 vertexToCamera = normalize(cameraPosition - vertexPosition_world);
 
 		// Reflection of light off vertex
-		vec3 reflection = reflect(vertexToLight, vertexNormal);
+		vec3 lightReflection = reflect(vertexToLight, vertexNormal);
 		vec3 specularLight = (light.specular * material.specular
-							  * pow(max(0.0, dot(-vertexToCamera, reflection)),
+							  * pow(max(0.0, dot(-vertexToCamera, lightReflection)),
 									material.shininess));
 
-		gl_FragColor = vec4(ambientLight + diffuseLight + specularLight, 1);
+		vec4 color = vec4(ambientLight + diffuseLight + specularLight, 1);
+
+		if (useReflect) {
+			gl_FragColor = color * textureCube(environment, reflection);
+		}
+		else if (useRefract) {
+			gl_FragColor = color * textureCube(environment, refraction);
+		}
+		else {
+			gl_FragColor = color;
+		}
 	}
 }

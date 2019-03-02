@@ -19,6 +19,8 @@ struct Material {
 uniform bool useForceColor;
 uniform bool usePhongInterpolation;
 uniform bool useTexture;
+uniform bool useReflect;
+uniform bool useRefract;
 
 // Force color mode
 uniform vec3 forceColor;
@@ -52,7 +54,8 @@ varying vec3 lightDirection_eye;
 varying vec3 vertexPosition_world;
 varying vec3 vertexNormal_world;
 
-
+varying vec3 reflection;
+varying vec3 refraction;
 
 void main() {
 	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1);
@@ -67,7 +70,12 @@ void main() {
 	}
 
 	vertexPosition_world = vec3(modelMatrix * vec4(vertexLightingPosition, 1));
-	vertexNormal_world = mat3(modelMatrix) * vertexNormal;
+	vertexNormal_world = normalize(mat3(modelMatrix) * vertexNormal);
+
+	vec3 cameraToVertex = normalize(vertexPosition_world - cameraPosition);
+
+	reflection = reflect(cameraToVertex, vertexNormal_world);
+	refraction = refract(cameraToVertex, vertexNormal_world, 0.5);
 
 	if (usePhongInterpolation) {
 		return;
@@ -85,12 +93,10 @@ void main() {
 	vec3 diffuseLight = (light.diffuse * material.diffuse
 						 * max(0.0, dot(vertexToLight, vertexNormal_world)));
 
-	vec3 vertexToCamera = normalize(cameraPosition - vertexPosition_world);
-
 	// Reflection of light off vertex
 	vec3 reflection = reflect(vertexToLight, vertexNormal_world);
 	vec3 specularLight = (light.specular * material.specular
-						  * pow(max(0.0, dot(-vertexToCamera, reflection)),
+						  * pow(max(0.0, dot(cameraToVertex, reflection)),
 								material.shininess));
 
 	finalColor = vec4(ambientLight + diffuseLight + specularLight, 1);
