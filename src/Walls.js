@@ -8,6 +8,21 @@ import stone_texture from "../textures/stones.bmp";
 import grass_texture from "../textures/grass.bmp";
 import sky_texture from "../textures/sky.jpg";
 
+import left_texture from "../textures/env/nvnegx.bmp";
+import bottom_texture from "../textures/env/nvnegy.bmp";
+import far_texture from "../textures/env/nvnegz.bmp";
+import right_texture from "../textures/env/nvposx.bmp";
+import top_texture from "../textures/env/nvposy.bmp";
+import near_texture from "../textures/env/nvposz.bmp";
+
+const ENV_MAP = {
+    left: left_texture,
+    right: right_texture,
+    near: near_texture,
+    far: far_texture,
+    top: top_texture,
+    bottom: top_texture,
+};
 
 const IDMAT4 = new Float32Array([1,0,0,0,
                                  0,1,0,0,
@@ -105,11 +120,29 @@ export default class Walls extends AbstractModel {
             stone: 1,
             grass: 2,
             sky: 3,
+            env: {
+                left: 4,
+                right: 5,
+                top: 6,
+                bottom: 7,
+                near: 8,
+                far: 9,
+            }
         });
 
         prepareAsyncTexture(this.textures.stone, stone_texture, [128, 128, 128]);
         prepareAsyncTexture(this.textures.grass, grass_texture, [0, 128, 0]);
         prepareAsyncTexture(this.textures.sky, sky_texture, [135, 206, 236]);
+
+        const cubeMap = (side, gl_side) =>
+              prepareAsyncTexture(this.textures.env[side], ENV_MAP[side], [255, 0, 255], gl.TEXTURE_CUBE_MAP, gl_side);
+
+        cubeMap('right',  gl.TEXTURE_CUBE_MAP_POSITIVE_X);
+        cubeMap('left',   gl.TEXTURE_CUBE_MAP_NEGATIVE_X);
+        cubeMap('top',    gl.TEXTURE_CUBE_MAP_POSITIVE_Y);
+        cubeMap('bottom', gl.TEXTURE_CUBE_MAP_NEGATIVE_Y);
+        cubeMap('near',   gl.TEXTURE_CUBE_MAP_POSITIVE_Z);
+        cubeMap('far',    gl.TEXTURE_CUBE_MAP_NEGATIVE_Z);
 
         let {stone, grass, sky} = this.textures;
 
@@ -150,23 +183,30 @@ export default class Walls extends AbstractModel {
  * @param {string} url The path to the texture image
  * @param {UINT8[]} placeholder_color An RGB color to use until the texture loads
  */
-function prepareAsyncTexture(index, url, placeholder_color = [255, 0, 255]) {
+function prepareAsyncTexture(index, url, placeholder_color = [255, 0, 255],
+                             target = gl.TEXTURE_2D, cube_side = gl.TEXTURE_2D) {
     let buffer = gl.createTexture();
 
     gl.activeTexture(gl.TEXTURE0 + index);
 
-    gl.bindTexture(gl.TEXTURE_2D, buffer);
+    gl.bindTexture(target, buffer);
 
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+    gl.texImage2D(cube_side, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
                   new Uint8Array([...placeholder_color, 255]));
 
     let image = document.createElement('img');
 
     image.addEventListener('load', () => {
         gl.activeTexture(gl.TEXTURE0 + index);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-        gl.generateMipmap(gl.TEXTURE_2D);
+        gl.texImage2D(cube_side, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+
+        if (target === gl.TEXTURE_2D) {
+            gl.generateMipmap(target);
+        }
     });
 
     image.src = url;
+
+    gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+    gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
 }
