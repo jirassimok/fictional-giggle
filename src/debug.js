@@ -31,9 +31,16 @@ export function resetRotations(stop = false, mobile = default_mobile) {
 /** Multiply the mobile's arm rotation speed */
 export function scaleSpeed(scale, mobile = default_mobile) {
     mobile.apply(mobile => {
+        {
         let speed = mobile.armRotation.speed;
         let scaled = () => scale * speed();
-        mobile.armRotation.speed = scaled;
+            mobile.armRotation.speed = scaled;
+        }
+        {
+            let speed = mobile.rotation.speed;
+            let scaled = () => scale * speed();
+            mobile.rotation.speed = scaled;
+        }
     });
 }
 

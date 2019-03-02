@@ -2,7 +2,11 @@
  * Extra features:
  *
  * - The camera may be moved and rotated with WASDRF, the arrow keys, 1, and 3.
+ *   - The shift key is required for WASDRF movement, to avoid conflicting with
+ *     other bindings.
  *   - To reorient the camera upwards, press 'U'.
+ * - The mobile's motion may be paused with the space key.
+ * - The mobile's motion may be speed or or slowed down with 'j' and 'k'.
  *
  * - Phong shading is still supported.
  * - The light source may be displayed by pressing 'L'.
@@ -30,6 +34,7 @@ import { mobile, scaleAmbient } from "./model.js";
 
 import * as MV from "./MV+.js";
 import * as Key from "./KeyboardUI.js";
+import * as db from "./debug.js";
 
 
 // Force the camera to use specified values
@@ -297,6 +302,28 @@ window.addEventListener('keydown', e => {
         }
         break;
 
+    case ' ': // fallthrough
+    case ' ':
+        Key.activate(' ');
+        if (mobile.rotation.isrunning()) {
+            db.stop(mobile);
+        }
+        else {
+            db.start(mobile);
+        }
+        break;
+    case 'J': // fallthrough
+    case 'j':
+        Key.activate('j');
+        db.scaleSpeed(2/3, mobile);
+        break;
+    case 'K': // fallthrough
+    case 'k':
+        Key.activate('k');
+        db.scaleSpeed(1.5, mobile);
+        break;
+
+
     case 'U': // fallthrough
     case 'u':
         Key.activate('U');
@@ -338,7 +365,8 @@ window.addEventListener('keyup', e => {
         return; // Ignore keys with non-shift modifiers
     }
 
-    const keys = ['P', 'p', 'M', 'm', 'L', 'l', 'n', 'U', 'u', 'b', 'c', 'd'];
+    const keys = ['P', 'p', 'M', 'm', 'L', 'l', 'n',
+                  'U', 'u', 'b', 'c', 'd', ' ', 'J', 'j', 'K', 'k'];
 
     if (keys.includes(e.key)) {
         Key.deactivate(e.key);
